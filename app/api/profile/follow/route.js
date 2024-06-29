@@ -7,8 +7,8 @@ import FollowersDB from "@/app/models/Followers.model";
 export const GET = async (req,res) => {
     await connectdb();
     await verifyUser(req,res);
+    const followUser = req.nextUrl.searchParams.get('followUser')
     try {
-        const followUser = req.nextUrl.searchParams.get('followUser')
         const follower = req.user._id;
         const following = followUser;
         if (follower === following) {

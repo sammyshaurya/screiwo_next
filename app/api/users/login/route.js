@@ -5,27 +5,24 @@ import Profile from "@/app/models/Profile.model";
 import bcrypt from "bcrypt";
 
 export const GET = async (req) => {
+  await connectdb();
+  const searchParams = new URL(req.url).searchParams;
   try {
-    await connectdb();
-
-    // Extract query parameters
-    const searchParams = new URL(req.url).searchParams;
     const username = searchParams.get("username");
     const password = searchParams.get("password");
 
     if (!username || !password) {
-      return new NextResponse("Username and password are required", { status: 400 });
+      return NextResponse.json("Username and password are required", { status: 400 });
     }
 
-    // Fetch user from database
     const user = await User.findOne({ username });
 
     if (!user) {
-      return new NextResponse("Invalid username or password", { status: 400 });
+      return NextResponse.json("Invalid username or password", { status: 400 });
     }
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return new NextResponse("Invalid username or password", { status: 400 });
+      return NextResponse.json("Invalid username or password", { status: 400 });
     }
 
     // Fetch user profile
@@ -41,6 +38,6 @@ export const GET = async (req) => {
 
   } catch (error) {
     console.error("Error processing request:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json("Internal Server Error", { status: 500 });
   }
 };

@@ -4,9 +4,8 @@ import { connectdb } from "@/app/lib/db";
 
 export const GET = async (req,{params})=> {
   await connectdb();
+  const user = req.nextUrl.searchParams.get('username') || null;
     try {
-      const { searchParams } = new URL(req.url)
-      const user = req.nextUrl.searchParams.get('username') || null;
         if (!user){
             console.error('No username provided');
             return NextResponse.json("Error", { status: 401 });

@@ -8,9 +8,8 @@ import { connectdb } from "@/app/lib/db";
 export const verifyUser = async (req, res, tokens=null) => {
     await connectdb()
     const tokenVal = tokens
+    let token = headers().get('authorization') || tokenVal;
     try {
-        let token = headers().get('authorization') || tokenVal;
-        console.log(tokenVal);
         if (!token) {
             req.verified = false;
             return NextResponse.json({ message: "Access denied. No token provided." }, { status: 401 });
