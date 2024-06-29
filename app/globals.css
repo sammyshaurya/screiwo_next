@@ -16,18 +16,96 @@
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+Link {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.username {
+  font-size: 1.50rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.username > :first-child {
+  margin-top: 0;
+}
+
+
+/* Font */
+.merriweather-light {
+  font-family: "Merriweather", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.merriweather-regular {
+  font-family: "Merriweather", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.merriweather-bold {
+  font-family: "Merriweather", serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.merriweather-black {
+  font-family: "Merriweather", serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.merriweather-light-italic {
+  font-family: "Merriweather", serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.merriweather-regular-italic {
+  font-family: "Merriweather", serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.merriweather-bold-italic {
+  font-family: "Merriweather", serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.merriweather-black-italic {
+  font-family: "Merriweather", serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.noto {
+  font-family: "Noto", serif;
+}
+
+.opensans {
+  font-family: "Noto", sans-serif;
+}
+
+@font-face {
+  font-family: "Noto";
+  src: local('Noto-Sans'), url('/uicomponents/Typography/Noto_serif') format('truetype');
+}
+
+@font-face {
+  font-family: "OpenSans";
+  src: local('OpenSans'), url('/uicomponents/Typography/OpenSans') format('truetype');
+}
+
