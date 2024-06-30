@@ -8,8 +8,8 @@ export const GET = async (req) => {
   await verifyUser(req);
     try {
     const userId = req.user._id.toString();
-
     const profile = await Profile.findOne({ userid: userId });
+    
 
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 400 });

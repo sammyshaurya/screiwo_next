@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import logo from "@/public/Logo.png";
 import Link from "next/link";
 import SearchIcon from "/public/assets/Search";
@@ -14,6 +14,7 @@ import {
   NavbarMenu,
   NavbarMenuItem,
 } from "@nextui-org/navbar";
+import { useClickOutside } from "react-click-outside-hook";
 
 export const ProfileNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,21 +22,24 @@ export const ProfileNav = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchList, setSearchList] = useState([]);
   const Router = useRouter();
+  const [dropdownRef, hasClickedOutside] = useClickOutside();
 
   const handleSearchFocus = () => {
     setIsDropdownOpen(true);
   };
 
   const handleSearchBlur = () => {
-    setIsDropdownOpen(false);
+    setTimeout(() => {
+      if (hasClickedOutside) {
+        setIsDropdownOpen(false);
+      }
+    }, 100); // Add a slight delay to allow for click events to propagate
   };
 
   const handleInputChange = (e) => {
     setSearchTerm(e.target.value);
     if (e.target.value.trim().length > 2) {
-      fetch(
-        `/api/allusers?q=${e.target.value}`
-      )
+      fetch(`/api/allusers?q=${e.target.value}`)
         .then((response) => response.json())
         .then((data) => {
           setSearchList(
@@ -53,7 +57,14 @@ export const ProfileNav = () => {
     }
   };
 
-  const menuItems = ["Home", "Profile", "Settings", "Log Out"];
+  const menuItems = ["Home", "Profile", "Search", "Settings", "Log Out"];
+  const LinkMap = {
+    "Home": "/home",
+    "Profile": "/profile",
+    "Search": "/search",
+    "Settings": "/settings",
+    "Log Out": "/logout",
+  }
 
   return (
     <div className="relative">
@@ -63,7 +74,7 @@ export const ProfileNav = () => {
           className="sm:hidden"
         />
         <NavbarBrand>
-          <Link href="/">
+          <Link href="/home">
             <Image src={logo} alt="Logo" width={150} height={150} />
           </Link>
         </NavbarBrand>
@@ -89,11 +100,11 @@ export const ProfileNav = () => {
               onFocus={handleSearchFocus}
               startContent={<SearchIcon size={18} />}
             />
-            {searchList.length > 0 && (
-              <div className="absolute top-full p-2 bg-white border rounded-md shadow-lg w-1/3">
+            {isDropdownOpen && searchList.length > 0 && (
+              <div ref={dropdownRef} className="absolute top-full p-2 bg-white border rounded-md shadow-lg w-1/3">
                 {searchList.map((user, index) => (
                   <div
-                    onClick={()=> {return Router.push(`/user/${user.username}`)}}
+                    onClick={() => { Router.push(`/user/${user.username}`) }}
                     key={index}
                     className="block py-1 px-2 w-full hover:bg-gray-100 cursor-pointer"
                   >
@@ -114,7 +125,7 @@ export const ProfileNav = () => {
               <Link
                 color={index === menuItems.length - 1 ? "danger" : "foreground"}
                 className="w-full"
-                href="#"
+                href={LinkMap[item]}
                 size="lg"
               >
                 {item}

@@ -21,14 +21,11 @@ const Profile = () => {
           Navigate("/");
           return;
         }
-        const response = await axios.get(
-          "/api/profile",
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
+        const response = await axios.get("/api/profile", {
+          headers: {
+            Authorization: token,
+          },
+        });
         setPosts(response.data.profile.posts);
         setUser(response.data.profile);
       } catch (error) {
@@ -42,57 +39,51 @@ const Profile = () => {
   return (
     <div className="bg-gray-100 min-h-screen">
       <ProfileNav />
-      <div className="flex">
-        <div className="flex-1 h-full ">
-          <div className="mx-36 mt-6 flex flex-col items-start">
-            <div className="flex items-center">
-              <Avatar
-                src="/defaultavatar.png"
-                className="flex h-40 w-40"
-              ></Avatar>
-              <div className="flex-col">
-                <div className="flex justify-between">
-                  <div className="username text-decoration-line: underline ml-16 mb-3">
-                    {user && user.username}
-                  </div>
-                  <Link href="/post">
-                    <Button>
-                      <StretchVerticallyIcon />
-                      Create Post
-                    </Button>
-                  </Link>
-                </div>
-                <div className="flex-col">
-                  <div className="flex">
-                    <div className="ml-16 mb-2">{`${posts.length || 0} posts`}</div>
-                    <div className="ml-8 mb-2">{`0 followers`}</div>
-                    <div className="ml-8 mb-2">{`0 following`}</div>
-                  </div>
-                  <h5 className="ml-16 mb-3 text-gray-700">
-                    {user && user.FirstName + " " + user.LastName}
-                    <span className="ml-3 text-wrap text-sm font-light text-slate-700 ">
-                      {user && user.profileType}
-                    </span>
-                  </h5>
-                  <blockquote className="ml-16 border-l-2 pl-2 italic">
-                    &quot;After all,&quot; he said, &quot;everyone enjoys a good
-                    joke, so it&apos;s only fair that they should pay for the
-                    privilege.&quot;
-                  </blockquote>
-                </div>
+      <div className="container mx-auto p-4">
+        <div className="flex flex-col items-center md:flex-row md:items-start">
+          <Avatar src="/defaultavatar.png" className="h-40 w-40" />
+          <div className="flex flex-col ml-0 md:ml-8 mt-4 md:mt-0">
+            <div className="flex justify-between w-full md:w-auto">
+              <div className="username underline mb-3">
+                {user && user.username}
               </div>
+              <Link href="/post">
+                <Button variant="contained" color="primary">
+                  <StretchVerticallyIcon />
+                  Create Post
+                </Button>
+              </Link>
             </div>
-            <Divider className="my-4" />
+            <div className="flex flex-col">
+              <div className="flex mb-2">
+                <div>{`${posts.length || 0} posts`}</div>
+                <div className="ml-4">{`0 followers`}</div>
+                <div className="ml-4">{`0 following`}</div>
+              </div>
+              <h5 className="text-gray-700">
+                {user && `${user.FirstName} ${user.LastName}`}
+                <span className="ml-3 text-sm font-light text-slate-700">
+                  {user && user.profileType}
+                </span>
+              </h5>
+              <blockquote className="border-l-2 pl-2 italic">
+                &quot;After all,&quot; he said, &quot;everyone enjoys a good
+                joke, so it&apos;s only fair that they should pay for the
+                privilege.&quot;
+              </blockquote>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 mx-36 mb-10">
-            {user && posts &&
-              posts
-                .slice()
-                .reverse()
-                .map((post, index) => (
-                  <Posts key={index} post={post} profile={user} />
-                ))}
-          </div>
+        </div>
+        <Divider className="my-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {user &&
+            posts &&
+            posts
+              .slice()
+              .reverse()
+              .map((post, index) => (
+                <Posts key={index} post={post} profile={user} />
+              ))}
         </div>
       </div>
     </div>

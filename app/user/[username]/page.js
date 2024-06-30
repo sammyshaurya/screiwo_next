@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React from "react";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import Posts from "@/app/components/Pages/main/Posts";
@@ -7,9 +7,9 @@ import axios from "axios";
 import { Button } from "@nextui-org/button";
 import { useEffect, useState } from "react";
 import { Divider } from "@nextui-org/divider";
+import toast, { Toaster } from "react-hot-toast";
 
-
-const UsersProfile = ({params}) => {
+const UsersProfile = ({ params }) => {
   const [curUser, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followed, setFollowed] = useState(false);
@@ -19,22 +19,22 @@ const UsersProfile = ({params}) => {
   const submitFollow = async (toFollow) => {
     try {
       const token = localStorage.getItem("token");
+      const myID = localStorage.getItem("userObj");
       if (!token) {
         Navigate("/");
         return;
       }
-      const response = await axios.get(
-        `/api/profile/follow`,
-        {
-          headers: {
-            Authorization: localStorage.getItem("token"),
-          },
-          params: {
-            followUser: toFollow,
-          },
-        }
-      );
-      if (response.status === 200) {
+      const response = await axios.post(`/api/profile/follow`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          followUser: toFollow,
+          followeeid: myID,
+        },
+      });
+      if (response.status >= 200 && response.status < 300) {
+        toast.success("Followed user");
         setFollowed(true);
       } else {
         setFollowed(false);
@@ -44,23 +44,34 @@ const UsersProfile = ({params}) => {
     }
   };
 
-  useEffect(() => {
-    if (curUser && !followed) {
-      submitFollow(curUser.userid);
-    }
-  }, [curUser, followed]);
-
+  // useEffect(() => {
+  //   if (curUser && !followed) {
+  //     submitFollow(curUser.userid);
+  //   }
+  // }, [curUser, followed]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
+
         if (!token) {
           Navigate("/");
           return;
         }
-        const response = await axios.get(`/api/profile/usersprofile?username=${encodeURIComponent(searchUser)}`);
-        const userProfile = response.data.userProfile
+        const response = await axios.get(
+          `/api/profile/usersprofile?username=${encodeURIComponent(
+            searchUser
+          )}`,
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
+
+        const userProfile = response.data.userProfile;
+        setFollowed(response.data.isFollowing);
         const userprofile = {
           Bio: userProfile.Bio,
           FirstName: userProfile.FirstName,
@@ -77,22 +88,6 @@ const UsersProfile = ({params}) => {
         };
         setPosts(userProfile.posts);
         setUser(userprofile);
-
-        // const fetchPosts = async () => {
-        //   try {
-        //     const response = await axios.get(
-        //       "/api/screiwousersprofilepost",
-        //       {
-        //         params: { userid: userprofile.userid },
-        //       }
-        //     );
-        //     setPosts(response.data);
-        //   } catch (error) {
-        //     console.error("Error fetching posts:", error);
-        //   }
-        // };
-
-        // fetchPosts();
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -102,80 +97,64 @@ const UsersProfile = ({params}) => {
   }, [searchUser]);
 
   return (
-    <div>
+    <div className="bg-gray-100 min-h-screen">
       <ProfileNav />
-      <div className="flex">
-        <div className="flex-1 overflow-y-auto bg-gray-100">
-          <div className="mx-36 mt-6 flex flex-col items-start">
-            <div className="flex items-center">
-            <Avatar
-                src="/defaultavatar.png"
-                className="flex h-40 w-40"
-              ></Avatar>
-              <div className="flex-col">
-                <div className="flex justify-between">
-                  <div className="username text-decoration-line: underline ml-16 mb-3">
-                    {curUser && curUser.username}
-                  </div>
-                  {/* <div className="ml-auto">
-                    <Button
-                      type="submit"
-                      onClick={() => submitFollow(curUser.userid)}
-                    >
-                      {followed ? "Following" : "Follow"}
-                    </Button>
-                  </div> */}
-                </div>
-                <div className="flex-col">
-                  <div className="flex">
-                    <div className="ml-16 mb-2">{`${posts.length} posts`}</div>
-                    <div className="ml-8 mb-2">
-                      {curUser && `${curUser.Followers} followers`}
-                    </div>
-                    <div className="ml-8 mb-2">
-                      {curUser && `${curUser.Followings} following`}
-                    </div>
-                  </div>
-
-                  <h5 className="ml-16 mb-3 text-gray-700">
-                    {(curUser &&
-                      curUser?.FirstName + " " + curUser?.LastName) ||
-                      ""}
-                    <span className="ml-3 text-wrap text-sm font-light text-slate-700 ">
-                      {curUser && `${curUser?.profileType}`}
-                    </span>
-                  </h5>
-                  <blockquote className="ml-16 border-l-2 pl-2 italic">
-                    {curUser && curUser.username !== "sammyshaurya" ? (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: curUser.Bio,
-                        }}
-                      />
-                    ) : (
-                      <div>
-                        &quot;After all,&quot; he said, &quot;everyone enjoys a
-                        good joke, so it&apos;s only fair that they should pay
-                        for the privilege.&quot;
-                      </div>
-                    )}
-                  </blockquote>
-                </div>
+      <div className="container mx-auto p-4">
+        <div className="flex flex-col items-center md:flex-row md:items-start">
+          <Avatar src="/defaultavatar.png" className="h-40 w-40" />
+          <div className="flex flex-col ml-0 md:ml-8 mt-4 md:mt-0 w-full">
+            <div className="flex justify-between items-center w-full">
+              <div className="username underline mb-3">
+                {curUser && curUser.username}
+              </div>
+              <div className="ml-auto">
+                <Button
+                  type="submit"
+                  onClick={() => submitFollow(curUser.userid)}
+                >
+                  {followed ? "Following" : "Follow"}
+                </Button>
               </div>
             </div>
-            <Divider className="my-4" />
-          </div>
-          <div className="grid grid-cols-2 gap-4 mx-36 mb-10">
-            {posts && posts.map((post, index) => (
-              <Posts
-                key={index}
-                post={post}
-                profile={curUser}
-              />
-            ))}
+            <div className="flex-col mt-4">
+              <div className="flex mb-2">
+                <div>{`${posts.length} posts`}</div>
+                <div className="ml-4">
+                  {curUser && `${curUser.Followers} followers`}
+                </div>
+                <div className="ml-4">
+                  {curUser && `${curUser.Followings} following`}
+                </div>
+              </div>
+              <h5 className="text-gray-700">
+                {(curUser && curUser.FirstName + " " + curUser.LastName) || ""}
+                <span className="ml-3 text-sm font-light text-slate-700">
+                  {curUser && curUser.profileType}
+                </span>
+              </h5>
+              <blockquote className="border-l-2 pl-2 italic mt-2">
+                {curUser && curUser.username !== "sammyshaurya" ? (
+                  <div dangerouslySetInnerHTML={{ __html: curUser.Bio }} />
+                ) : (
+                  <div>
+                    &quot;After all,&quot; he said, &quot;everyone enjoys a good
+                    joke, so it&apos;s only fair that they should pay for the
+                    privilege.&quot;
+                  </div>
+                )}
+              </blockquote>
+            </div>
           </div>
         </div>
+        <Divider className="my-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {posts &&
+            posts.map((post, index) => (
+              <Posts key={index} post={post} profile={curUser} />
+            ))}
+        </div>
       </div>
+      <Toaster />
     </div>
   );
 };

@@ -14,20 +14,26 @@ const Home = () => {
   ];
 
   return (
-    <div>
-    <ProfileNav />
-    <div className="container mx-auto h-screen grid grid-cols-12">
-      <LeftSidebar />
-      <div className="col-span-8 overflow-y-auto p-4 mx-32">
-        {dummyPosts.map((post, index) => (
-          <div key={index} className="bg-white p-6 rounded-lg shadow-md mb-4">
-            <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-            <p className="text-gray-700">{post.content}</p>
-          </div>
-        ))}
+    <div className="min-h-screen bg-gray-100">
+      <ProfileNav />
+      <div className="block md:hidden">
       </div>
-      <RightSidebar />
-    </div>
+      <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 px-4 py-4">
+        <div className="hidden md:block md:col-span-3">
+          <LeftSidebar />
+        </div>
+        <div className="col-span-1 md:col-span-6">
+          {dummyPosts.map((post, index) => (
+            <div key={index} className="bg-white p-4 rounded-lg shadow-md mb-4">
+              <h2 className="text-lg md:text-xl font-bold mb-2">{post.title}</h2>
+              <p className="text-gray-700">{post.content}</p>
+            </div>
+          ))}
+        </div>
+        <div className="hidden md:block md:col-span-3">
+          <RightSidebar />
+        </div>
+      </div>
     </div>
   );
 };

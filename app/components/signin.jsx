@@ -10,28 +10,30 @@ const Signin = ({ togglemode }) => {
     username: '',
     password: '',
   });
-
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
   const login = async (e) => {
-    
     e.preventDefault();
+    setLoading(true);
     const { username, password } = formData;
     try {
       const res = await axios.get(
         `/api/users/login?username=${username}&password=${password}`
       );
-      const { profiled, token } = res.data;
+      const { profiled, token, userid } = res.data;
       localStorage.setItem('token', token);
+      localStorage.setItem('userObj', userid);
       if (profiled) {
         router.push('/profile');
       } else {
         router.push('/createprofile');
       }
     } catch (error) {
+      setLoading(false);
       console.error('Error logging in:', error);
     }
   };
@@ -88,7 +90,7 @@ const Signin = ({ togglemode }) => {
                       aria-describedby="remember"
                       type="checkbox"
                       className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300"
-                      required
+                      // required
                     />
                   </div>
                   <div className="ml-3 text-sm">
@@ -99,21 +101,21 @@ const Signin = ({ togglemode }) => {
                 </div>
                 <a
                   href="#"
-                  className="text-sm font-medium text-primary-600 hover:underline"
+                  className="text-sm font-medium text-primary-600 hover:underline text-clip"
                 >
                   Forgot password?
                 </a>
               </div>
               <div className="d-grid gap-2 col-10 mx-auto">
                 <button type="submit" className="btn btn-outline-primary">
-                  Login
+                  {loading ? 'Logging!!' : 'Sign in'}
                 </button>
               </div>
               <div className="text-sm font-light text-gray-500">
-                Don’t have an account yet?{' '}
+                Don’t have an account yet?
                 <span
                   onClick={togglemode}
-                  className="font-medium text-primary-600 hover:underline cursor-pointer"
+                  className="font-medium text-primary-600 hover:underline cursor-pointer ml-2"
                 >
                   Sign up
                 </span>

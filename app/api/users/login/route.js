@@ -29,7 +29,7 @@ export const GET = async (req) => {
     const userProfile = await Profile.findOne({ userid: user._id });
 
     if (userProfile) {
-      return NextResponse.json({ message: "User already profiled", profiled: true, token: user.token }, { status: 200 });
+      return NextResponse.json({ message: "User already profiled", profiled: true, token: user.token, userid: user._id }, { status: 200 });
     }
 
     

@@ -64,6 +64,14 @@ const ProfileSchema = new Schema({
     type: Number,
     default: 0,
   },
+  FollowersList: {
+    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    default: [],
+  },
+  FollowingsList: {
+    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    default: [],
+  },
   Posts: {
     type: Number,
     default: 0,
