@@ -48,7 +48,7 @@ const Profile = () => {
                 {user && user.username}
               </div>
               <Link href="/post">
-                <Button variant="contained" color="primary">
+                <Button size="sm" color="primary" variant="ghost" radius="none">
                   <StretchVerticallyIcon />
                   Create Post
                 </Button>
