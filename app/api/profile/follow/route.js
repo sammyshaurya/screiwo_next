@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { verifyUser } from "../../middleware/fetchData";
 import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
+import FeedUpdate from "../../users/createpost/FeedUpdate";
 
 export const POST = async (req) => {
   await connectdb();
   await verifyUser(req);
+  if (!req.verified) {
+    return NextResponse.json("Unauthorized access", { status: 401 });
+  }
   const postValues = await req.json();
   const userID = postValues.params.followeeid;
   const followUser = postValues.params.followUser;
@@ -55,6 +59,8 @@ export const POST = async (req) => {
       },
       { new: true }
     );
+
+
 
     return NextResponse.json("Followed successfully", { status: 201 });
   } catch (error) {

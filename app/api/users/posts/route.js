@@ -6,6 +6,9 @@ import { connectdb } from "@/app/lib/db";
 export const GET = async (req) => {
   await connectdb()
   await verifyUser(req);
+  if (!req.verified) {
+    return NextResponse.json("Unauthorized access", { status: 401 });
+  }
     try {
     const userId = req.user._id.toString();
     const profile = await Profile.findOne({ userid: userId });

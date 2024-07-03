@@ -12,7 +12,7 @@ export const POST = async (req, res) => {
     // Parse the request body
     const { profileData, token } = await req.json();
     await verifyUser(req, res, token);
-    console.log(req.verified)
+    
     if (req.verified === false || req.verified === null) {
         return NextResponse.json({ message: "Unauthorized access." }, { status: 401 });
     }

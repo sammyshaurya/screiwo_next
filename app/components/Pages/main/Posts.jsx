@@ -55,7 +55,7 @@ export default function Posts({ post, profile }) {
   return (
     <Card className="flex flex-col p-1">
       <CardHeader>
-        <CardTitle className="text-2xl mb-2">
+        <CardTitle className="text-2xl mb-2 line-clamp-2">
           {post?.title ? post.title : "No Title"}
         </CardTitle>
         <CardDescription>

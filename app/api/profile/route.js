@@ -6,6 +6,9 @@ import { connectdb } from '@/app/lib/db';
 export const GET = async (req,res) => {
     await connectdb();
     await verifyUser(req,res);
+    if (!req.verified) {
+        return NextResponse.json("Unauthorized access", { status: 401 });
+      }
     await userProfile(req,res);
     const userprofile = {profile : req.profile, user: req.user}
     if (!userprofile.profile || !userprofile.user){
