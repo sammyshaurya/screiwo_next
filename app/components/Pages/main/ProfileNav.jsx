@@ -15,6 +15,7 @@ import {
   NavbarMenuItem,
 } from "@nextui-org/navbar";
 import { useClickOutside } from "react-click-outside-hook";
+import { Button } from "@/components/ui/button";
 
 const SearchInput = ({ searchTerm, setSearchTerm, searchList, setSearchList, isDropdownOpen, setIsDropdownOpen }) => {
   const Router = useRouter();
@@ -91,12 +92,12 @@ export const ProfileNav = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchList, setSearchList] = useState([]);
 
-  const menuItems = ["Home", "Profile", "Settings", "Log Out"];
+  const menuItems = ["Home", "Profile", "Settings"];
   const LinkMap = {
     "Home": "/home",
     "Profile": "/profile",
     "Settings": "/settings",
-    "Log Out": "/logout",
+    // "Log Out": "/logout",
   }
 
 
@@ -139,7 +140,6 @@ export const ProfileNav = () => {
           {menuItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
               <Link
-                color={index === menuItems.length - 1 ? "danger" : "foreground"}
                 className="w-full"
                 href={LinkMap[item]}
                 size="lg"
@@ -148,6 +148,12 @@ export const ProfileNav = () => {
               </Link>
             </NavbarMenuItem>
           ))}
+          <NavbarMenuItem>
+            <Button variant="link" className="p-0 mt-2 text-md underline"
+            >
+              Log Out
+            </Button>
+          </NavbarMenuItem>
           <NavbarMenuItem className="mt-4">
             <SearchInput
               searchTerm={searchTerm}

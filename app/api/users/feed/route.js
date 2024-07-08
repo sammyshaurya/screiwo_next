@@ -16,7 +16,6 @@ export const GET = async (req) => {
 
     const headersList = headers();
     const user = headersList.get('user');
-    const token = headersList.get('Authorization');
 
     // Fetch the post IDs from Vercel KV
     const postIds = await kv.lrange(`userFeed:${user}`, 0, -1);

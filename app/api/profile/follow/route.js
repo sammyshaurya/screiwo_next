@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyUser } from "../../middleware/fetchData";
 import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
-import FeedUpdate from "../../users/createpost/FeedUpdate";
+import { FeedFromFollow } from "../../users/createpost/FeedUpdate";
 
 export const POST = async (req) => {
   await connectdb();
@@ -11,13 +11,13 @@ export const POST = async (req) => {
     return NextResponse.json("Unauthorized access", { status: 401 });
   }
   const postValues = await req.json();
-  const userID = postValues.params.followeeid;
-  const followUser = postValues.params.followUser;
+  const userID = postValues.followeeid;
+  const followUser = postValues.followUser;
   try {
-    const followerID = userID;
-    const followingID = followUser;
+    const followerID = userID.toString();
+    const followeeID = followUser.toString();
 
-    if (followerID === followingID) {
+    if (followerID === followeeID) {
       return NextResponse.json({ message: "Can't follow yourself" }, { status: 204 });
     }
 
@@ -25,24 +25,26 @@ export const POST = async (req) => {
       return NextResponse.json({ message: "Follower ID is missing" }, { status: 404 });
     }
 
-    if (!followingID) {
+    if (!followeeID) {
       return NextResponse.json({ message: "Following ID is missing" }, { status: 404 });
     }
 
     // Find the following user
-    const followingProfile = await Profile.findOne({userid: followingID}).lean();
+    const followingProfile = await Profile.findOne({ userid: followeeID }).lean();
     if (!followingProfile) {
       return NextResponse.json({ message: "No user found" }, { status: 404 });
     }
 
     // Check if already following
-    if (followingProfile.FollowersList.includes(followerID)) {
-      return NextResponse.json({ message: "Already following this user" }, { status: 202 });
+    const isAlreadyFollowing = followingProfile.FollowersList.some(id => id.toString() === followerID);
+    FeedFromFollow(followerID, followeeID);
+
+    if (isAlreadyFollowing) {
+      return NextResponse.json("Already following this user", { status: 202 });
     }
 
-    // Add follower to the following user's FollowersList and increment followersCount
     await Profile.findOneAndUpdate(
-      { userid: followingID },
+      { userid: followeeID },
       {
         $addToSet: { FollowersList: followerID },
         $inc: { Followers: 1 }
@@ -54,17 +56,17 @@ export const POST = async (req) => {
     await Profile.findOneAndUpdate(
       { userid: followerID },
       {
-        $addToSet: { FollowingsList: followingID },
+        $addToSet: { FollowingsList: followeeID },
         $inc: { Followings: 1 }
       },
       { new: true }
     );
 
-
+    
 
     return NextResponse.json("Followed successfully", { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
-}
+};

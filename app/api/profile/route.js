@@ -1,7 +1,8 @@
-// pages/api/profile.js
+// pages/api/profile
 import { verifyUser, userProfile } from '@/app/api/middleware/fetchData';
 import { NextResponse } from 'next/server';
 import { connectdb } from '@/app/lib/db';
+import { user } from '@nextui-org/theme';
 
 export const GET = async (req,res) => {
     await connectdb();

@@ -8,7 +8,7 @@ import { connectdb } from "@/app/lib/db";
 export const verifyUser = async (req, res, tokens=null) => {
     await connectdb()
     const tokenVal = tokens
-    let token = headers().get('authorization') || tokenVal;
+    let token = headers().get('authorizations') || headers().get('authorization') || tokenVal;
     try {
         if (!token) {
             req.verified = false;

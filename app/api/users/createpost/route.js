@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { verifyUser } from "../../middleware/fetchData";
 import Profile from "@/app/models/Profile.model";
-import FeedUpdate from "./FeedUpdate";
+import {FeedUpdate} from "./FeedUpdate";
+import { connectdb } from "@/app/lib/db";
 
 export const POST = async (req, res) => {
+  await connectdb();
   await verifyUser(req, res);
   if (!req.verified) {
     return NextResponse.json("Unauthorized access", { status: 401 });
@@ -33,6 +35,7 @@ export const POST = async (req, res) => {
     profile.posts.push(newPost);
     const authorpost = await profile.save();
     const newPostId = authorpost.posts[authorpost.posts.length - 1]._id.toString();
+    console.log(authorId,newPostId)
     FeedUpdate(authorId, newPostId);
     return NextResponse.json({ message: "Post created successfully" }, { status: 201 });
   } catch (error) {

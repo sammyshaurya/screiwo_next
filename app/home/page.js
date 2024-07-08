@@ -4,7 +4,8 @@ import LeftSidebar from "./Leftspan";
 import RightSidebar from "./Rightspan";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import axios from "axios";
-import Postcard from './Postcard'
+import Postcard from "./Postcard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Home = () => {
   const [posts, setPosts] = React.useState();
@@ -35,20 +36,40 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-  <ProfileNav />
-  <div className="block md:hidden"></div>
-  <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 px-4 py-4">
-    <div className="hidden md:block md:col-span-3">
-      <LeftSidebar />
+      <ProfileNav />
+      <div className="block md:hidden"></div>
+      <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 px-4 py-4">
+        <div className="hidden md:block md:col-span-3">
+          <LeftSidebar />
+        </div>
+        <div className="col-span-12 md:col-span-6 px-0">
+          {!posts ? (
+            <div className="flex flex-col space-y-3">
+              <Skeleton className="h-[225px] w-full rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+              <Skeleton className="h-[225px] w-full rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+              <Skeleton className="h-[225px] w-full rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            </div>
+          ) : (
+            <Postcard posts={posts} />
+          )}
+        </div>
+        <div className="hidden md:block md:col-span-3">
+          <RightSidebar />
+        </div>
+      </div>
     </div>
-    <div className="col-span-12 md:col-span-6 px-0">
-      {posts && <Postcard posts={posts} />}  
-    </div>
-    <div className="hidden md:block md:col-span-3">
-      <RightSidebar />
-    </div>
-  </div>
-</div>
   );
 };
 
