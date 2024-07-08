@@ -16,11 +16,7 @@ import {
 } from "@nextui-org/navbar";
 import { useClickOutside } from "react-click-outside-hook";
 
-export const ProfileNav = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchList, setSearchList] = useState([]);
+const SearchInput = ({ searchTerm, setSearchTerm, searchList, setSearchList, isDropdownOpen, setIsDropdownOpen }) => {
   const Router = useRouter();
   const [dropdownRef, hasClickedOutside] = useClickOutside();
 
@@ -33,7 +29,7 @@ export const ProfileNav = () => {
       if (hasClickedOutside) {
         setIsDropdownOpen(false);
       }
-    }, 100); // Add a slight delay to allow for click events to propagate
+    }, 400);
   };
 
   const handleInputChange = (e) => {
@@ -57,14 +53,52 @@ export const ProfileNav = () => {
     }
   };
 
-  const menuItems = ["Home", "Profile", "Search", "Settings", "Log Out"];
+  return (
+    <div className="relative">
+      <Input
+        className="mt-2 relative z-10"
+        type="search"
+        placeholder="Search"
+        value={searchTerm}
+        onChange={handleInputChange}
+        onBlur={handleSearchBlur}
+        onFocus={handleSearchFocus}
+        startContent={<SearchIcon size={18} />}
+      />
+      {isDropdownOpen && searchList.length > 0 && (
+        <div ref={dropdownRef} className="absolute top-full p-2 bg-white border rounded-md shadow-lg w-full">
+          {searchList.map((user, index) => (
+            <div
+              onClick={() => { Router.push(`/user/${user.username}`) }}
+              key={index}
+              className="block py-1 px-2 w-full hover:bg-gray-100 cursor-pointer"
+            >
+              <div className="flex flex-col">
+                <span>{user.username}</span>
+                <hr className="my-2 border-gray-200" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const ProfileNav = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchList, setSearchList] = useState([]);
+
+  const menuItems = ["Home", "Profile", "Settings", "Log Out"];
   const LinkMap = {
     "Home": "/home",
     "Profile": "/profile",
-    "Search": "/search",
     "Settings": "/settings",
     "Log Out": "/logout",
   }
+
 
   return (
     <div className="relative">
@@ -90,32 +124,14 @@ export const ProfileNav = () => {
             </Link>
           </NavbarItem>
           <NavbarContent justify="end">
-            <Input
-              className="mt-2 relative z-10"
-              type="search"
-              placeholder="Search"
-              value={searchTerm}
-              onChange={handleInputChange}
-              onBlur={handleSearchBlur}
-              onFocus={handleSearchFocus}
-              startContent={<SearchIcon size={18} />}
+            <SearchInput
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              searchList={searchList}
+              setSearchList={setSearchList}
+              isDropdownOpen={isDropdownOpen}
+              setIsDropdownOpen={setIsDropdownOpen}
             />
-            {isDropdownOpen && searchList.length > 0 && (
-              <div ref={dropdownRef} className="absolute top-full p-2 bg-white border rounded-md shadow-lg w-1/3">
-                {searchList.map((user, index) => (
-                  <div
-                    onClick={() => { Router.push(`/user/${user.username}`) }}
-                    key={index}
-                    className="block py-1 px-2 w-full hover:bg-gray-100 cursor-pointer"
-                  >
-                    <div className="flex flex-col">
-                      <span>{user.username}</span>
-                      <hr className="my-2 border-gray-200" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </NavbarContent>
         </NavbarContent>
 
@@ -132,6 +148,16 @@ export const ProfileNav = () => {
               </Link>
             </NavbarMenuItem>
           ))}
+          <NavbarMenuItem className="mt-4">
+            <SearchInput
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              searchList={searchList}
+              setSearchList={setSearchList}
+              isDropdownOpen={isDropdownOpen}
+              setIsDropdownOpen={setIsDropdownOpen}
+            />
+          </NavbarMenuItem>
         </NavbarMenu>
       </Navbar>
     </div>
