@@ -31,13 +31,15 @@ export const POST = async (req) => {
 
     // Find the following user
     const followingProfile = await Profile.findOne({ userid: followeeID }).lean();
+    const username = followingProfile.username
     if (!followingProfile) {
       return NextResponse.json({ message: "No user found" }, { status: 404 });
     }
 
     // Check if already following
     const isAlreadyFollowing = followingProfile.FollowersList.some(id => id.toString() === followerID);
-    FeedFromFollow(followerID, followeeID);
+    // console.log(followerID,followeeID)
+    FeedFromFollow(followerID, followeeID, username);
 
     if (isAlreadyFollowing) {
       return NextResponse.json("Already following this user", { status: 202 });
@@ -60,7 +62,7 @@ export const POST = async (req) => {
         $inc: { Followings: 1 }
       },
       { new: true }
-    );
+    );    
 
     
 

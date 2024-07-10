@@ -28,7 +28,8 @@ export const POST = async (req, res) => {
     }
 
     const existProfile = await Profile.findOne({ userid: userId });
-    if (!existProfile) {
+
+    if (!existProfile) {    
       // Create new profile
       const newProfile = new Profile({
         userid: userId,

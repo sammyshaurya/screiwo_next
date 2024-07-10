@@ -43,32 +43,32 @@ function MessageCircleIcon(props) {
 }
 
 export default function Component({ posts }) {
-    return (
+  return (
     <div className="w-full rounded-lg ">
       {posts && posts.length > 0 ? (
         posts.map((post, index) => (
           <Card key={index} className="w-full p-4 mb-4 rounded-lg shadow-md">
             <h2 className="text-xl noto font-bold line-clamp-2 mb-5">
-              {post.post.title}
+              {post.feed.title }
             </h2>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarImage src="/placeholder-user.jpg" />
                   <AvatarFallback>
-                    {post.user.username.charAt(0)}
+                    {post.username.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-sm text-muted-foreground">
-                  <p className="font-medium">{post.user.username}</p>
-                  <p>{new Date(post.post.createdat).toLocaleDateString()}</p>
+                  <p className="font-medium">{posts.username}</p>
+                  <p>{new Date(post.feed.createdat).toLocaleDateString()}</p>
                 </div>
               </div>
             </div>
             <Divider className="my-4 border-gray-200" />
             <div>
               <p className="text-muted-foreground opensans line-clamp-4">
-                {post.post.content}
+                {post.feed.content}
               </p>
             </div>
             <Divider className="my-2 border-gray-200" />
@@ -91,7 +91,7 @@ export default function Component({ posts }) {
                 </Button>
               </div>
               <div className="text-sm text-muted-foreground">
-                <p>{post.post.likes} likes</p>
+                <p>{post.feed.likes} likes</p>
               </div>
             </div>
           </Card>

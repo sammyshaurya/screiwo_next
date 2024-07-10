@@ -1,49 +1,47 @@
 import { kv } from "@vercel/kv";
 import Profile from "@/app/models/Profile.model";
-import db from "mongoose";
+import mongoose from "mongoose";
 
-async function FeedUpdate(authorId, postId) {
-  const authorProfile = await Profile.findOne({ userid: authorId });
-  const followers = authorProfile.FollowersList;
-
-  const usersToUpdate = [authorId, ...followers];
-  const score = 70;
+async function FeedUpdate(authorId, authorUsername, feedpost, FollowingsList) {
+  const post = { feed: feedpost, username: authorUsername };
   try {
-    for (const userId of usersToUpdate) {
-      const postCache = JSON.stringify({ score, value: postId });
-      await kv.lpush(`userFeed:${userId}`, postCache);
-    }
-  } catch (error) {
-    console.error("Error updating feed:", error);
+    FollowingsList.forEach((follower) => {
+      return kv.lpush(`userFeed:${follower}`, post);
+    });
+
+    await kv.lpush(`userFeed:${authorId}`, post);
+  } catch (err) {
+    console.log(err);
   }
 }
 
-async function FeedFromFollow(followerID, followingID) {
+async function FeedFromFollow(followerID, followingID, username) {
   try {
+    const followingIDObjectId = new mongoose.Types.ObjectId(followingID);
     const followingProfile = await Profile.aggregate([
-      { $match: { username: "sammyshaurya" } },
-      { $project: { posts: 1 } },
+      {
+        $match: { userid: followingIDObjectId },
+      },
       { $unwind: "$posts" },
       { $sort: { "posts.createdat": -1 } },
       { $limit: 3 },
+      { $project: { posts: 1 } }
     ]);
+    console.log(followingProfile)
+
 
     if (!followingProfile) {
       console.error("No posts found for the following user");
       return;
     }
-
-    const score = 70;
     const currentFeed = await kv.lrange(`userFeed:${followerID}`, 0, -1);
-    const existingPostIds = currentFeed.map((item) => item.value);
+    const existingPostIds = currentFeed.map((item) => item.feed.userid);
 
     for (const post of followingProfile) {
-      const postId = post.posts._id.toString();
+      const postId = post.posts.userid.toString();
       if (!existingPostIds.includes(postId)) {
-        const postCache = JSON.stringify({ score, value: postId });
-        console.log("Adding post to feed:", postCache);
+        const postCache = { feed: post.posts, username: username };
         await kv.lpush(`userFeed:${followerID}`, postCache);
-        console.log("Feed updated");
       }
     }
 

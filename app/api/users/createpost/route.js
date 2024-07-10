@@ -3,6 +3,7 @@ import { verifyUser } from "../../middleware/fetchData";
 import Profile from "@/app/models/Profile.model";
 import {FeedUpdate} from "./FeedUpdate";
 import { connectdb } from "@/app/lib/db";
+import AllPosts from "@/app/models/Posts.model";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -31,12 +32,14 @@ export const POST = async (req, res) => {
       content: content,
       createdAt: new Date(),
     };
-
     profile.posts.push(newPost);
     const authorpost = await profile.save();
-    const newPostId = authorpost.posts[authorpost.posts.length - 1]._id.toString();
-    console.log(authorId,newPostId)
-    FeedUpdate(authorId, newPostId);
+    
+    const feedpost = authorpost.posts[authorpost.posts.length - 1]
+    await AllPosts.create(newPost)
+
+    FeedUpdate(authorId, req.user.username, feedpost, authorpost.FollowingsList);
+
     return NextResponse.json({ message: "Post created successfully" }, { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);
