@@ -9,10 +9,15 @@ import { Button } from "@nextui-org/button";
 import { StretchVerticallyIcon } from "@radix-ui/react-icons";
 import { Divider } from "@nextui-org/divider";
 import { Skeleton } from "@/components/ui/skeleton";
+import FollowersList from "../components/ui/FollowersList";
+import FollowingsList from "../components/ui/FollowingsList";
+
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +41,14 @@ const Profile = () => {
 
     fetchData();
   }, []);
+
+  const handleFollowersClick = () => {
+    setShowFollowers(!showFollowers);
+  };
+
+  const handleFollowingClick = () => {
+    setShowFollowing(!showFollowing);
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -72,8 +85,14 @@ const Profile = () => {
               <div className="flex flex-col">
                 <div className="flex mb-2">
                   <div>{posts && `${posts.length || 0} posts`}</div>
-                  <div className="ml-4">{`0 followers`}</div>
-                  <div className="ml-4">{`0 following`}</div>
+                  <div className="ml-4 cursor-pointer" onClick={handleFollowersClick}>
+                    {`${user.Followers} followers`}
+                  </div>
+                  {showFollowers && <FollowersList handleFollowersClick={handleFollowersClick} />}
+                  {showFollowing && <FollowingsList handleFollowingClick={handleFollowingClick} />}
+                  <div className="ml-4 cursor-pointer" onClick={handleFollowingClick}>
+                    {`${user.Followings} following`}
+                  </div>
                 </div>
                 <h5 className="text-gray-700">
                   {user ? (
@@ -86,9 +105,7 @@ const Profile = () => {
                   </span>
                 </h5>
                 <blockquote className="border-l-2 pl-2 italic">
-                  &quot;After all,&quot; he said, &quot;everyone enjoys a good
-                  joke, so it&apos;s only fair that they should pay for the
-                  privilege.&quot;
+                  &quot;After all,&quot; he said, &quot;everyone enjoys a good joke, so it&apos;s only fair that they should pay for the privilege.&quot;
                 </blockquote>
               </div>
             </div>
