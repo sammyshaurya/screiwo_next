@@ -11,6 +11,7 @@ export const POST = async (req) => {
     return NextResponse.json("Unauthorized access", { status: 401 });
   }
   const postValues = await req.json();
+  console.log(postValues);
   const userID = postValues.followeeid;
   const followUser = postValues.followUser;
   try {

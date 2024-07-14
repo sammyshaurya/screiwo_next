@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/button";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const FollowersList = ({ handleFollowersClick }) => {
   const [showFollowings, setShowFollowings] = useState([]);
@@ -43,7 +44,7 @@ const FollowersList = ({ handleFollowersClick }) => {
             </div>
             <div className="w-full h-80 overflow-y-auto">
               <ul>
-                {showFollowings &&
+                {showFollowings ?
                   showFollowings.map((follower, index) => (
                     <Link
                       className="p-2"
@@ -54,7 +55,8 @@ const FollowersList = ({ handleFollowersClick }) => {
                         {follower.username}
                       </li>
                     </Link>
-                  ))}
+                  )): <Skeleton className="h-4 w-[250px]" />
+                }
               </ul>
             </div>
           </div>

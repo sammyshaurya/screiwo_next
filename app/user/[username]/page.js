@@ -10,11 +10,15 @@ import { Divider } from "@nextui-org/divider";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import FollowersList from "@/app/components/ui/FollowersList";
+import FollowingsList from "@/app/components/ui/FollowingsList";
 
 const UsersProfile = ({ params }) => {
   const [curUser, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followed, setFollowed] = useState(false);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
 
   const router = useRouter();
   const searchUser = params.username;
@@ -98,6 +102,14 @@ const UsersProfile = ({ params }) => {
     fetchData();
   }, [searchUser]);
 
+  const handleFollowersClick = () => {
+    setShowFollowers(!showFollowers);
+  };
+
+  const handleFollowingClick = () => {
+    setShowFollowing(!showFollowing);
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <ProfileNav />
@@ -130,10 +142,12 @@ const UsersProfile = ({ params }) => {
               <div className="flex-col mt-4">
                 <div className="flex mb-2">
                   <div>{posts && `${posts.length} posts`}</div>
-                  <div className="ml-4">
+                  <div className="ml-4 cursor-pointer" onClick={handleFollowersClick}>
                     {curUser && `${curUser.Followers} followers`}
                   </div>
-                  <div className="ml-4">
+                  {showFollowers && <FollowersList handleFollowersClick={handleFollowersClick} />}
+                  {showFollowing && <FollowingsList handleFollowingClick={handleFollowingClick} />}
+                  <div className="ml-4 cursor-pointer" onClick={handleFollowingClick}>
                     {curUser && `${curUser.Followings} following`}
                   </div>
                 </div>

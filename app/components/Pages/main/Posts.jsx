@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/components/ui/card";
+import Link from "next/link";
 
 export default function Posts({ post, profile }) {
   const givenDate = new Date(post.createdat);
@@ -51,8 +52,8 @@ export default function Posts({ post, profile }) {
     return `${yearsDifference} year${yearsDifference !== 1 ? "s" : ""} ago`;
   }
 
-
   return (
+    <Link href={`/post/${post._id}`}>
     <Card className="flex flex-col p-1">
       <CardHeader>
         <CardTitle className="text-2xl mb-2 line-clamp-2">
@@ -71,17 +72,25 @@ export default function Posts({ post, profile }) {
       <hr className="mx-4 border-t-1 border-gray-500 dark:border-gray-700" />
       <CardContent className="flex-1 mt-2">
         <div className="line-clamp-3">
-          {post?.content
-            ? post?.content
-            : "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Cumque eaque architecto quis tempore sit officia quisquam similique saepe, temporibus necessitatibus inventore maxime veritatis rem dolores laboriosam ducimus sed quam quasi?"}
+          {post?.content ? (
+            <div
+              className="prose"
+              dangerouslySetInnerHTML={{ __html: post?.content }}
+            />
+          ) : (
+            "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Cumque eaque architecto quis tempore sit officia quisquam similique saepe, temporibus necessitatibus inventore maxime veritatis rem dolores laboriosam ducimus sed quam quasi?"
+          )}
         </div>
       </CardContent>
 
       <CardFooter className="mt-auto">
         <div className="flex items-center">
-          <h6 className="text-sm mr-4 mt-2">{post.likes || "0 likes and comments"}</h6>
-          </div>
+          <h6 className="text-sm mr-4 mt-2">
+            {post.likes || "0 likes and comments"}
+          </h6>
+        </div>
       </CardFooter>
     </Card>
+    </Link>
   );
 }

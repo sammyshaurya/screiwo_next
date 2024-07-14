@@ -75,6 +75,7 @@ module.exports = {
   },
   plugins: [
     nextui(),
-    require("tailwindcss-animate")
+    require("tailwindcss-animate"),
+    require('@tailwindcss/typography')
   ],
 }

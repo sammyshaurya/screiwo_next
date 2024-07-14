@@ -15,7 +15,7 @@ export const verifyUser = async (req, res, tokens=null) => {
             return NextResponse.json({ message: "Access denied. No token provided." }, { status: 401 });
         }
 
-        const user = await User.findOne({ token: token});
+        const user = await User.findOne({ token });
 
         if (!user) {
             req.verified = false;

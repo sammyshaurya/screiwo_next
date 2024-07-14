@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { verifyUser } from "../../middleware/fetchData";
 import Profile from "@/app/models/Profile.model";
-import {FeedUpdate} from "./FeedUpdate";
+import { FeedUpdate } from "./FeedUpdate";
 import { connectdb } from "@/app/lib/db";
 import AllPosts from "@/app/models/Posts.model";
+import mongoose from "mongoose";
+import DOMPurify from "isomorphic-dompurify";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -11,6 +13,7 @@ export const POST = async (req, res) => {
   if (!req.verified) {
     return NextResponse.json("Unauthorized access", { status: 401 });
   }
+
   const { title, content } = await req.json();
   const authorId = req.user._id.toString();
 
@@ -19,28 +22,43 @@ export const POST = async (req, res) => {
   }
 
   try {
-    const profile = await Profile.findOne({ userid: authorId });
+    // Create a new ObjectId
+    const postId = new mongoose.Types.ObjectId();
+    
+    const newPost = {
+      _id: postId, // Assign the generated ObjectId
+      userid: authorId,
+      title: title,
+      content: DOMPurify(content),
+      createdAt: new Date(),
+    };
 
-    if (!profile) {
+    // Update the profile with the new post
+    const updatedProfile = await Profile.findOneAndUpdate(
+      { userid: authorId },
+      {
+        $push: {
+          posts: {
+            $each: [newPost],
+            $position: 0,
+          },
+        },
+      },
+      { new: true, projection: { FollowingsList: 1 } }
+    );
+
+    if (!updatedProfile) {
       return NextResponse.json("Profile not found", { status: 404 });
     }
 
-    // Create the new post
-    const newPost = {
-      userid: req.user._id,
-      title: title,
-      content: content,
-      createdAt: new Date(),
-    };
-    profile.posts.push(newPost);
-    const authorpost = await profile.save();
-    
-    const feedpost = authorpost.posts[authorpost.posts.length - 1]
-    await AllPosts.create(newPost)
+    // Create the post in AllPosts with the same _id
+    const post = await AllPosts.create(newPost);
 
-    FeedUpdate(authorId, req.user.username, feedpost, authorpost.FollowingsList);
 
-    return NextResponse.json({ message: "Post created successfully" }, { status: 201 });
+    // Update the feed
+    FeedUpdate(authorId, req.user.username, newPost, updatedProfile.FollowingsList);
+
+    return NextResponse.json({ message: "Post created successfully", FollowingsList: updatedProfile.FollowingsList }, { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);
     return NextResponse.json("Internal Server Error", { status: 500 });

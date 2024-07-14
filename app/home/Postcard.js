@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Divider } from "@nextui-org/divider";
 import { Button } from "@/components/ui/button";
 import React from "react";
+import Link from "next/link";
 
 function HeartIcon(props) {
   return (
@@ -49,28 +50,28 @@ export default function Component({ posts }) {
         posts.map((post, index) => (
           <Card key={index} className="w-full p-4 mb-4 rounded-lg shadow-md">
             <h2 className="text-xl noto font-bold line-clamp-2 mb-5">
-              {post.feed.title }
+              {post.feed.title}
             </h2>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
+                <Link href={`/user/${post.username}`}>
                 <Avatar>
-                  <AvatarImage src="/placeholder-user.jpg" />
-                  <AvatarFallback>
-                    {post.username.charAt(0)}
-                  </AvatarFallback>
+                  <AvatarImage src="/defaultavatar.png" />
+                  <AvatarFallback>{post.username.charAt(0)}</AvatarFallback>
                 </Avatar>
+                </Link>
                 <div className="text-sm text-muted-foreground">
-                  <p className="font-medium">{posts.username}</p>
-                  <p>{new Date(post.feed.createdat).toLocaleDateString()}</p>
+                  <Link href={`/user/${post.username}`}>
+                    <p className="font-medium">{post.username}</p>
+                  </Link>
+                  <p>{new Date(post.feed.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             </div>
-            <Divider className="my-4 border-gray-200" />
-            <div>
-              <p className="text-muted-foreground opensans line-clamp-4">
-                {post.feed.content}
-              </p>
-            </div>
+            <Divider className="mt-2 border-gray-200" />
+            <article className="prose prose-gray dark:prose-invert opensans line-clamp-4">
+              <div dangerouslySetInnerHTML={{ __html: post.feed.content }} />
+            </article>
             <Divider className="my-2 border-gray-200" />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

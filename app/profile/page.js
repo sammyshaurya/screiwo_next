@@ -12,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import FollowersList from "../components/ui/FollowersList";
 import FollowingsList from "../components/ui/FollowingsList";
 
-
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -50,6 +49,8 @@ const Profile = () => {
     setShowFollowing(!showFollowing);
   };
 
+  console.log(posts);
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <ProfileNav />
@@ -70,7 +71,7 @@ const Profile = () => {
                 <div className="username underline mb-3">
                   {user && user.username}
                 </div>
-                <Link href="/post">
+                <Link href="/createpost">
                   <Button
                     size="sm"
                     color="primary"
@@ -85,12 +86,26 @@ const Profile = () => {
               <div className="flex flex-col">
                 <div className="flex mb-2">
                   <div>{posts && `${posts.length || 0} posts`}</div>
-                  <div className="ml-4 cursor-pointer" onClick={handleFollowersClick}>
+                  <div
+                    className="ml-4 cursor-pointer"
+                    onClick={handleFollowersClick}
+                  >
                     {`${user.Followers} followers`}
                   </div>
-                  {showFollowers && <FollowersList handleFollowersClick={handleFollowersClick} />}
-                  {showFollowing && <FollowingsList handleFollowingClick={handleFollowingClick} />}
-                  <div className="ml-4 cursor-pointer" onClick={handleFollowingClick}>
+                  {showFollowers && (
+                    <FollowersList
+                      handleFollowersClick={handleFollowersClick}
+                    />
+                  )}
+                  {showFollowing && (
+                    <FollowingsList
+                      handleFollowingClick={handleFollowingClick}
+                    />
+                  )}
+                  <div
+                    className="ml-4 cursor-pointer"
+                    onClick={handleFollowingClick}
+                  >
                     {`${user.Followings} following`}
                   </div>
                 </div>
@@ -105,7 +120,9 @@ const Profile = () => {
                   </span>
                 </h5>
                 <blockquote className="border-l-2 pl-2 italic">
-                  &quot;After all,&quot; he said, &quot;everyone enjoys a good joke, so it&apos;s only fair that they should pay for the privilege.&quot;
+                  &quot;After all,&quot; he said, &quot;everyone enjoys a good
+                  joke, so it&apos;s only fair that they should pay for the
+                  privilege.&quot;
                 </blockquote>
               </div>
             </div>
@@ -129,12 +146,9 @@ const Profile = () => {
 
           {user &&
             posts &&
-            posts
-              .slice()
-              .reverse()
-              .map((post, index) => (
+            posts.map((post, index) => (
                 <Posts key={index} post={post} profile={user} />
-              ))}
+            ))}
         </div>
       </div>
     </div>
