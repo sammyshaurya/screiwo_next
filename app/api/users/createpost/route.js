@@ -26,12 +26,13 @@ export const POST = async (req, res) => {
     const postId = new mongoose.Types.ObjectId();
     
     const newPost = {
-      _id: postId, // Assign the generated ObjectId
+      _id: postId, 
       userid: authorId,
       title: title,
-      content: DOMPurify(content),
+      content: content,
       createdAt: new Date(),
     };
+    console.log(newPost.content);
 
     // Update the profile with the new post
     const updatedProfile = await Profile.findOneAndUpdate(

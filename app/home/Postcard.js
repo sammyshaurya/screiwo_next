@@ -49,9 +49,11 @@ export default function Component({ posts }) {
       {posts && posts.length > 0 ? (
         posts.map((post, index) => (
           <Card key={index} className="w-full p-4 mb-4 rounded-lg shadow-md">
+            <Link href={`/post/${post.feed._id}`}>
             <h2 className="text-xl noto font-bold line-clamp-2 mb-5">
               {post.feed.title}
             </h2>
+            </Link>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Link href={`/user/${post.username}`}>
@@ -69,9 +71,11 @@ export default function Component({ posts }) {
               </div>
             </div>
             <Divider className="mt-2 border-gray-200" />
+            <Link href={`/post/${post.feed._id}`}>
             <article className="prose prose-gray dark:prose-invert opensans line-clamp-4">
               <div dangerouslySetInnerHTML={{ __html: post.feed.content }} />
             </article>
+            </Link>
             <Divider className="my-2 border-gray-200" />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
