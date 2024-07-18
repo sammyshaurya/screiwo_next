@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server"
 import Profile from "@/app/models/Profile.model";
 import { connectdb } from "@/app/lib/db";
-import { headers } from 'next/headers'
+import { currentUser } from "@clerk/nextjs/server";
 
 export const GET = async (req,{params})=> {
   await connectdb();
-  const headersList = headers()
-  const userID = headersList.get('authorization')
+  const signeduser = await currentUser();
+  if (!signeduser) {
+    return NextResponse.json("Unauthorized access", { status: 401 });
+  }
   const user = req.nextUrl.searchParams.get('username') || null;
     try {
         if (!user){
@@ -19,7 +21,7 @@ export const GET = async (req,{params})=> {
             return NextResponse.json("No user found", { status: 404 });
           }
         let follower = false
-        if (searchedUsers.FollowersList.includes(userID)) {
+        if (searchedUsers.FollowersList.includes(signeduser.id)) {
              follower = true
           }
         else {

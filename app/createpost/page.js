@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@nextui-org/button";
 import axios from "axios";
 import { SimpleEditor } from "../editor/editor";
+import { Input } from "@/components/ui/input";
 
 const Postings = () => {
   const [post, setPost] = useState({ title: "", content: "" });
@@ -68,6 +69,15 @@ const Postings = () => {
             placeholder="Title"
             className="w-full noto font-normal text-2xl px-4 py-3 border-l-4 border-transparent focus:border-blue-500 outline-none transition-colors duration-300 placeholder-gray-400"
           />
+        </div>
+        <div>
+          <label
+            htmlFor="Hero Image"
+            className="block noto text-xl font-semibold mb-2"
+          >
+            Add Blog Hero Image
+          </label>
+          <Input type="file" />
         </div>
         <div>
           <label

@@ -5,6 +5,7 @@ import axios from "axios";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import {
   Card,
   CardHeader,
@@ -15,13 +16,14 @@ import {
 
 const AuthorCard = ({ author }) => {
   const [isFollowed, setIsFollowed] = useState(false);
+  const { user: clerkUser } = useUser();
   return (
     <Card className="w-full">
       <CardHeader className="justify-between">
         <Link href={`/user/${author.username}`}>
           <div className="flex gap-5">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={author.avatar || "/defaultavatar.png"} />
+              <AvatarImage src={clerkUser?.imageUrl || "/defaultavatar.png"} />
               <AvatarFallback>{author.username.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1 items-start justify-center">
@@ -90,12 +92,7 @@ const PostPage = () => {
   useEffect(() => {
     if (postid) {
       axios
-        .get(`/api/getpost?postid=${postid}`, {
-          headers: {
-            authorization: localStorage.getItem("token"),
-            userid: localStorage.getItem("userObj"),
-          },
-        })
+        .get(`/api/getpost?postid=${postid}`)
         .then((response) => {
           setPost(response.data);
           setLoading(false);
@@ -145,7 +142,7 @@ const PostPage = () => {
               <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage
-                    src={post.author.avatar || "/defaultavatar.png"}
+                    src={clerkUser?.imageUrl || "/defaultavatar.png"}
                   />
                   <AvatarFallback>
                     {post.author.username.charAt(0)}
@@ -158,7 +155,7 @@ const PostPage = () => {
                 </Link>
               </div>
               <span className="text-sm">
-                {new Date(post.DateofCreation).toLocaleDateString()}
+                {new Date(post.createdat).toLocaleDateString()}
               </span>
             </div>
           </div>

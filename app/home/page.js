@@ -6,25 +6,19 @@ import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import axios from "axios";
 import Postcard from "./Postcard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@clerk/nextjs";
 
 const Home = () => {
   const [posts, setPosts] = React.useState();
   const [isloading, setLoading] = React.useState(true);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const user = localStorage.getItem("userObj");
-        if (!user) {
-          Navigate("/");
+        const response = await axios.get("/api/users/feed");
+        if (!response.data) {
+          setLoading(false);
           return;
         }
-        const response = await axios.get("/api/users/feed", {
-          headers: {
-            user: user,
-            Authorization: localStorage.getItem("token"),
-          },
-        });
         setPosts(response.data);
         setLoading(false);
       } catch (error) {
@@ -43,7 +37,7 @@ const Home = () => {
           <LeftSidebar />
         </div>
         <div className="col-span-12 md:col-span-6 px-0">
-          {!posts ? (
+          {!posts && isloading ? (
             <div className="flex flex-col space-y-3">
               <Skeleton className="h-[225px] w-full rounded-xl" />
               <div className="space-y-2">
@@ -55,14 +49,16 @@ const Home = () => {
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-full" />
               </div>
-              <Skeleton className="h-[225px] w-full rounded-xl" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
+            </div>
+          ) : posts && posts.length > 0 ? (
+            <Postcard posts={posts} />
+          ) : (
+            <div className="flex flex-col items-center justify-center space-y-3 text-center text-gray-500">
+              <div className="text-lg font-semibold">No feeds to show</div>
+              <div className="text-sm">
+                Follow some users to see their posts here
               </div>
             </div>
-          ) : (
-            <Postcard posts={posts} />
           )}
         </div>
         <div className="hidden md:block md:col-span-3">

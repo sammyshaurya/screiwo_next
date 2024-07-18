@@ -5,6 +5,7 @@ import SearchIcon from "/public/assets/Search";
 import Image from "next/image";
 import { Input } from "@nextui-org/input";
 import { useRouter } from 'next/navigation';
+import { SignedIn,UserButton } from "@clerk/nextjs";
 import {
   Navbar,
   NavbarBrand,
@@ -133,6 +134,9 @@ export const ProfileNav = () => {
               isDropdownOpen={isDropdownOpen}
               setIsDropdownOpen={setIsDropdownOpen}
             />
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </NavbarContent>
         </NavbarContent>
 
@@ -162,7 +166,10 @@ export const ProfileNav = () => {
               setSearchList={setSearchList}
               isDropdownOpen={isDropdownOpen}
               setIsDropdownOpen={setIsDropdownOpen}
-            />
+            />            
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </NavbarMenuItem>
         </NavbarMenu>
       </Navbar>

@@ -7,6 +7,7 @@ import { Button } from "@nextui-org/button";
 import axios from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 const CreateProfile = () => {
   const [profileData, setProfileData] = useState({
@@ -19,6 +20,7 @@ const CreateProfile = () => {
   const [error, setError] = useState(null);
 
   const router = useRouter();
+  const { user: clerkUser } = useUser();
 
   const handleChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
@@ -54,12 +56,9 @@ const CreateProfile = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post("/api/profile/createprofile", {
         profileData,
-        token,
       });
-      
       alert("Profile created successfully!");
       return router.push("/profile");
     } catch (error) {
@@ -77,9 +76,9 @@ const CreateProfile = () => {
         <div className="flex items-center mb-8">
           <Image
             className="w-20 h-20 rounded-full bg-gray-500 mr-4"
-            src="/avatar.png"
-            width={20}
-            height={20}
+            src={clerkUser?.imageUrl || "/defaultavatar.png"}
+            width={80}
+            height={80}
             alt="Profile"
           />
           <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">

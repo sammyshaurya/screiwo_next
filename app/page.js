@@ -6,11 +6,6 @@ import Signin from "./components/signin";
 import Signup from "./components/signup";
 
 export default function Home() {
-  const [usermode, setusermode] = useState(true);
-
-  function togglemode() {
-    setusermode(!usermode);
-  }
   return (
     <>
     <Navbar />
@@ -25,7 +20,7 @@ export default function Home() {
         />
       </div>
       <div className="flex flex-col w-full lg:w-1/2">
-        {usermode ? <Signin togglemode={togglemode} /> : <Signup togglemode={togglemode} />}
+        <Signin />
       </div>
     </div>
   </>

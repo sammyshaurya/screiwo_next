@@ -3,19 +3,15 @@ import AllPosts from "@/app/models/Posts.model";
 import Profile from "@/app/models/Profile.model";
 import { connectdb } from "@/app/lib/db";
 import { headers } from "next/headers";
-import { verifyUser } from "../middleware/fetchData";
+import { currentUser } from "@clerk/nextjs/server";
 
 export const GET = async (req, res) => {
   await connectdb();
-  let token = headers().get('authorizations') || headers().get('authorization');
-  let userObj = headers().get('userid');
   let follows = false;
-
-  if (token) {
-    await verifyUser(req, res);
-    if (!req.verified) {
+  const signeduser = await currentUser();
+  let userObj = signeduser.id;
+  if (!signeduser) {
       return NextResponse.json("Unauthorized access", { status: 401 });
-    }
   }
 
   const postid = req.nextUrl.searchParams.get("postid")?.toString() || null;
@@ -31,7 +27,7 @@ export const GET = async (req, res) => {
       console.error("Post not found");
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-
+    console.log(posts.userid)
     const author = await Profile.findOne(
       { userid: posts.userid },
       { username: 1, profileType: 1, FirstName: 1, LastName: 1, Bio: 1, Followers: 1, Followings: 1, userid: 1 }
@@ -45,8 +41,7 @@ export const GET = async (req, res) => {
     const { FollowingsList } = author;
     
     if (userObj) {
-      userObj = JSON.stringify(userObj);
-      if (userObj === JSON.stringify(author.userid)) {
+      if (userObj === (author.userid)) {
         follows = "myself";
       } else {
         follows = FollowingsList.some(id => id.toString() === userObj) || false ;

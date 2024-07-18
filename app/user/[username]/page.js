@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowersList from "@/app/components/ui/FollowersList";
 import FollowingsList from "@/app/components/ui/FollowingsList";
+import { useUser } from "@clerk/nextjs";
 
 const UsersProfile = ({ params }) => {
   const [curUser, setUser] = useState(null);
@@ -22,26 +23,15 @@ const UsersProfile = ({ params }) => {
 
   const router = useRouter();
   const searchUser = params.username;
+  const { user: clerkUser } = useUser();
 
   const submitFollow = async (toFollow) => {
     try {
-      const token = localStorage.getItem("token");
-      const myID = localStorage.getItem("userObj");
-      if (!token) {
-        router.push("/");
-        return;
-      }
       const response = await axios.post(
         "/api/profile/follow",
         {
           followUser: toFollow,
-          followeeid: myID,
         },
-        {
-          headers: {
-            Authorization: token,
-          },
-        }
       );
       console.log(response);
 
@@ -59,21 +49,10 @@ const UsersProfile = ({ params }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          router.push("/");
-          return;
-        }
         const response = await axios.get(
           `/api/profile/usersprofile?username=${encodeURIComponent(
             searchUser
           )}`,
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
         );
 
         const userProfile = response.data.userProfile;
@@ -124,7 +103,7 @@ const UsersProfile = ({ params }) => {
           </div>
         ) : (
           <div className="flex flex-col items-center md:flex-row md:items-start">
-            <Avatar src="/defaultavatar.png" className="h-40 w-40" />
+            <Avatar width={40} height={40} src={clerkUser?.imageUrl || "/defaultavatar.png"} className="h-40 w-40 min-w-40" />
             <div className="flex flex-col ml-0 md:ml-8 mt-4 md:mt-0 w-full">
               <div className="flex justify-between items-center w-full">
                 <div className="username underline mb-3">

@@ -4,6 +4,7 @@ import Profile from "@/app/models/Profile.model";
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers'
 import { connectdb } from "@/app/lib/db";
+import { currentUser } from '@clerk/nextjs/server';
 
 export const verifyUser = async (req, res, tokens=null) => {
     await connectdb()
@@ -34,18 +35,16 @@ export const verifyUser = async (req, res, tokens=null) => {
 
 export const userProfile = async (req, res, next) => {
     try {
-        const user = req.user;
-
+        const user = await currentUser();
         if (!user) {
             return NextResponse.json({ message: "Unauthorized access." }, { status: 401 });
         }
-
-        const profile = await Profile.findOne({ userid: user._id });
+        
+        const profile = await Profile.findOne({ userid: user.id });
 
         if (!profile) {
             return NextResponse.json({ message: "Profile not found.", valid: false }, { status: 404 });
         }
-        
         req.profile = profile;
         return true;
     } catch (error) {

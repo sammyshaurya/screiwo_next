@@ -1,26 +1,25 @@
 import { NextResponse } from "next/server";
-import { verifyUser } from "../../middleware/fetchData";
 import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
 import { FeedFromFollow } from "../../users/createpost/FeedUpdate";
+import { currentUser } from "@clerk/nextjs/server";
 
 export const POST = async (req) => {
   await connectdb();
-  await verifyUser(req);
-  if (!req.verified) {
+  const signeduser = await currentUser();
+  if (!signeduser) {
     return NextResponse.json("Unauthorized access", { status: 401 });
   }
-  const postValues = await req.json();
-  console.log(postValues);
-  const userID = postValues.followeeid;
-  const followUser = postValues.followUser;
+  const headers = await req.json();
+  const followUser = headers.followUser;
   try {
-    const followerID = userID.toString();
+    const followerID = signeduser.id.toString();
     const followeeID = followUser.toString();
-
+  
     if (followerID === followeeID) {
-      return NextResponse.json({ message: "Can't follow yourself" }, { status: 204 });
+      return NextResponse.json({ message: "Can't follow yourself" }, { status: 202 });
     }
+    
 
     if (!followerID) {
       return NextResponse.json({ message: "Follower ID is missing" }, { status: 404 });
@@ -31,7 +30,7 @@ export const POST = async (req) => {
     }
 
     // Find the following user
-    const followingProfile = await Profile.findOne({ userid: followeeID }).lean();
+    const followingProfile = await Profile.findOne({ userid: followeeID });
     const username = followingProfile.username
     if (!followingProfile) {
       return NextResponse.json({ message: "No user found" }, { status: 404 });
@@ -39,8 +38,6 @@ export const POST = async (req) => {
 
     // Check if already following
     const isAlreadyFollowing = followingProfile.FollowersList.some(id => id.toString() === followerID);
-    // console.log(followerID,followeeID)
-    FeedFromFollow(followerID, followeeID, username);
 
     if (isAlreadyFollowing) {
       return NextResponse.json("Already following this user", { status: 202 });
@@ -65,6 +62,8 @@ export const POST = async (req) => {
       { new: true }
     );    
 
+    // Update the feed
+    FeedFromFollow(followerID, followeeID, signeduser.username);
     
 
     return NextResponse.json("Followed successfully", { status: 201 });

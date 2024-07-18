@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^5.2.4",
     "@nextui-org/avatar": "^2.0.30",
     "@nextui-org/button": "^2.0.34",
     "@nextui-org/card": "^2.0.31",
@@ -44,6 +45,7 @@
     "@tiptap/pm": "^2.4.0",
     "@tiptap/react": "^2.4.0",
     "@tiptap/starter-kit": "^2.4.0",
+    "@uploadthing/react": "^6.7.2",
     "@vercel/kv": "^2.0.0",
     "antd": "^5.16.2",
     "axios": "^1.7.2",
@@ -66,8 +68,10 @@
     "react-click-outside-hook": "^1.1.1",
     "react-dom": "^18",
     "react-hot-toast": "^2.4.1",
+    "sharp": "^0.33.4",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uploadthing": "^6.13.2"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.13",

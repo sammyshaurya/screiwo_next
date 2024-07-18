@@ -11,6 +11,7 @@ import { Divider } from "@nextui-org/divider";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowersList from "../components/ui/FollowersList";
 import FollowingsList from "../components/ui/FollowingsList";
+import { useUser } from "@clerk/nextjs";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -18,19 +19,11 @@ const Profile = () => {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
 
+  const clerkUser = useUser().user;
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          Navigate("/");
-          return;
-        }
-        const response = await axios.get("/api/profile", {
-          headers: {
-            Authorization: token,
-          },
-        });
+        const response = await axios.get("/api/profile") 
         setPosts(response.data.profile.posts);
         setUser(response.data.profile);
       } catch (error) {
@@ -49,7 +42,6 @@ const Profile = () => {
     setShowFollowing(!showFollowing);
   };
 
-  console.log(posts);
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -65,7 +57,7 @@ const Profile = () => {
           </div>
         ) : (
           <div className="flex flex-col items-center md:flex-row md:items-start">
-            <Avatar src="/defaultavatar.png" className="h-40 w-40" />
+            <Avatar src={clerkUser.imageUrl || "/defaultavatar.png"} className="h-40 w-40 min-w-40" />
             <div className="flex flex-col ml-0 md:ml-8 mt-4 md:mt-0">
               <div className="flex justify-between w-full md:w-auto">
                 <div className="username underline mb-3">

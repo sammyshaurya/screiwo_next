@@ -9,9 +9,11 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 export default function Posts({ post, profile }) {
   const givenDate = new Date(post.createdat);
+  const { user: clerkUser } = useUser();
 
   function formatTimeDifference(givenDate) {
     const currentDate = new Date();
@@ -61,7 +63,7 @@ export default function Posts({ post, profile }) {
         </CardTitle>
         <CardDescription>
           <div className="flex items-center">
-            <Avatar src="/defaultavatar.png" className="h-8 w-8"></Avatar>
+            <Avatar src={clerkUser?.imageUrl || "/defaultavatar.png"} className="h-8 w-8"></Avatar>
             <span className="ml-3">{profile.username}</span>
             <span className="text-xs ml-auto">
               {formatTimeDifference(givenDate)}
@@ -70,8 +72,8 @@ export default function Posts({ post, profile }) {
         </CardDescription>
       </CardHeader>
       <hr className="mx-4 border-t-1 border-gray-500 dark:border-gray-700" />
-      <CardContent className="flex-1 mt-2">
-        <div className="line-clamp-3">
+      <CardContent className="flex-1 md:max-h-32 mt-2 max-h-56 overflow-hidden ">
+        <div className="line-clamp-5 md:line-clamp-3">
           {post?.content ? (
             <div
               className="prose"

@@ -4,6 +4,7 @@ import { Divider } from "@nextui-org/divider";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 function HeartIcon(props) {
   return (
@@ -44,6 +45,7 @@ function MessageCircleIcon(props) {
 }
 
 export default function Component({ posts }) {
+  const { user: clerkUser } = useUser();
   return (
     <div className="w-full rounded-lg ">
       {posts && posts.length > 0 ? (
@@ -58,7 +60,7 @@ export default function Component({ posts }) {
               <div className="flex items-center gap-3">
                 <Link href={`/user/${post.username}`}>
                 <Avatar>
-                  <AvatarImage src="/defaultavatar.png" />
+                  <AvatarImage src={clerkUser?.imageUrl || "/defaultavatar.png"} />
                   <AvatarFallback>{post.username.charAt(0)}</AvatarFallback>
                 </Avatar>
                 </Link>

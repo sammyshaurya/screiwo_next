@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyUser } from "../../middleware/fetchData";
+import { currentUser } from "@clerk/nextjs/server";
 import Profile from "@/app/models/Profile.model";
 import { FeedUpdate } from "./FeedUpdate";
 import { connectdb } from "@/app/lib/db";
@@ -9,13 +9,13 @@ import DOMPurify from "isomorphic-dompurify";
 
 export const POST = async (req, res) => {
   await connectdb();
-  await verifyUser(req, res);
-  if (!req.verified) {
+  const clerkuser = await currentUser();
+  if (!clerkuser) {
     return NextResponse.json("Unauthorized access", { status: 401 });
   }
 
   const { title, content } = await req.json();
-  const authorId = req.user._id.toString();
+  const authorId = clerkuser.id;
 
   if (!title || !content) {
     return NextResponse.json("Title and content are required", { status: 401 });
@@ -32,7 +32,6 @@ export const POST = async (req, res) => {
       content: content,
       createdAt: new Date(),
     };
-    console.log(newPost.content);
 
     // Update the profile with the new post
     const updatedProfile = await Profile.findOneAndUpdate(
@@ -55,9 +54,8 @@ export const POST = async (req, res) => {
     // Create the post in AllPosts with the same _id
     const post = await AllPosts.create(newPost);
 
-
     // Update the feed
-    FeedUpdate(authorId, req.user.username, newPost, updatedProfile.FollowingsList);
+    FeedUpdate(authorId, clerkuser.username, newPost, updatedProfile.FollowingsList);
 
     return NextResponse.json({ message: "Post created successfully", FollowingsList: updatedProfile.FollowingsList }, { status: 201 });
   } catch (error) {

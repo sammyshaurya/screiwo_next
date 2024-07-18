@@ -17,10 +17,10 @@ async function FeedUpdate(authorId, authorUsername, feedpost, FollowingsList) {
 
 async function FeedFromFollow(followerID, followingID, username) {
   try {
-    const followingIDObjectId = new mongoose.Types.ObjectId(followingID);
+    console.log("hey")
     const followingProfile = await Profile.aggregate([
       {
-        $match: { userid: followingIDObjectId },
+        $match: { userid: followingID },
       },
       { $unwind: "$posts" },
       { $sort: { "posts.createdat": -1 } },
@@ -44,8 +44,6 @@ async function FeedFromFollow(followerID, followingID, username) {
         await kv.lpush(`userFeed:${followerID}`, postCache);
       }
     }
-
-    console.log(await kv.lrange(`userFeed:${followerID}`, 0, -1));
   } catch (error) {
     console.error("Error updating feed from follow:", error);
   }

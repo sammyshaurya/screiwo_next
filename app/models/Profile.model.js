@@ -4,8 +4,8 @@ const { Schema } = mongoose;
 
 const PostSchema = new Schema({
   userid: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+    type: String,
+    ref: "Profile",
     required: true,
   },
   title: {
@@ -40,13 +40,16 @@ const PostSchema = new Schema({
 
 const ProfileSchema = new Schema({
   userid: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+    type: String,
     required: true,
   },
   username: {
     type: String,
     required: true,
+  },
+  profileImageUrl: {
+    type: String,
+    default: null
   },
   FirstName: {
     type: String,

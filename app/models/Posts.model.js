@@ -4,8 +4,8 @@ const { Schema } = mongoose;
 
 const PostSchema = new Schema({
   userid: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+    type: String,
+    ref: "Profile",
     required: true,
   },
   title: {

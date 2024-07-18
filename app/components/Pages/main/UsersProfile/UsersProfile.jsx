@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Navigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useUser } from "@clerk/nextjs";
 
 export const UsersProfile = () => {
   const [curUser, setUser] = useState(null);
@@ -15,6 +16,7 @@ export const UsersProfile = () => {
   const searchUser = useParams();
   const [followed, setFollowed] = useState(false);
 
+  const { user: clerkUser } = useUser();
 
   const submitFollow = async (toFollow) => {
     try {
@@ -117,7 +119,7 @@ export const UsersProfile = () => {
           <div className="mx-36 mt-6 flex flex-col items-start">
             <div className="flex items-center">
             <Avatar
-                src="/defaultavatar.png"
+                src={clerkUser?.imageUrl || "/defaultavatar.png"}
                 className="flex h-40 w-40"
               ></Avatar>
               <div className="flex-col">
