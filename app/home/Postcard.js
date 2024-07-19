@@ -4,7 +4,6 @@ import { Divider } from "@nextui-org/divider";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
 
 function HeartIcon(props) {
   return (
@@ -45,24 +44,23 @@ function MessageCircleIcon(props) {
 }
 
 export default function Component({ posts }) {
-  const { user: clerkUser } = useUser();
   return (
     <div className="w-full rounded-lg ">
       {posts && posts.length > 0 ? (
         posts.map((post, index) => (
           <Card key={index} className="w-full p-4 mb-4 rounded-lg shadow-md">
             <Link href={`/post/${post.feed._id}`}>
-            <h2 className="text-xl noto font-bold line-clamp-2 mb-5">
-              {post.feed.title}
-            </h2>
+              <h2 className="text-xl noto font-bold line-clamp-2 mb-5">
+                {post.feed.title}
+              </h2>
             </Link>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Link href={`/user/${post.username}`}>
-                <Avatar>
-                  <AvatarImage src={clerkUser?.imageUrl || "/defaultavatar.png"} />
-                  <AvatarFallback>{post.username.charAt(0)}</AvatarFallback>
-                </Avatar>
+                  <Avatar>
+                    <AvatarImage src={post.feed.profileImageUrl} />
+                    <AvatarFallback>{post.username.charAt(0)}</AvatarFallback>
+                  </Avatar>
                 </Link>
                 <div className="text-sm text-muted-foreground">
                   <Link href={`/user/${post.username}`}>
@@ -74,9 +72,9 @@ export default function Component({ posts }) {
             </div>
             <Divider className="mt-2 border-gray-200" />
             <Link href={`/post/${post.feed._id}`}>
-            <article className="prose prose-gray dark:prose-invert opensans line-clamp-4">
-              <div dangerouslySetInnerHTML={{ __html: post.feed.content }} />
-            </article>
+              <article className="prose prose-gray dark:prose-invert opensans line-clamp-4">
+                <div dangerouslySetInnerHTML={{ __html: post.feed.content }} />
+              </article>
             </Link>
             <Divider className="my-2 border-gray-200" />
             <div className="flex items-center justify-between">

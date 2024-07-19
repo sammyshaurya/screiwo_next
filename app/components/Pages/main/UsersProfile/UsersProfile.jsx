@@ -38,7 +38,7 @@ export const UsersProfile = () => {
       );
       if (response.status === 200) {
         setFollowed(true);
-        console.log(response.data);
+        
       } else {
         setFollowed(false);
         console.log("error in following");

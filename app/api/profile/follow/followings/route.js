@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
 import { auth } from "@clerk/nextjs/server";
+import { user } from "@nextui-org/theme";
 
 export const GET = async (req)=>{
     await connectdb();
-    const {userId} = auth();
-    if(!req.verified){
+    const { userId } = auth();
+    if(!userId){
         return NextResponse.json("Unauthorized access",{status:401});
     }
     const profile = await Profile.findOne({userid:userId}, {FollowingsList:1});

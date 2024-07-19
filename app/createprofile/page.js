@@ -20,7 +20,7 @@ const CreateProfile = () => {
   const [error, setError] = useState(null);
 
   const router = useRouter();
-  const { user: clerkUser } = useUser();
+  const {user: clerkUser} = useUser();
 
   const handleChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
@@ -53,11 +53,10 @@ const CreateProfile = () => {
       setError("Please enter a valid mobile number");
       return;
     }
-
     setLoading(true);
     try {
       const response = await axios.post("/api/profile/createprofile", {
-        profileData,
+        profileData
       });
       alert("Profile created successfully!");
       return router.push("/profile");
@@ -76,7 +75,7 @@ const CreateProfile = () => {
         <div className="flex items-center mb-8">
           <Image
             className="w-20 h-20 rounded-full bg-gray-500 mr-4"
-            src={clerkUser?.imageUrl || "/defaultavatar.png"}
+            src={clerkUser?.imageUrl || "https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yajRnVkRFaDFMak1JTzRKcXNWY3drckdZMmEiLCJyaWQiOiJ1c2VyXzJqUDlkb0p2TE9uYmVZOVkxZlUzUEVVYm1wViIsImluaXRpYWxzIjoiVFUifQ?width=160"}
             width={80}
             height={80}
             alt="Profile"

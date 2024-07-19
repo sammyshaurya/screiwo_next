@@ -20,6 +20,7 @@ export const GET = async (req,{params})=> {
             console.error('No user found');
             return NextResponse.json("No user found", { status: 404 });
           }
+          
         let follower = false
         if (searchedUsers.FollowersList.includes(signeduser.id)) {
              follower = true

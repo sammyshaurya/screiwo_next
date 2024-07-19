@@ -31,6 +31,7 @@ export const POST = async (req, res) => {
       title: title,
       content: content,
       createdAt: new Date(),
+      profileImageUrl: clerkuser.imageUrl,
     };
 
     // Update the profile with the new post

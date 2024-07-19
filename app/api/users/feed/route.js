@@ -7,7 +7,7 @@ import { auth } from "@clerk/nextjs/server";
 export const GET = async (req) => {
   await connectdb();
   const {userId} = auth();
-  console.log(userId)
+
   try {
     if (!userId) {
       return NextResponse.json({ message: "Unauthorized access." }, { status: 401 });

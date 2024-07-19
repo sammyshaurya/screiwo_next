@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import AllPosts from "@/app/models/Posts.model";
 import Profile from "@/app/models/Profile.model";
 import { connectdb } from "@/app/lib/db";
-import { headers } from "next/headers";
 import { currentUser } from "@clerk/nextjs/server";
 
 export const GET = async (req, res) => {
@@ -27,10 +26,9 @@ export const GET = async (req, res) => {
       console.error("Post not found");
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    console.log(posts.userid)
     const author = await Profile.findOne(
       { userid: posts.userid },
-      { username: 1, profileType: 1, FirstName: 1, LastName: 1, Bio: 1, Followers: 1, Followings: 1, userid: 1 }
+      { username: 1, profileType: 1, FirstName: 1, LastName: 1, Bio: 1, Followers: 1, Followings: 1, userid: 1, FollowingsList: 1, profileImageUrl:1 }
     );
     if (!author) {
       console.error("Author not found");

@@ -17,7 +17,6 @@ async function FeedUpdate(authorId, authorUsername, feedpost, FollowingsList) {
 
 async function FeedFromFollow(followerID, followingID, username) {
   try {
-    console.log("hey")
     const followingProfile = await Profile.aggregate([
       {
         $match: { userid: followingID },
@@ -27,7 +26,6 @@ async function FeedFromFollow(followerID, followingID, username) {
       { $limit: 3 },
       { $project: { posts: 1 } }
     ]);
-    console.log(followingProfile)
 
 
     if (!followingProfile) {

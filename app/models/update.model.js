@@ -1,18 +1,15 @@
-// import Profile from './Profile.model.mjs';
-// import {connectdb} from '../lib/db.mjs';
+// import Profile from './Profile.model.js';
+// import {connectdb} from '../lib/db.js';
 
 // // Function to update users
-// async function updateUsers() {
+// export async function updateUsers() {
 //     await connectdb();
 //     try {
 //     const profile = await Profile.find();
 
 //     const updatePromises = profile.map(async (profile) => {
-//       if (!profile.FollowersList) {
-//         profile.FollowersList = [];
-//       }
-//       if (!profile.FollowingsList) {
-//         profile.FollowingsList = [];
+//       if (!profile.profileImageUrl) {
+//         profile.profileImageUrl = null;
 //       }
 
 //       return profile.save();

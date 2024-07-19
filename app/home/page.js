@@ -6,7 +6,6 @@ import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import axios from "axios";
 import Postcard from "./Postcard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@clerk/nextjs";
 
 const Home = () => {
   const [posts, setPosts] = React.useState();

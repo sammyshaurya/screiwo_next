@@ -2,17 +2,15 @@
 import React from "react";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import Posts from "@/app/components/Pages/main/Posts";
-import { Avatar } from "@nextui-org/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import axios from "axios";
 import { Button } from "@nextui-org/button";
 import { useEffect, useState } from "react";
 import { Divider } from "@nextui-org/divider";
 import toast, { Toaster } from "react-hot-toast";
-import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowersList from "@/app/components/ui/FollowersList";
 import FollowingsList from "@/app/components/ui/FollowingsList";
-import { useUser } from "@clerk/nextjs";
 
 const UsersProfile = ({ params }) => {
   const [curUser, setUser] = useState(null);
@@ -21,19 +19,13 @@ const UsersProfile = ({ params }) => {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
 
-  const router = useRouter();
   const searchUser = params.username;
-  const { user: clerkUser } = useUser();
 
   const submitFollow = async (toFollow) => {
     try {
-      const response = await axios.post(
-        "/api/profile/follow",
-        {
-          followUser: toFollow,
-        },
-      );
-      console.log(response);
+      const response = await axios.post("/api/profile/follow", {
+        followUser: toFollow,
+      });
 
       if (response.status >= 200 && response.status < 300) {
         toast.success("Followed user");
@@ -50,9 +42,7 @@ const UsersProfile = ({ params }) => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `/api/profile/usersprofile?username=${encodeURIComponent(
-            searchUser
-          )}`,
+          `/api/profile/usersprofile?username=${encodeURIComponent(searchUser)}`
         );
 
         const userProfile = response.data.userProfile;
@@ -70,6 +60,7 @@ const UsersProfile = ({ params }) => {
           profileType: userProfile.profileType,
           username: userProfile.username,
           userid: userProfile.userid,
+          profileImageUrl: userProfile.profileImageUrl,
         };
         setPosts(userProfile.posts);
         setUser(userprofile);
@@ -103,7 +94,10 @@ const UsersProfile = ({ params }) => {
           </div>
         ) : (
           <div className="flex flex-col items-center md:flex-row md:items-start">
-            <Avatar width={40} height={40} src={clerkUser?.imageUrl || "/defaultavatar.png"} className="h-40 w-40 min-w-40" />
+            <Avatar className="h-32 w-32 min-w-32">
+              <AvatarImage src={curUser.profileImageUrl} />
+              <AvatarFallback>{curUser.username.charAt(0)}</AvatarFallback>
+            </Avatar>
             <div className="flex flex-col ml-0 md:ml-8 mt-4 md:mt-0 w-full">
               <div className="flex justify-between items-center w-full">
                 <div className="username underline mb-3">
@@ -121,12 +115,28 @@ const UsersProfile = ({ params }) => {
               <div className="flex-col mt-4">
                 <div className="flex mb-2">
                   <div>{posts && `${posts.length} posts`}</div>
-                  <div className="ml-4 cursor-pointer" onClick={handleFollowersClick}>
+                  <div
+                    className="ml-4 cursor-pointer"
+                    onClick={handleFollowersClick}
+                  >
                     {curUser && `${curUser.Followers} followers`}
                   </div>
-                  {showFollowers && <FollowersList handleFollowersClick={handleFollowersClick} />}
-                  {showFollowing && <FollowingsList handleFollowingClick={handleFollowingClick} />}
-                  <div className="ml-4 cursor-pointer" onClick={handleFollowingClick}>
+                  {showFollowers && (
+                    <FollowersList
+                      handleFollowersClick={handleFollowersClick}
+                      user={searchUser}
+                    />
+                  )}
+                  {showFollowing && (
+                    <FollowingsList
+                      handleFollowingClick={handleFollowingClick}
+                      user={searchUser}
+                    />
+                  )}
+                  <div
+                    className="ml-4 cursor-pointer"
+                    onClick={handleFollowingClick}
+                  >
                     {curUser && `${curUser.Followings} following`}
                   </div>
                 </div>

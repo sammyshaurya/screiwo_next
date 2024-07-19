@@ -5,7 +5,6 @@ import axios from "axios";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
 import {
   Card,
   CardHeader,
@@ -16,14 +15,13 @@ import {
 
 const AuthorCard = ({ author }) => {
   const [isFollowed, setIsFollowed] = useState(false);
-  const { user: clerkUser } = useUser();
   return (
     <Card className="w-full">
       <CardHeader className="justify-between">
         <Link href={`/user/${author.username}`}>
           <div className="flex gap-5">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={clerkUser?.imageUrl || "/defaultavatar.png"} />
+            <Avatar>
+              <AvatarImage src={author.profileImageUrl} />
               <AvatarFallback>{author.username.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1 items-start justify-center">
@@ -88,7 +86,6 @@ const PostPage = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     if (postid) {
       axios
@@ -140,10 +137,8 @@ const PostPage = () => {
             </h1>
             <div className="flex items-center space-x-4 text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src={clerkUser?.imageUrl || "/defaultavatar.png"}
-                  />
+                <Avatar>
+                  <AvatarImage src={post.profileImageUrl} />
                   <AvatarFallback>
                     {post.author.username.charAt(0)}
                   </AvatarFallback>

@@ -6,7 +6,7 @@ import Profile from "@/app/models/Profile.model";
 export const GET = async (req)=>{
     await connectdb();
     const {userId} = auth();
-    if(!signeduser){
+    if(!userId){
         return NextResponse.json("Unauthorized access",{status:401});
     }
     const profile = await Profile.findOne({userid:userId}, {FollowersList:1});

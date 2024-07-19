@@ -4,12 +4,12 @@ const { Schema } = mongoose;
 
 const followerSchema = new Schema({
   IFollowing: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
   IFollower: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
-import User from "@/app/models/User.model"; // Ensure this is the correct path
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 export const POST = async (req) => {
@@ -32,6 +31,7 @@ export const POST = async (req) => {
         gender,
         dob,
         mobile,
+        profileImageUrl: user.imageUrl
       });
       await newProfile.save();
 

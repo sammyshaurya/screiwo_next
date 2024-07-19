@@ -8,6 +8,10 @@ const PostSchema = new Schema({
     ref: "Profile",
     required: true,
   },
+  profileImageUrl: {
+    type: String,
+    default: null,
+  },
   title: {
     type: String,
     required: true,

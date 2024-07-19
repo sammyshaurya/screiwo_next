@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import Posts from "@/app/components/Pages/main/Posts";
-import { Avatar } from "@nextui-org/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; 
 import axios from "axios";
 import Link from "next/link";
 import { Button } from "@nextui-org/button";
@@ -11,7 +11,6 @@ import { Divider } from "@nextui-org/divider";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowersList from "../components/ui/FollowersList";
 import FollowingsList from "../components/ui/FollowingsList";
-import { useUser } from "@clerk/nextjs";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -19,7 +18,6 @@ const Profile = () => {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
 
-  const clerkUser = useUser().user;
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -57,7 +55,11 @@ const Profile = () => {
           </div>
         ) : (
           <div className="flex flex-col items-center md:flex-row md:items-start">
-            <Avatar src={clerkUser.imageUrl || "/defaultavatar.png"} className="h-40 w-40 min-w-40" />
+            {/* <Avatar src={user.profileImageUrl} className="h-40 w-40 min-w-40" /> */}
+            <Avatar className="h-32 w-32 min-w-32">
+                  <AvatarImage src={user.profileImageUrl} />
+                  <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                </Avatar>
             <div className="flex flex-col ml-0 md:ml-8 mt-4 md:mt-0">
               <div className="flex justify-between w-full md:w-auto">
                 <div className="username underline mb-3">

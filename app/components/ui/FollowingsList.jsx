@@ -1,19 +1,14 @@
 import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/button";
 import Link from "next/link";
+import axios from "axios";
 
 const FollowingsList = ({ handleFollowingClick }) => {
   const [showFollowings, setShowFollowings] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: token,
-    };
     fetch(`/api/profile/follow/followings`, {
-      method: "GET",
-      headers: headers,
+      method: "GET"
     })
       .then((response) => {
         if (!response.ok) {
@@ -22,11 +17,7 @@ const FollowingsList = ({ handleFollowingClick }) => {
         return response.json();
       })
       .then((data) => {
-        console.log("Response:", data);
-        let repeatedData = Array(8).fill(data).flat();
-
-        // Now you can set it to setShowFollowings
-        setShowFollowings(repeatedData);
+        setShowFollowings(data);
       })
       .catch((error) => {
         console.error("Fetch Error:", error);

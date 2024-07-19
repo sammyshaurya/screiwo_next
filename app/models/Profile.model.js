@@ -8,6 +8,10 @@ const PostSchema = new Schema({
     ref: "Profile",
     required: true,
   },
+  profileImageUrl:{
+    type: String,
+    default: null
+  },
   title: {
     type: String,
     required: true,
@@ -68,11 +72,11 @@ const ProfileSchema = new Schema({
     default: 0,
   },
   FollowersList: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    type: [{ type: String, ref: 'Profile' }],
     default: [],
   },
   FollowingsList: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    type: [{ type: String, ref: 'Profile' }],
     default: [],
   },
   Posts: {

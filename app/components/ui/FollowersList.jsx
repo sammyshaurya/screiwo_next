@@ -3,18 +3,15 @@ import { Button } from "@nextui-org/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const FollowersList = ({ handleFollowersClick }) => {
+const FollowersList = ({ handleFollowersClick, user=null }) => {
   const [showFollowings, setShowFollowings] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: token,
-    };
     fetch(`/api/profile/follow/followers`, {
       method: "GET",
-      headers: headers,
+      
+    },{
+      body: JSON.stringify({ user }),
     })
       .then((response) => {
         if (!response.ok) {
