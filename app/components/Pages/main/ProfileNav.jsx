@@ -1,11 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import logo from "@/public/Logo.png";
 import Link from "next/link";
 import SearchIcon from "/public/assets/Search";
 import Image from "next/image";
 import { Input } from "@nextui-org/input";
-import { useRouter } from 'next/navigation';
-import { SignedIn,UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 import {
   Navbar,
   NavbarBrand,
@@ -18,7 +18,14 @@ import {
 import { useClickOutside } from "react-click-outside-hook";
 import { Button } from "@/components/ui/button";
 
-const SearchInput = ({ searchTerm, setSearchTerm, searchList, setSearchList, isDropdownOpen, setIsDropdownOpen }) => {
+const SearchInput = ({
+  searchTerm,
+  setSearchTerm,
+  searchList,
+  setSearchList,
+  isDropdownOpen,
+  setIsDropdownOpen,
+}) => {
   const Router = useRouter();
   const [dropdownRef, hasClickedOutside] = useClickOutside();
 
@@ -68,10 +75,15 @@ const SearchInput = ({ searchTerm, setSearchTerm, searchList, setSearchList, isD
         startContent={<SearchIcon size={18} />}
       />
       {isDropdownOpen && searchList.length > 0 && (
-        <div ref={dropdownRef} className="absolute top-full p-2 bg-white border rounded-md shadow-lg w-full">
+        <div
+          ref={dropdownRef}
+          className="absolute top-full p-2 bg-white border rounded-md shadow-lg w-full"
+        >
           {searchList.map((user, index) => (
             <div
-              onClick={() => { Router.push(`/user/${user.username}`) }}
+              onClick={() => {
+                Router.push(`/user/${user.username}`);
+              }}
               key={index}
               className="block py-1 px-2 w-full hover:bg-gray-100 cursor-pointer"
             >
@@ -95,85 +107,76 @@ export const ProfileNav = () => {
 
   const menuItems = ["Home", "Profile", "Settings"];
   const LinkMap = {
-    "Home": "/home",
-    "Profile": "/profile",
-    "Settings": "/settings",
-    // "Log Out": "/logout",
-  }
-
+    Home: "/home",
+    Profile: "/profile",
+    Settings: "/settings",
+  };
 
   return (
-    <div className="relative">
-      <Navbar onMenuOpenChange={setIsMenuOpen} isBordered isBlurred={false}>
-        <NavbarMenuToggle
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="sm:hidden"
-        />
-        <NavbarBrand>
-          <Link href="/home">
-            <Image src={logo} alt="Logo" width={150} height={150} />
+    <Navbar onMenuOpenChange={setIsMenuOpen} isBordered isBlurred={false} className="shadow-sm">
+      <NavbarMenuToggle
+        aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        className="sm:hidden"
+      />
+      <NavbarBrand>
+        <Link href="/home">
+          <Image src={logo} alt="Logo" width={150} height={150} />
+        </Link>
+      </NavbarBrand>
+      <NavbarContent className="hidden sm:flex gap-4 mt-2" justify="center">
+        <NavbarItem>
+          <Link color="foreground" href="/home">
+            Home
           </Link>
-        </NavbarBrand>
-        <NavbarContent className="hidden sm:flex gap-4 mt-2" justify="center">
-          <NavbarItem>
-            <Link color="foreground" href="/home">
-              Home
-            </Link>
-          </NavbarItem>
-          <NavbarItem>
-            <Link color="foreground" href="/profile" aria-current="page">
-              Profile
-            </Link>
-          </NavbarItem>
-          <NavbarContent justify="end">
-            <SearchInput
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              searchList={searchList}
-              setSearchList={setSearchList}
-              isDropdownOpen={isDropdownOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-            />
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </NavbarContent>
+        </NavbarItem>
+        <NavbarItem>
+          <Link color="foreground" href="/profile" aria-current="page">
+            Profile
+          </Link>
+        </NavbarItem>
+        <NavbarContent justify="end">
+          <SearchInput
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            searchList={searchList}
+            setSearchList={setSearchList}
+            isDropdownOpen={isDropdownOpen}
+            setIsDropdownOpen={setIsDropdownOpen}
+          />
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
         </NavbarContent>
+      </NavbarContent>
 
-        <NavbarMenu>
-          {menuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
-              <Link
-                className="w-full"
-                href={LinkMap[item]}
-                size="lg"
-              >
-                {item}
-              </Link>
-            </NavbarMenuItem>
-          ))}
-          <NavbarMenuItem>
-            <Button variant="link" className="p-0 mt-2 text-md underline"
-            >
-              Log Out
-            </Button>
+      <NavbarMenu>
+        {menuItems.map((item, index) => (
+          <NavbarMenuItem key={`${item}-${index}`}>
+            <Link className="w-full" href={LinkMap[item]} size="lg">
+              {item}
+            </Link>
           </NavbarMenuItem>
-          <NavbarMenuItem className="mt-4">
-            <SearchInput
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              searchList={searchList}
-              setSearchList={setSearchList}
-              isDropdownOpen={isDropdownOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-            />            
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </NavbarMenuItem>
-        </NavbarMenu>
-      </Navbar>
-    </div>
+        ))}
+        <NavbarMenuItem>
+          <Button variant="link" className="p-0 mt-2 text-md underline">
+            Log Out
+          </Button>
+        </NavbarMenuItem>
+        <NavbarMenuItem className="mt-4">
+          <SearchInput
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            searchList={searchList}
+            setSearchList={setSearchList}
+            isDropdownOpen={isDropdownOpen}
+            setIsDropdownOpen={setIsDropdownOpen}
+          />
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </NavbarMenuItem>
+      </NavbarMenu>
+    </Navbar>
   );
 };
 

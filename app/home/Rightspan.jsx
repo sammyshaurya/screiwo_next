@@ -2,7 +2,7 @@ import React from 'react';
 
 const RightSidebar = () => {
   return (
-    <div className="col-span-2 border-l h-full p-4">
+    <div className="col-span-2 h-full p-4">
       <div className="mb-4">
         <h3 className="font-bold">Recent Activities</h3>
         <ul>
