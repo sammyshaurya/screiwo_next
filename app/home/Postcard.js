@@ -45,10 +45,10 @@ function MessageCircleIcon(props) {
 
 export default function Component({ posts }) {
   return (
-    <div className="w-full rounded-lg ">
+    <div className="w-full">
       {posts && posts.length > 0 ? (
         posts.map((post, index) => (
-          <Card key={index} className="w-full p-4 mb-4 rounded-lg shadow-md">
+          <Card key={index} className="w-full p-4 rounded-none shadow-md">
             <Link href={`/post/${post.feed._id}`}>
               <h2 className="text-xl noto font-bold line-clamp-2 mb-5">
                 {post.feed.title}

@@ -4,6 +4,7 @@ import { Button } from "@nextui-org/button";
 import axios from "axios";
 import { SimpleEditor } from "../editor/editor";
 import { Input } from "@/components/ui/input";
+import ProfileNav from "../components/Pages/main/ProfileNav";
 
 const Postings = () => {
   const [post, setPost] = useState({ title: "", content: "" });
@@ -49,6 +50,8 @@ const Postings = () => {
   };
 
   return (
+    <>
+    <ProfileNav />
     <div className="max-w-4xl mx-auto py-8 px-6">
       <h1 className="text-4xl font-bold mb-8 text-center noto">
         Share Your Story
@@ -105,6 +108,7 @@ const Postings = () => {
         </div>
       </form>
     </div>
+    </>
   );
 };
 
