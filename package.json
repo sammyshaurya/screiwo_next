@@ -47,6 +47,7 @@
     "@tiptap/starter-kit": "^2.4.0",
     "@uploadthing/react": "^6.7.2",
     "@vercel/kv": "^2.0.0",
+    "@vercel/speed-insights": "^1.0.12",
     "antd": "^5.16.2",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
