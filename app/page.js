@@ -91,7 +91,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-4 text-center">
         <p className="text-sm">
-          &copy; 2024 Scriewo. Created by{" "}
+          &copy; 2025 Scriewo. Created by{" "}
           <a
             href="https://twitter.com/sammy_shaurya"
             className="text-blue-400 hover:underline"
