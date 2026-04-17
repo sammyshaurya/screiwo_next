@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { clearProfileCaches } from '@/app/lib/profileCache';
 
 const API_BASE = '/api';
 
@@ -96,6 +95,62 @@ export const unbookmarkPost = async (postId) => {
   }
 };
 
+// FOLLOWS
+export const followUser = async (followUserId) => {
+  try {
+    const response = await apiClient.post('/profile/follow', {
+      followUser: followUserId,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const unfollowUser = async (followUserId) => {
+  try {
+    const response = await apiClient.delete('/profile/follow', {
+      params: { followUser: followUserId },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getFollowRequests = async () => {
+  try {
+    const response = await apiClient.get('/profile/follow/requests');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const acceptFollowRequest = async (requestUserId) => {
+  try {
+    const response = await apiClient.post('/profile/follow/requests', {
+      requestUser: requestUserId,
+      action: 'accept',
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const declineFollowRequest = async (requestUserId) => {
+  try {
+    const response = await apiClient.post('/profile/follow/requests', {
+      requestUser: requestUserId,
+      action: 'decline',
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // NOTIFICATIONS
 export const getNotifications = async (page = 1, limit = 20) => {
   try {
@@ -137,7 +192,6 @@ export const editPost = async (postId, title, content) => {
       title,
       content,
     });
-    clearProfileCaches();
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -149,7 +203,6 @@ export const deletePost = async (postId) => {
     const response = await apiClient.delete('/posts/manage', {
       params: { id: postId },
     });
-    clearProfileCaches();
     return response.data;
   } catch (error) {
     throw error.response?.data || error;

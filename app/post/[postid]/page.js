@@ -16,6 +16,64 @@ import {
   Button,
 } from "@nextui-org/react";
 
+const VIEW_WINDOW_MS = 5000;
+
+function getViewStorageKey(postid) {
+  return `post-view:${postid}`;
+}
+
+function shouldCountView(postid) {
+  if (typeof window === "undefined" || !postid) {
+    return false;
+  }
+
+  const storageKey = getViewStorageKey(postid);
+  const stored = window.sessionStorage.getItem(storageKey);
+
+  if (!stored) {
+    window.sessionStorage.setItem(
+      storageKey,
+      JSON.stringify({ status: "pending", ts: Date.now() })
+    );
+    return true;
+  }
+
+  try {
+    const parsed = JSON.parse(stored);
+    const isFresh = Date.now() - (parsed.ts || 0) < VIEW_WINDOW_MS;
+    if (isFresh) {
+      return false;
+    }
+  } catch {
+    // Treat malformed state as stale and re-count.
+  }
+
+  window.sessionStorage.setItem(
+    storageKey,
+    JSON.stringify({ status: "pending", ts: Date.now() })
+  );
+  return true;
+}
+
+function markViewSettled(postid) {
+  if (typeof window === "undefined" || !postid) {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    getViewStorageKey(postid),
+    JSON.stringify({ status: "counted", ts: Date.now() })
+  );
+}
+
+function clearViewPending(postid) {
+  if (typeof window === "undefined" || !postid) {
+    return;
+  }
+
+  window.sessionStorage.removeItem(getViewStorageKey(postid));
+}
+
 const AuthorCard = ({ author, follows }) => {
   const [isFollowed, setIsFollowed] = useState(false);
   return (
@@ -93,15 +151,25 @@ const PostPage = () => {
 
   useEffect(() => {
     if (postid) {
+      const countView = shouldCountView(postid);
+
       axios
-        .get(`/api/getpost?postid=${postid}`)
+        .get(`/api/getpost?postid=${postid}&countView=${countView ? "1" : "0"}`)
         .then((response) => {
           setPost(response.data);
           setLoading(false);
+          if (countView) {
+            markViewSettled(postid);
+          }
         })
         .catch((error) => {
           console.error(error);
-          setError("Failed to load post.");
+          clearViewPending(postid);
+          if (error?.response?.status === 403) {
+            setError("This post is private.");
+          } else {
+            setError("Failed to load post.");
+          }
           setLoading(false);
         });
     }
@@ -171,6 +239,7 @@ const PostPage = () => {
             currentUserId={isLoaded ? user?.id : null}
             currentUserName={user?.firstName || user?.username}
             currentUserImage={user?.imageUrl}
+            allowComments={post.allowComments !== false}
           />
         </div>
         <div className="w-full">

@@ -4,6 +4,7 @@ import Posts from '../../../models/Posts.model';
 import Profile from '../../../models/Profile.model';
 import Feed from '../../../models/Feed.model';
 import { buildPostDerivedFields } from '../../../lib/postData';
+import { syncProfileCounters } from '../../../lib/profileData';
 
 // PATCH edit a post
 export async function PATCH(req) {
@@ -57,6 +58,8 @@ export async function PATCH(req) {
         arrayFilters: [{ 'item.postId': post._id }],
       }
     );
+
+    await syncProfileCounters(post.userid);
 
     return Response.json({
       success: true,
@@ -117,6 +120,8 @@ export async function DELETE(req) {
         $pull: { items: { postId: post._id } },
       },
     );
+
+    await syncProfileCounters(userId);
 
     return Response.json({
       success: true,

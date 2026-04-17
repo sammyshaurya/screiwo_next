@@ -39,9 +39,25 @@ const ProfileSchema = new Schema({
     type: [{ type: String, ref: 'Profile' }],
     default: [],
   },
+  FollowRequestsReceived: {
+    type: [{ type: String, ref: 'Profile' }],
+    default: [],
+  },
+  FollowRequestsSent: {
+    type: [{ type: String, ref: 'Profile' }],
+    default: [],
+  },
   Bio: {
     type: String,
     default: "I am using Screiwo",
+  },
+  website: {
+    type: String,
+    default: "",
+  },
+  location: {
+    type: String,
+    default: "",
   },
   dob: {
     type: String,
@@ -62,6 +78,41 @@ const ProfileSchema = new Schema({
   mobile: {
     type: String,
     required: true,
+  },
+  preferences: {
+    profileVisibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+    },
+    allowComments: {
+      type: Boolean,
+      default: true,
+    },
+    likeNotifications: {
+      type: Boolean,
+      default: true,
+    },
+    commentNotifications: {
+      type: Boolean,
+      default: true,
+    },
+    followNotifications: {
+      type: Boolean,
+      default: true,
+    },
+    emailDigest: {
+      type: Boolean,
+      default: false,
+    },
+    compactMode: {
+      type: Boolean,
+      default: false,
+    },
+    hideMediaPreviews: {
+      type: Boolean,
+      default: false,
+    },
   },
 }, { timestamps: true });
 

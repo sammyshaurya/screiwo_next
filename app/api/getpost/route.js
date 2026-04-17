@@ -4,6 +4,7 @@ import Profile from "@/app/models/Profile.model";
 import { connectdb } from "@/app/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { toProfileSummary } from "@/app/lib/profileData";
+import { canViewProfile, canCommentOnPost } from "@/app/lib/profilePrivacy";
 
 export const GET = async (req, res) => {
   await connectdb();
@@ -15,6 +16,7 @@ export const GET = async (req, res) => {
   const userObj = signeduser.id;
 
   const postid = req.nextUrl.searchParams.get("postid")?.toString() || null;
+  const countView = req.nextUrl.searchParams.get("countView") !== "0";
 
   if (!postid) {
     console.error("No postid provided");
@@ -22,10 +24,8 @@ export const GET = async (req, res) => {
   }
 
   try {
-    const posts = await AllPosts.findOneAndUpdate(
-      { _id: postid, isDeleted: { $ne: true } },
-      { $inc: { viewsCount: 1 } },
-      { new: true }
+    const posts = await AllPosts.findOne(
+      { _id: postid, isDeleted: { $ne: true } }
     );
     if (!posts) {
       console.error("Post not found");
@@ -33,11 +33,26 @@ export const GET = async (req, res) => {
     }
     const author = await Profile.findOne(
       { userid: posts.userid },
-      { username: 1, profileType: 1, FirstName: 1, LastName: 1, Bio: 1, Followers: 1, Followings: 1, FollowersList: 1, userid: 1, profileImageUrl: 1 }
+      { username: 1, profileType: 1, FirstName: 1, LastName: 1, Bio: 1, Followers: 1, Followings: 1, FollowersList: 1, FollowingsList: 1, userid: 1, profileImageUrl: 1, preferences: 1 }
     ).lean();
     if (!author) {
       console.error("Author not found");
       return NextResponse.json({ error: "Author not found" }, { status: 404 });
+    }
+
+    if (!canViewProfile(author, userObj)) {
+      return NextResponse.json(
+        { error: "This profile is private." },
+        { status: 403 }
+      );
+    }
+
+    if (countView) {
+      await AllPosts.findByIdAndUpdate(
+        postid,
+        { $inc: { viewsCount: 1 } },
+        { new: true }
+      );
     }
 
     if (userObj) {
@@ -52,6 +67,8 @@ export const GET = async (req, res) => {
       ...posts.toObject(),
       author: toProfileSummary(author),
       follows,
+      allowComments: canCommentOnPost(author, userObj),
+      profileVisibility: author.preferences?.profileVisibility || "public",
     };
 
     return NextResponse.json(Post);

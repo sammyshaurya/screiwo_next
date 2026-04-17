@@ -6,6 +6,7 @@ import Notification from '../../../models/Notification.model';
 import Activity from '../../../models/Activity.model';
 import Profile from '../../../models/Profile.model';
 import { getProfileMapByUserIds } from '../../../lib/profileData';
+import { canViewProfile, canCommentOnPost } from '@/app/lib/profilePrivacy';
 
 // GET comments for a post with pagination
 export async function GET(req) {
@@ -114,6 +115,25 @@ export async function POST(req) {
       return Response.json(
         { success: false, error: 'Post not found' },
         { status: 404 }
+      );
+    }
+
+    const authorProfile = await Profile.findOne(
+      { userid: post.userid },
+      { userid: 1, FollowersList: 1, preferences: 1 }
+    ).lean();
+
+    if (!canViewProfile(authorProfile, userId)) {
+      return Response.json(
+        { success: false, error: 'This profile is private' },
+        { status: 403 }
+      );
+    }
+
+    if (!canCommentOnPost(authorProfile, userId)) {
+      return Response.json(
+        { success: false, error: 'Comments are disabled for this post' },
+        { status: 403 }
       );
     }
 

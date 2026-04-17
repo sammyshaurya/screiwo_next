@@ -21,10 +21,6 @@ import {
   Users,
 } from "lucide-react";
 import ProfileShell from "@/app/components/profile/ProfileShell";
-import {
-  getOwnProfileCache,
-  setOwnProfileCache,
-} from "@/app/lib/profileCache";
 
 function formatJoinDate(dateValue) {
   if (!dateValue) {
@@ -75,24 +71,11 @@ export default function Profile() {
       return;
     }
 
-    const cached = getOwnProfileCache(userId);
-    if (cached) {
-      setUser(cached.profile);
-      setPosts(cached.posts || []);
-      setIsLoading(false);
-      return;
-    }
-
     try {
       setIsLoading(true);
       const response = await axios.get("/api/profile");
-      const nextData = {
-        profile: response.data.profile,
-        posts: response.data.posts || [],
-      };
-      setUser(nextData.profile);
-      setPosts(nextData.posts);
-      setOwnProfileCache(userId, nextData);
+      setUser(response.data.profile);
+      setPosts(response.data.posts || []);
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
@@ -182,7 +165,7 @@ export default function Profile() {
                 className: "bg-blue-600 text-white hover:bg-blue-700",
               },
               {
-                href: "/createprofile",
+                href: "/editprofile",
                 label: "Edit profile",
                 icon: <Edit3 className="h-4 w-4" />,
                 className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",

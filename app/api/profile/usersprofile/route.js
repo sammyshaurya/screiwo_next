@@ -3,6 +3,9 @@ import Profile from "@/app/models/Profile.model";
 import { connectdb } from "@/app/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { getPostsByAuthorId } from "@/app/lib/postData";
+import { canViewProfile } from "@/app/lib/profilePrivacy";
+import { withLiveProfileCounts } from "@/app/lib/profileData";
+import Posts from "@/app/models/Posts.model";
 
 export const GET = async (req,{params})=> {
   await connectdb();
@@ -21,17 +24,36 @@ export const GET = async (req,{params})=> {
             console.error('No user found');
             return NextResponse.json("No user found", { status: 404 });
           }
-          
-        let follower = false
-        if (searchedUsers.FollowersList.includes(signeduser.id)) {
-             follower = true
-          }
-        else {
-            follower = false
-          }
+        const follower = (searchedUsers.FollowersList || []).some((id) => id?.toString?.() === signeduser.id);
+        const requested = (searchedUsers.FollowRequestsReceived || []).some((id) => id?.toString?.() === signeduser.id);
+        const canView = canViewProfile(searchedUsers, signeduser.id);
+        const postCount = await Posts.countDocuments({ userid: searchedUsers.userid, isDeleted: { $ne: true } });
+        if (!canView) {
+          return NextResponse.json(
+            {
+              message: "This profile is private.",
+              isPrivate: true,
+              userProfile: {
+                ...withLiveProfileCounts(searchedUsers, postCount),
+                preferences: searchedUsers.preferences || {},
+              },
+              posts: [],
+              isFollowing: follower,
+              isRequested: requested,
+              relationship: follower ? "following" : requested ? "requested" : "none",
+            },
+            {
+              status: 403,
+              headers: {
+                "Cache-Control": "no-store",
+              },
+            }
+          );
+        }
+
         const posts = await getPostsByAuthorId(searchedUsers.userid);
         return NextResponse.json(
-          { userProfile: searchedUsers, posts, isFollowing : follower },
+          { userProfile: withLiveProfileCounts(searchedUsers, posts.length), posts, isFollowing : follower, isRequested: requested, relationship: follower ? "following" : requested ? "requested" : "none" },
           {
             status: 200,
             headers: {

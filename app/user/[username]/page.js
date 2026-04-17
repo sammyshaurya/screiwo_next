@@ -9,6 +9,7 @@ import Posts from "@/app/components/Pages/main/Posts";
 import FollowersList from "@/app/components/ui/FollowersList";
 import FollowingsList from "@/app/components/ui/FollowingsList";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ArrowRight,
   Copy,
@@ -19,9 +20,11 @@ import {
 } from "lucide-react";
 import ProfileShell from "@/app/components/profile/ProfileShell";
 import {
-  getPublicProfileCache,
-  setPublicProfileCache,
-} from "@/app/lib/profileCache";
+  PROFILE_AVATAR_CLASS,
+  PROFILE_AVATAR_FALLBACK_CLASS,
+  PROFILE_HERO_HEADER_CLASS,
+} from "@/app/components/profile/profileStyles";
+import { followUser as followProfile, unfollowUser as unfollowProfile } from "@/app/lib/api";
 
 function formatJoinDate(dateValue) {
   if (!dateValue) {
@@ -46,30 +49,26 @@ function formatBirthday(dateValue) {
   });
 }
 
+function displayName(user) {
+  return [user?.FirstName, user?.LastName].filter(Boolean).join(" ") || user?.username || "Profile";
+}
+
 export default function UsersProfile({ params }) {
   const searchUser = params.username;
   const [curUser, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [followed, setFollowed] = useState(false);
+  const [relationship, setRelationship] = useState("none");
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const followed = relationship === "following";
+  const requested = relationship === "requested";
 
   const fetchData = useCallback(async ({ preferCache = true } = {}) => {
     if (!searchUser) {
       return;
-    }
-
-    if (preferCache) {
-      const cached = getPublicProfileCache(searchUser);
-      if (cached) {
-        setUser(cached.userProfile);
-        setPosts(cached.posts || []);
-        setFollowed(Boolean(cached.isFollowing));
-        setIsLoading(false);
-        return;
-      }
     }
 
     try {
@@ -82,14 +81,24 @@ export default function UsersProfile({ params }) {
         userProfile: response.data.userProfile,
         posts: response.data.posts || [],
         isFollowing: response.data.isFollowing,
+        isRequested: response.data.isRequested,
+        relationship: response.data.relationship || (response.data.isFollowing ? "following" : response.data.isRequested ? "requested" : "none"),
       };
 
       setUser(nextData.userProfile);
       setPosts(nextData.posts);
-      setFollowed(Boolean(nextData.isFollowing));
-      setPublicProfileCache(searchUser, nextData);
+      setRelationship(nextData.relationship);
+      setIsPrivate(Boolean(response.data.isPrivate));
     } catch (error) {
       console.error("Error fetching user data:", error);
+      if (error?.response?.status === 403) {
+        const privateProfile = error.response.data?.userProfile || null;
+        setUser(privateProfile);
+        setPosts([]);
+        setRelationship(error.response.data?.relationship || (error.response.data?.isFollowing ? "following" : error.response.data?.isRequested ? "requested" : "none"));
+        setIsPrivate(true);
+        return;
+      }
       toast.error("Could not load this profile right now.");
     } finally {
       setIsLoading(false);
@@ -117,32 +126,25 @@ export default function UsersProfile({ params }) {
 
   const submitFollow = async (toFollow) => {
     try {
-      const response = await axios.post("/api/profile/follow", {
-        followUser: toFollow,
-      });
+      const response = followed || requested
+        ? await unfollowProfile(toFollow)
+        : await followProfile(toFollow);
 
       if (response.status >= 200 && response.status < 300) {
-        toast.success(followed ? "You already follow this profile." : "Now following this profile.");
-        setFollowed(true);
-        setUser((currentUser) =>
-          currentUser
-            ? {
-                ...currentUser,
-                Followers: (currentUser.Followers || 0) + (followed ? 0 : 1),
-              }
-            : currentUser
+        const nextRelationship = response.data?.relationship || ((followed || requested) ? "none" : "following");
+        const actorSnapshot = response.data?.actorProfile || null;
+        const targetSnapshot = response.data?.targetProfile || null;
+        setRelationship(nextRelationship);
+        toast.success(
+          nextRelationship === "following"
+            ? "Now following this profile."
+            : followed || requested
+              ? "Relationship removed."
+              : "Follow request sent."
         );
-        const nextProfile = curUser
-          ? {
-              ...curUser,
-              Followers: (curUser.Followers || 0) + (followed ? 0 : 1),
-            }
-          : curUser;
-        setPublicProfileCache(searchUser, {
-          userProfile: nextProfile,
-          posts,
-          isFollowing: true,
-        });
+        const nextProfile = targetSnapshot ? { ...targetSnapshot } : curUser;
+        setIsPrivate(Boolean(nextProfile?.preferences?.profileVisibility === "private"));
+        setUser(nextProfile);
       }
     } catch (error) {
       console.error("Error following profile:", error);
@@ -194,6 +196,103 @@ export default function UsersProfile({ params }) {
               ))}
             </div>
           </section>
+        ) : isPrivate && curUser ? (
+          <section className="border border-gray-200 bg-white shadow-sm">
+            <div className={PROFILE_HERO_HEADER_CLASS}>
+              <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+                  <div className="shrink-0">
+                    <Avatar className={PROFILE_AVATAR_CLASS}>
+                      <AvatarImage src={curUser.profileImageUrl || undefined} />
+                      <AvatarFallback className={PROFILE_AVATAR_FALLBACK_CLASS}>
+                        {(curUser.username || "P").charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+
+                  <div className="max-w-2xl">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+                      Private profile
+                    </p>
+                    <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-950 md:text-4xl">
+                      {displayName(curUser)}
+                    </h1>
+                    <p className="mt-1 text-base text-gray-500">@{curUser.username}</p>
+                    <p className="mt-5 max-w-2xl border-l-2 border-gray-200 pl-4 text-base leading-7 text-gray-700">
+                      {curUser.Bio || "This profile is private. Follow to request access to posts and details."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-8 p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+                <div className="space-y-6">
+                  <section className="grid gap-4 md:grid-cols-3">
+                    {[
+                      { label: "Posts", value: curUser.postCount || posts.length || 0 },
+                      { label: "Followers", value: curUser.Followers || 0 },
+                      { label: "Following", value: curUser.Followings || 0 },
+                    ].map((item) => (
+                      <div key={item.label} className="border border-gray-200 bg-white px-5 py-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                          {item.label}
+                        </p>
+                        <p className="mt-2 text-2xl font-bold text-gray-950">{item.value}</p>
+                      </div>
+                    ))}
+                  </section>
+
+                  <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
+                    <FileText className="mx-auto h-8 w-8 text-gray-400" />
+                    <h3 className="mt-4 text-xl font-bold text-gray-950">
+                      Posts are hidden
+                    </h3>
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                      You can view this profile’s details, but the writing stays locked until access is approved.
+                    </p>
+                  </div>
+                </div>
+
+                <aside className="space-y-4">
+                  <section className="border border-gray-200 bg-white p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                      Actions
+                    </p>
+                    <div className="mt-5 space-y-3">
+                      <button
+                        onClick={() => submitFollow(curUser.userid)}
+                        type="button"
+                        className={`inline-flex h-10 w-full items-center justify-center gap-2 px-4 text-sm font-semibold transition ${
+                          followed || requested
+                            ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        {followed ? "Unfollow" : requested ? "Cancel request" : "Request access"}
+                      </button>
+                      <button
+                        onClick={handleCopyProfile}
+                        type="button"
+                        className="inline-flex h-10 w-full items-center justify-center gap-2 border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50"
+                      >
+                        <Share2 className="h-4 w-4" />
+                        {copied ? "Copied" : "Share"}
+                      </button>
+                    </div>
+                  </section>
+                  <section className="border border-gray-200 bg-white p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                      Privacy
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-gray-600">
+                      This profile is private. Followers approved by the owner can see the posts.
+                    </p>
+                  </section>
+                </aside>
+              </div>
+          </section>
         ) : !curUser ? (
           <section className="border border-gray-200 bg-white p-8 text-center shadow-sm">
             <h1 className="text-2xl font-bold text-gray-950">Profile not available</h1>
@@ -209,12 +308,12 @@ export default function UsersProfile({ params }) {
             actions={[
               {
                 onClick: () => submitFollow(curUser.userid),
-                label: followed ? "Following" : "Follow",
+                label: followed ? "Unfollow" : requested ? "Cancel request" : isPrivate ? "Request access" : "Follow",
                 icon: <UserPlus className="h-4 w-4" />,
-                className: followed
-                  ? "cursor-not-allowed border border-emerald-200 bg-emerald-50 text-emerald-700"
+                className: followed || requested
+                  ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
                   : "bg-blue-600 text-white hover:bg-blue-700",
-                disabled: followed,
+                disabled: false,
               },
               {
                 onClick: handleCopyProfile,

@@ -5,7 +5,7 @@ import { Heart, Reply, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { getComments, createComment, deleteComment } from '@/app/lib/api';
 import Link from 'next/link';
 
-export default function CommentsSection({ postId, currentUserId, currentUserName, currentUserImage }) {
+export default function CommentsSection({ postId, currentUserId, currentUserName, currentUserImage, allowComments = true }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -91,42 +91,48 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
     <div className="mt-4 border-t border-gray-200 dark:border-slate-700 pt-4">
       {/* Comment Input */}
       <div className="mb-4">
-        <form onSubmit={handleCreateComment}>
-          <div className="flex gap-3">
-            {currentUserImage && (
-              <img
-                src={currentUserImage}
-                alt={currentUserName}
-                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-              />
-            )}
-            <div className="flex-1">
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="flex justify-end gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setNewComment('')}
-                  className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!newComment.trim() || loading}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  Post
-                </button>
+        {allowComments ? (
+          <form onSubmit={handleCreateComment}>
+            <div className="flex gap-3">
+              {currentUserImage && (
+                <img
+                  src={currentUserImage}
+                  alt={currentUserName}
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                />
+              )}
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="flex justify-end gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewComment('')}
+                    className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!newComment.trim() || loading}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    Post
+                  </button>
+                </div>
               </div>
             </div>
+          </form>
+        ) : (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+            Comments are turned off for this post.
           </div>
-        </form>
+        )}
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </div>
 

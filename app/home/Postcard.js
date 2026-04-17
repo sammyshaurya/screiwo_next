@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
+import { formatRelativeTime } from "@/app/lib/time";
 
 function HeartIcon(props) {
   return (
@@ -76,11 +77,7 @@ export default function Component({ posts }) {
                       </p>
                     </Link>
                     <p className="text-sm text-gray-500">
-                      {new Date(post.DateofCreation || post.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}
+                      {formatRelativeTime(post.DateofCreation || post.createdAt)}
                     </p>
                   </div>
                 </div>

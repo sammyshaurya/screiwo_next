@@ -105,10 +105,11 @@ export const ProfileNav = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchList, setSearchList] = useState([]);
 
-  const menuItems = ["Home", "Profile", "Settings"];
+  const menuItems = ["Home", "Profile", "Requests", "Settings"];
   const LinkMap = {
     Home: "/home",
     Profile: "/profile",
+    Requests: "/follow-requests",
     Settings: "/settings",
   };
 
@@ -132,6 +133,16 @@ export const ProfileNav = () => {
         <NavbarItem>
           <Link color="foreground" href="/profile" aria-current="page">
             Profile
+          </Link>
+        </NavbarItem>
+        <NavbarItem>
+          <Link color="foreground" href="/follow-requests">
+            Requests
+          </Link>
+        </NavbarItem>
+        <NavbarItem>
+          <Link color="foreground" href="/settings">
+            Settings
           </Link>
         </NavbarItem>
         <NavbarContent justify="end">

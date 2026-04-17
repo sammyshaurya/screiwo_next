@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Trash2, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '@/app/lib/api';
+import { formatRelativeTime } from '@/app/lib/time';
 
 export default function PostCard({ post, onCommentClick, onEditClick, onDeleteClick, isLiked = false, isBookmarked = false, currentUserId }) {
   const [liked, setLiked] = useState(isLiked);
@@ -91,7 +92,7 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
               {authorName}
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {post.DateofCreation ? new Date(post.DateofCreation).toLocaleDateString() : 'Recently'}
+              {formatRelativeTime(post.DateofCreation || post.createdAt)}
             </p>
           </div>
         </div>

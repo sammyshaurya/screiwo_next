@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
@@ -9,53 +9,17 @@ import {
 } from "@/app/components/ui/card";
 import DOMPurify from "isomorphic-dompurify";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { getUiPreferences } from "@/app/lib/uiPreferences";
+import { formatRelativeTime } from "@/app/lib/time";
 
 export default function Posts({ post, profile }) {
-  const givenDate = new Date(post.createdAt || post.createdat || post.DateofCreation || Date.now());
-  const { user: clerkUser } = useUser();
-  const profileImage = post.profileImageUrl || profile.profileImageUrl || clerkUser?.imageUrl || null;
+  const authorUsername = profile?.username || post.username || "Writer";
+  const profileImage = post.profileImageUrl || profile?.profileImageUrl || null;
   const previewText = post.excerpt || post.contentText || "";
   const coverImageUrl = post.coverImageUrl || null;
-
-  function formatTimeDifference(givenDate) {
-    const currentDate = new Date();
-    let timeDifference = currentDate.getTime() - givenDate.getTime();
-    let secondsDifference = Math.floor(timeDifference / 1000);
-
-    if (secondsDifference < 60) {
-      return `${secondsDifference} second${
-        secondsDifference !== 1 ? "s" : ""
-      } ago`;
-    }
-
-    let minutesDifference = Math.floor(secondsDifference / 60);
-    if (minutesDifference < 60) {
-      return `${minutesDifference} minute${
-        minutesDifference !== 1 ? "s" : ""
-      } ago`;
-    }
-
-    let hoursDifference = Math.floor(minutesDifference / 60);
-    if (hoursDifference < 24) {
-      return `${hoursDifference} hour${hoursDifference !== 1 ? "s" : ""} ago`;
-    }
-
-    let daysDifference = Math.floor(hoursDifference / 24);
-    if (daysDifference < 30) {
-      return `${daysDifference} day${daysDifference !== 1 ? "s" : ""} ago`;
-    }
-
-    let monthsDifference = Math.floor(daysDifference / 30);
-    if (monthsDifference < 12) {
-      return `${monthsDifference} month${
-        monthsDifference !== 1 ? "s" : ""
-      } ago`;
-    }
-
-    let yearsDifference = Math.floor(monthsDifference / 12);
-    return `${yearsDifference} year${yearsDifference !== 1 ? "s" : ""} ago`;
-  }
+  const uiPrefs = getUiPreferences();
+  const compactMode = Boolean(profile?.preferences?.compactMode ?? uiPrefs.compactMode);
+  const hideMediaPreviews = Boolean(profile?.preferences?.hideMediaPreviews ?? uiPrefs.hideMediaPreviews);
 
   // Function to estimate reading time
   const getReadingTime = (content) => {
@@ -67,20 +31,20 @@ export default function Posts({ post, profile }) {
 
   return (
     <Link href={`/post/${post._id}`}>
-      <Card className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer">
+      <Card className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer ${compactMode ? "text-sm" : ""}`}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8 ring-2 ring-gray-100">
                 <AvatarImage src={profileImage || undefined} />
                 <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-semibold">
-                  {profile.username.charAt(0).toUpperCase()}
+                  {authorUsername.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-gray-900 text-sm">{profile.username}</p>
+                <p className="font-semibold text-gray-900 text-sm">{authorUsername}</p>
                 <p className="text-xs text-gray-500">
-                  {formatTimeDifference(givenDate)}
+                  {formatRelativeTime(post.createdAt || post.createdat || post.DateofCreation)}
                 </p>
               </div>
           </div>
@@ -95,12 +59,12 @@ export default function Posts({ post, profile }) {
         </CardHeader>
 
         <CardContent className="pt-0">
-          {coverImageUrl && (
+        {coverImageUrl && !hideMediaPreviews && (
             <div className="mb-3 overflow-hidden rounded-lg border border-gray-100">
               <img
                 src={coverImageUrl}
                 alt={post?.title || "Post preview image"}
-                className="h-40 w-full object-cover"
+                className={compactMode ? "h-32 w-full object-cover" : "h-40 w-full object-cover"}
               />
             </div>
           )}
@@ -112,7 +76,7 @@ export default function Posts({ post, profile }) {
                     Structured post
                   </p>
                 )}
-                <p className="line-clamp-4 whitespace-pre-line text-sm">
+                <p className={`line-clamp-4 whitespace-pre-line ${compactMode ? "text-xs" : "text-sm"}`}>
                   {DOMPurify.sanitize(previewText)}
                 </p>
               </div>

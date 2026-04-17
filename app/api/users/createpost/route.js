@@ -6,6 +6,7 @@ import { connectdb } from "@/app/lib/db";
 import AllPosts from "@/app/models/Posts.model";
 import mongoose from "mongoose";
 import { buildPostDerivedFields } from "@/app/lib/postData";
+import { syncProfileCounters } from "@/app/lib/profileData";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -38,21 +39,30 @@ export const POST = async (req, res) => {
       profileImageUrl: clerkuser.imageUrl,
     };
 
-    const updatedProfile = await Profile.findOneAndUpdate(
+    const updatedProfile = await Profile.findOne(
       { userid: authorId },
-      { $inc: { postCount: 1 } },
-      { new: true, projection: { FollowingsList: 1, postCount: 1 } }
-    );
+      { FollowingsList: 1 }
+    ).lean();
 
     if (!updatedProfile) {
       return NextResponse.json("Profile not found", { status: 404 });
     }
 
-    await AllPosts.create(newPost);
+    const createdPost = await AllPosts.create(newPost);
+    const liveCounts = await syncProfileCounters(authorId);
 
     await FeedUpdate(authorId, postId, updatedProfile.FollowingsList);
 
-    return NextResponse.json({ message: "Post created successfully", postId, postCount: updatedProfile.postCount }, { status: 201 });
+    return NextResponse.json({
+      message: "Post created successfully",
+      postId,
+      postCount: liveCounts?.postCount ?? 0,
+      post: createdPost.toObject ? createdPost.toObject() : createdPost,
+      profile: {
+        ...(updatedProfile.toObject ? updatedProfile.toObject() : updatedProfile),
+        ...(liveCounts || {}),
+      },
+    }, { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);
     return NextResponse.json("Internal Server Error", { status: 500 });

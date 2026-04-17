@@ -3,6 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getUiPreferences } from "@/app/lib/uiPreferences";
+import {
+  PROFILE_AVATAR_CLASS,
+  PROFILE_AVATAR_FALLBACK_CLASS,
+  PROFILE_HERO_HEADER_CLASS,
+  PROFILE_HERO_HEADER_COMPACT_CLASS,
+} from "@/app/components/profile/profileStyles";
 
 export default function ProfileShell({
   profile,
@@ -25,16 +32,18 @@ export default function ProfileShell({
 }) {
   const displayName = title || [profile?.FirstName, profile?.LastName].filter(Boolean).join(" ") || "Writer";
   const initials = (profile?.username || "U").charAt(0).toUpperCase();
+  const uiPrefs = getUiPreferences();
+  const compactMode = Boolean(profile?.preferences?.compactMode ?? uiPrefs.compactMode);
 
   return (
     <div className="space-y-8">
       <section className="border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-6 py-7 md:px-8">
+        <div className={compactMode ? PROFILE_HERO_HEADER_COMPACT_CLASS : PROFILE_HERO_HEADER_CLASS}>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-              <Avatar className="h-24 w-24 border border-gray-200 bg-gray-100">
+              <Avatar className={PROFILE_AVATAR_CLASS}>
                 <AvatarImage src={profile?.profileImageUrl || undefined} />
-                <AvatarFallback className="bg-gray-900 text-2xl font-semibold text-white">
+                <AvatarFallback className={PROFILE_AVATAR_FALLBACK_CLASS}>
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -95,8 +104,8 @@ export default function ProfileShell({
           </div>
         </div>
 
-        {statCards.length > 0 ? (
-          <div className="grid divide-y divide-gray-100 md:grid-cols-4 md:divide-x md:divide-y-0">
+      {statCards.length > 0 ? (
+        <div className="grid divide-y divide-gray-100 md:grid-cols-4 md:divide-x md:divide-y-0">
             {statCards.map((stat) => (
               <button
                 key={stat.label}

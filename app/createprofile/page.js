@@ -8,7 +8,6 @@ import axios from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { clearProfileCaches } from "@/app/lib/profileCache";
 
 const CreateProfile = () => {
   const [profileData, setProfileData] = useState({
@@ -59,7 +58,6 @@ const CreateProfile = () => {
       const response = await axios.post("/api/profile/createprofile", {
         profileData
       });
-      clearProfileCaches();
       alert("Profile created successfully!");
       return router.push("/profile");
     } catch (error) {
