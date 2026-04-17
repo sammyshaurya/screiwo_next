@@ -29,12 +29,10 @@ export const GET = async (req) => {
     const userProfile = await Profile.findOne({ userid: user._id });
 
     if (userProfile) {
-      return NextResponse.json({ message: "User already profiled", profiled: true, token: user.token, userid: user._id }, { status: 200 });
+      return NextResponse.json({ message: "Authentication successful", profiled: true, userid: user._id }, { status: 200 });
     }
 
-    
-
-    return NextResponse.json({ profiled: false, token: user.token }, { status: 200 });
+    return NextResponse.json({ message: "Authentication successful", profiled: false, userid: user._id }, { status: 200 });
 
   } catch (error) {
     console.error("Error processing request:", error);

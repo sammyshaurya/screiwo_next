@@ -12,6 +12,10 @@ const PostSchema = new Schema({
     type: String,
     default: null,
   },
+  username: {
+    type: String,
+    default: null,
+  },
   title: {
     type: String,
     required: true,
@@ -36,11 +40,37 @@ const PostSchema = new Schema({
     type: Number,
     default: 0,
   },
+  // New fields for engagement tracking
+  viewsCount: {
+    type: Number,
+    default: 0,
+  },
+  isEdited: {
+    type: Boolean,
+    default: false,
+  },
+  editedAt: {
+    type: Date,
+    default: null,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
   DateofCreation: {
     type: Date,
     default: Date.now,
   },
-});
+}, { timestamps: true });
+
+// Indexes for efficient querying
+PostSchema.index({ userid: 1, DateofCreation: -1 });
+PostSchema.index({ DateofCreation: -1 });
+PostSchema.index({ isDeleted: 1, DateofCreation: -1 });
 
 const AllPosts = mongoose.models.Posts || mongoose.model("Posts", PostSchema);
 

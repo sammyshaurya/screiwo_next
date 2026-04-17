@@ -1,10 +1,10 @@
+"use client";
 import { SignUp } from "@clerk/nextjs";
-import { ClerkProvider } from "@clerk/nextjs";
 
-export default function Signin() {
+export default function Signup() {
   return (
-    <ClerkProvider>
-      <SignUp />
-    </ClerkProvider>
+    <div className="flex flex-col items-center justify-center w-full h-full">
+      <SignUp routing="hash" />
+    </div>
   );
 }

@@ -7,10 +7,13 @@ const FollowersList = ({ handleFollowersClick, user=null }) => {
   const [showFollowings, setShowFollowings] = useState([]);
 
   useEffect(() => {
+    if (!user) return;
+
     fetch(`/api/profile/follow/followers`, {
       method: "GET",
-      
-    },{
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ user }),
     })
       .then((response) => {
@@ -25,7 +28,7 @@ const FollowersList = ({ handleFollowersClick, user=null }) => {
       .catch((error) => {
         console.error("Fetch Error:", error);
       });
-  }, []);
+  }, [user]);
 
   return (
     <>

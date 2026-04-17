@@ -31,10 +31,10 @@ export const POST = async (req) => {
 
     // Find the following user
     const followingProfile = await Profile.findOne({ userid: followeeID });
-    const username = followingProfile.username
     if (!followingProfile) {
       return NextResponse.json({ message: "No user found" }, { status: 404 });
     }
+    const username = followingProfile.username;
 
     // Check if already following
     const isAlreadyFollowing = followingProfile.FollowersList.some(id => id.toString() === followerID);
@@ -62,8 +62,8 @@ export const POST = async (req) => {
       { new: true }
     );    
 
-    // Update the feed
-    FeedFromFollow(followerID, followeeID, signeduser.username);
+    // Update the feed with the followed user's recent posts
+    await FeedFromFollow(followerID, followeeID, username);
     
 
     return NextResponse.json("Followed successfully", { status: 201 });

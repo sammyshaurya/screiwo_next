@@ -5,7 +5,6 @@ import { FeedUpdate } from "./FeedUpdate";
 import { connectdb } from "@/app/lib/db";
 import AllPosts from "@/app/models/Posts.model";
 import mongoose from "mongoose";
-import DOMPurify from "isomorphic-dompurify";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -56,7 +55,7 @@ export const POST = async (req, res) => {
     const post = await AllPosts.create(newPost);
 
     // Update the feed
-    FeedUpdate(authorId, clerkuser.username, newPost, updatedProfile.FollowingsList);
+    await FeedUpdate(authorId, clerkuser.username, newPost, updatedProfile.FollowingsList);
 
     return NextResponse.json({ message: "Post created successfully", FollowingsList: updatedProfile.FollowingsList }, { status: 201 });
   } catch (error) {

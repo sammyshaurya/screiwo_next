@@ -22,6 +22,7 @@ import { Icon } from "lucide-react";
 
 export function SimpleEditor({ onChange }) {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       Document,
       History,

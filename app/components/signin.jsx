@@ -1,3 +1,4 @@
+"use client";
 import { SignedOut, SignIn } from "@clerk/nextjs";
 
 export default function Signin() {  

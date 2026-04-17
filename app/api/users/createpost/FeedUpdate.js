@@ -1,46 +1,78 @@
-import { kv } from "@vercel/kv";
+import Feed from "@/app/models/Feed.model";
 import Profile from "@/app/models/Profile.model";
-import mongoose from "mongoose";
 
 async function FeedUpdate(authorId, authorUsername, feedpost, FollowingsList) {
-  const post = { feed: feedpost, username: authorUsername };
-  try {
-    FollowingsList.forEach((follower) => {
-      return kv.lpush(`userFeed:${follower}`, post);
-    });
+  const post = { feed: feedpost, username: authorUsername, createdAt: new Date() };
+  const recipients = new Set([authorId, ...(FollowingsList || [])]);
 
-    await kv.lpush(`userFeed:${authorId}`, post);
+  try {
+    const updates = Array.from(recipients).map((userId) =>
+      Feed.findOneAndUpdate(
+        { userid: userId },
+        {
+          $push: {
+            items: {
+              $each: [post],
+              $position: 0,
+            },
+          },
+        },
+        { upsert: true, new: true }
+      )
+    );
+
+    await Promise.all(updates);
   } catch (err) {
-    console.log(err);
+    console.error("Error updating user feeds:", err);
   }
 }
 
-async function FeedFromFollow(followerID, followingID, username) {
+async function FeedFromFollow(followerID, followingID, followingUsername) {
   try {
     const followingProfile = await Profile.aggregate([
-      {
-        $match: { userid: followingID },
-      },
+      { $match: { userid: followingID } },
       { $unwind: "$posts" },
       { $sort: { "posts.createdat": -1 } },
       { $limit: 3 },
-      { $project: { posts: 1 } }
+      { $project: { posts: 1 } },
     ]);
 
-
-    if (!followingProfile) {
-      console.error("No posts found for the following user");
+    if (!followingProfile?.length) {
+      console.error("No recent posts found for the followed user");
       return;
     }
-    const currentFeed = await kv.lrange(`userFeed:${followerID}`, 0, -1);
-    const existingPostIds = currentFeed.map((item) => item.feed.userid);
 
-    for (const post of followingProfile) {
-      const postId = post.posts.userid.toString();
-      if (!existingPostIds.includes(postId)) {
-        const postCache = { feed: post.posts, username: username };
-        await kv.lpush(`userFeed:${followerID}`, postCache);
+    const feedDocument = await Feed.findOne({ userid: followerID });
+    const existingPostIds = new Set(
+      (feedDocument?.items || [])
+        .map((item) => item.feed?._id?.toString())
+        .filter(Boolean)
+    );
+
+    const newFeedItems = [];
+    for (const item of followingProfile) {
+      const post = item.posts;
+      const postId = post?._id?.toString();
+      if (!postId || existingPostIds.has(postId)) {
+        continue;
       }
+
+      newFeedItems.push({ feed: post, username: followingUsername, createdAt: new Date() });
+    }
+
+    if (newFeedItems.length > 0) {
+      await Feed.findOneAndUpdate(
+        { userid: followerID },
+        {
+          $push: {
+            items: {
+              $each: newFeedItems.reverse(),
+              $position: 0,
+            },
+          },
+        },
+        { upsert: true, new: true }
+      );
     }
   } catch (error) {
     console.error("Error updating feed from follow:", error);

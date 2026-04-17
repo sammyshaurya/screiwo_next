@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
-import { Avatar } from "@nextui-org/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/app/components/ui/card";
+import DOMPurify from "isomorphic-dompurify";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 
@@ -54,45 +54,80 @@ export default function Posts({ post, profile }) {
     return `${yearsDifference} year${yearsDifference !== 1 ? "s" : ""} ago`;
   }
 
+  // Function to estimate reading time
+  const getReadingTime = (content) => {
+    const wordsPerMinute = 200;
+    const words = content.replace(/<[^>]*>/g, '').split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return minutes;
+  };
+
   return (
     <Link href={`/post/${post._id}`}>
-    <Card className="flex flex-col p-1">
-      <CardHeader>
-        <CardTitle className="text-2xl mb-2 line-clamp-2">
-          {post?.title ? post.title : "No Title"}
-        </CardTitle>
-        <CardDescription>
-          <div className="flex items-center">
-            <Avatar src={clerkUser?.imageUrl || "/defaultavatar.png"} className="h-8 w-8"></Avatar>
-            <span className="ml-3">{profile.username}</span>
-            <span className="text-xs ml-auto">
-              {formatTimeDifference(givenDate)}
+      <Card className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8 ring-2 ring-gray-100">
+                <AvatarImage src={clerkUser?.imageUrl || "/defaultavatar.png"} />
+                <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-semibold">
+                  {profile.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold text-gray-900 text-sm">{profile.username}</p>
+                <p className="text-xs text-gray-500">
+                  {formatTimeDifference(givenDate)}
+                </p>
+              </div>
+            </div>
+            <div className="text-xs text-gray-400">
+              {getReadingTime(post?.content || "")} min
+            </div>
+          </div>
+
+          <CardTitle className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors leading-tight line-clamp-2">
+            {post?.title ? post.title : "Untitled Post"}
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          <div className="line-clamp-3 text-gray-700 leading-relaxed">
+            {post?.content ? (
+              <div
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post?.content) }}
+              />
+            ) : (
+              <p className="text-gray-500 italic">
+                This post has no content preview available.
+              </p>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="pt-3 border-t border-gray-100 bg-gray-50">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1 text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="text-sm">{post.likes || 0}</span>
+              </div>
+              <div className="flex items-center gap-1 text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span className="text-sm">0</span>
+              </div>
+            </div>
+            <span className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+              Read →
             </span>
           </div>
-        </CardDescription>
-      </CardHeader>
-      <hr className="mx-4 border-t-1 border-gray-500 dark:border-gray-700" />
-      <CardContent className="flex-1 md:max-h-32 mt-2 max-h-56 overflow-hidden ">
-        <div className="line-clamp-5 md:line-clamp-3">
-          {post?.content ? (
-            <div
-              className="prose"
-              dangerouslySetInnerHTML={{ __html: post?.content }}
-            />
-          ) : (
-            "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Cumque eaque architecto quis tempore sit officia quisquam similique saepe, temporibus necessitatibus inventore maxime veritatis rem dolores laboriosam ducimus sed quam quasi?"
-          )}
-        </div>
-      </CardContent>
-
-      <CardFooter className="mt-auto">
-        <div className="flex items-center">
-          <h6 className="text-sm mr-4 mt-2">
-            {post.likes || "0 likes and comments"}
-          </h6>
-        </div>
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
     </Link>
   );
 }

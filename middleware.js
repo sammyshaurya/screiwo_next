@@ -1,6 +1,6 @@
 import {
   clerkMiddleware,
-  createRouteMatcher
+  createRouteMatcher,
 } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
@@ -8,30 +8,47 @@ const isProtectedRoute = createRouteMatcher([
   '/home(.*)',
   '/profile(.*)',
   '/createpost(.*)',
+  '/createprofile(.*)',
+  '/editor(.*)',
+  '/post(.*)',
 ]);
+
 const isPublicRoute = createRouteMatcher([
   '/',
   '/signin(.*)',
   '/signup(.*)',
 ]);
-const myProfile = createRouteMatcher(['/user/:username']);
 
-export default clerkMiddleware((auth, req) => {
-  const { userId } = auth()
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
   
+  const pathname = req.nextUrl.pathname;
+
+  // Handle protected routes
   if (isProtectedRoute(req)) {
     if (!userId) {
       return NextResponse.redirect(new URL('/', req.url));
     }
   }
 
-  if (isPublicRoute(req)) {
-    if (userId) {
-      return NextResponse.redirect(new URL('/profile', req.url));
-    }
+  // Redirect authenticated users away from public routes to profile
+  if (isPublicRoute(req) && userId && pathname === '/') {
+    return NextResponse.redirect(new URL('/profile', req.url));
   }
+
+  return NextResponse.next();
 });
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: [
+    '/',
+    '/home/:path*',
+    '/profile/:path*',
+    '/createpost/:path*',
+    '/createprofile/:path*',
+    '/editor/:path*',
+    '/post/:path*',
+    '/user/:path*',
+    '/api/:path*',
+  ],
 };

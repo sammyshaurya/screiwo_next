@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { connectdb } from "@/app/lib/db";
 import User from "@/app/models/User.model";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -37,12 +36,8 @@ export const POST = async (req, res) => {
     });
     console.log(newUser);
 
-    const savedUser = await newUser.save();
-
-    const token = jwt.sign({ _id: savedUser._id }, process.env.jwt_secret);
-    savedUser.token = token;
-    await savedUser.save();
-    return NextResponse.json({message: "Account created successfully"}, {status: 200})
+    await newUser.save();
+    return NextResponse.json({message: "Account created successfully. Please sign in with Clerk."}, {status: 200})
   } catch (error) {
     console.error("Error handling signup request:", error);
     return new NextResponse("Internal Server Error", {status: 500})

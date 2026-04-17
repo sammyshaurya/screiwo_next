@@ -193,7 +193,7 @@ Link {
 /* Font faces */
 @font-face {
   font-family: "Noto";
-  src: local('Noto-Sans'), url('/uicomponents/Typography/Noto_serif') format('truetype');
+  src: local('Noto Serif'), url('/uicomponents/Typography/Noto_Serif/NotoSerif-VariableFont_wdth,wght.ttf') format('truetype');
 }
 
 @font-face {

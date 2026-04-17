@@ -2,6 +2,7 @@
 // components/BlogPost.jsx
 import React from 'react';
 import ProfileNav from '../components/Pages/main/ProfileNav';
+import DOMPurify from 'isomorphic-dompurify';
 
 const BlogPost = () => {
   const title = "Blog Post"
@@ -12,7 +13,7 @@ const BlogPost = () => {
       <div className="container mx-auto py-8 px-4">
         <article className="prose lg:prose-xl mx-auto bg-white p-6 rounded-lg shadow-lg">
           <h1 className="text-2xl noto font-bold mb-4">{title}</h1>
-          <div className="opensans" dangerouslySetInnerHTML={{ __html: content }} />
+          <div className="opensans" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />
         </article>
       </div>
     </div>

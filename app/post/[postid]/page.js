@@ -2,9 +2,12 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useUser } from "@clerk/nextjs";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
+import DOMPurify from "isomorphic-dompurify";
+import CommentsSection from "../../components/Pages/CommentsSection";
 import {
   Card,
   CardHeader,
@@ -83,9 +86,11 @@ const AuthorCard = ({ author }) => {
 
 const PostPage = () => {
   const { postid } = useParams();
+  const { user, isLoaded } = useUser();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   useEffect(() => {
     if (postid) {
       axios
@@ -157,9 +162,17 @@ const PostPage = () => {
         </div>
       </header>
       <main className="container max-w-6xl mx-auto py-12 md:py-20 px-4 grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
-        <article className="prose max-w-none text-lg prose-gray opensans dark:prose-invert md:border-r-2 border-gray-200 md:pr-8 pr-4 w-full">
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
-        </article>
+        <div className="space-y-8 w-full">
+          <article className="prose max-w-none text-lg prose-gray opensans dark:prose-invert md:border-r-2 border-gray-200 md:pr-8 pr-4 w-full">
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+          </article>
+          <CommentsSection
+            postId={postid}
+            currentUserId={isLoaded ? user?.id : null}
+            currentUserName={user?.firstName || user?.username}
+            currentUserImage={user?.imageUrl}
+          />
+        </div>
         <div className="w-full">
           <AuthorCard author={post.author} />
         </div>

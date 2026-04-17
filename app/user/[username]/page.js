@@ -8,6 +8,7 @@ import { Button } from "@nextui-org/button";
 import { useEffect, useState } from "react";
 import { Divider } from "@nextui-org/divider";
 import toast, { Toaster } from "react-hot-toast";
+import DOMPurify from "isomorphic-dompurify";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowersList from "@/app/components/ui/FollowersList";
 import FollowingsList from "@/app/components/ui/FollowingsList";
@@ -149,7 +150,7 @@ const UsersProfile = ({ params }) => {
                 </h5>
                 <blockquote className="border-l-2 pl-2 italic mt-2">
                   {curUser && curUser.username !== "sammyshaurya" ? (
-                    <div dangerouslySetInnerHTML={{ __html: curUser.Bio }} />
+                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(curUser.Bio) }} />
                   ) : (
                     <div>
                       &quot;After all,&quot; he said, &quot;everyone enjoys a

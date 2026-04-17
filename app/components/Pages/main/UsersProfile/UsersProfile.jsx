@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Navigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import DOMPurify from "isomorphic-dompurify";
 import { useUser } from "@clerk/nextjs";
 
 export const UsersProfile = () => {
@@ -155,11 +156,11 @@ export const UsersProfile = () => {
                       {curUser && `${curUser?.profileType}`}
                     </span>
                   </h5>
-                  <blockquote className="ml-16 border-l-2 pl-2 italic">
+                  <blockquote className="ml-16 border-l-2 italic">
                     {curUser && curUser.username !== "sammyshaurya" ? (
                       <div
                         dangerouslySetInnerHTML={{
-                          __html: curUser.Bio,
+                          __html: DOMPurify.sanitize(curUser.Bio),
                         }}
                       />
                     ) : (
