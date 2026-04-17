@@ -9,21 +9,14 @@ import Posts from "@/app/components/Pages/main/Posts";
 import FollowersList from "@/app/components/ui/FollowersList";
 import FollowingsList from "@/app/components/ui/FollowingsList";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ArrowRight,
-  Copy,
   FileText,
   Share2,
   UserPlus,
   Users,
 } from "lucide-react";
 import ProfileShell from "@/app/components/profile/ProfileShell";
-import {
-  PROFILE_AVATAR_CLASS,
-  PROFILE_AVATAR_FALLBACK_CLASS,
-  PROFILE_HERO_HEADER_CLASS,
-} from "@/app/components/profile/profileStyles";
 import { followUser as followProfile, unfollowUser as unfollowProfile } from "@/app/lib/api";
 
 function formatJoinDate(dateValue) {
@@ -63,6 +56,7 @@ export default function UsersProfile({ params }) {
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [activeTab, setActiveTab] = useState("posts");
   const followed = relationship === "following";
   const requested = relationship === "requested";
 
@@ -170,6 +164,8 @@ export default function UsersProfile({ params }) {
     }
   };
 
+  const profilePostCount = curUser?.postCount || posts.length || 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <ProfileNav />
@@ -197,102 +193,159 @@ export default function UsersProfile({ params }) {
             </div>
           </section>
         ) : isPrivate && curUser ? (
-          <section className="border border-gray-200 bg-white shadow-sm">
-            <div className={PROFILE_HERO_HEADER_CLASS}>
-              <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-                  <div className="shrink-0">
-                    <Avatar className={PROFILE_AVATAR_CLASS}>
-                      <AvatarImage src={curUser.profileImageUrl || undefined} />
-                      <AvatarFallback className={PROFILE_AVATAR_FALLBACK_CLASS}>
-                        {(curUser.username || "P").charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+          <ProfileShell
+            profile={curUser}
+            profileTypeLabel="Private profile"
+            title={displayName(curUser)}
+            subtitle={`@${curUser.username}`}
+            bio={curUser.Bio || "This profile is private. Follow to request access to posts and details."}
+            badgeLabel={followed ? "Following" : requested ? "Request sent" : "Private"}
+            actions={[
+              {
+                onClick: () => submitFollow(curUser.userid),
+                label: followed ? "Unfollow" : requested ? "Cancel request" : "Request access",
+                icon: <UserPlus className="h-4 w-4" />,
+                className: followed || requested
+                  ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
+                  : "bg-blue-600 text-white hover:bg-blue-700",
+              },
+              {
+                onClick: handleCopyProfile,
+                label: copied ? "Copied" : "Share",
+                icon: <Share2 className="h-4 w-4" />,
+                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+              },
+            ]}
+            statCards={[
+              { label: "Posts", value: profilePostCount, onClick: () => setActiveTab("posts") },
+              { label: "Followers", value: curUser.Followers || 0, onClick: () => setShowFollowers(true) },
+              { label: "Following", value: curUser.Followings || 0, onClick: () => setShowFollowing(true) },
+              { label: "Reads", value: profileMetrics.views, onClick: () => setActiveTab("stats") },
+            ]}
+            tabs={[
+              { id: "posts", label: "Posts" },
+              { id: "about", label: "About" },
+              { id: "stats", label: "Stats" },
+            ]}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            sidebarTop={
+              <section className="border border-gray-200 bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  Privacy
+                </p>
+                <p className="mt-3 text-sm leading-6 text-gray-600">
+                  This profile is private. Followers approved by the owner can see the posts.
+                </p>
+              </section>
+            }
+            sidebarBottom={
+              <section className="border border-gray-200 bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  Reader context
+                </p>
+                <div className="mt-5 space-y-4 text-sm text-gray-700">
+                  <div className="flex items-center gap-3">
+                    <Users className="h-4 w-4 text-blue-600" />
+                    <span>{curUser.Followers || 0} followers</span>
                   </div>
-
-                  <div className="max-w-2xl">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
-                      Private profile
-                    </p>
-                    <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-950 md:text-4xl">
-                      {displayName(curUser)}
-                    </h1>
-                    <p className="mt-1 text-base text-gray-500">@{curUser.username}</p>
-                    <p className="mt-5 max-w-2xl border-l-2 border-gray-200 pl-4 text-base leading-7 text-gray-700">
-                      {curUser.Bio || "This profile is private. Follow to request access to posts and details."}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <ArrowRight className="h-4 w-4 text-blue-600" />
+                    <span>{curUser.Followings || 0} following</span>
                   </div>
                 </div>
+              </section>
+            }
+          >
+            {showFollowers && (
+              <FollowersList
+                handleFollowersClick={() => setShowFollowers(false)}
+                user={curUser.username}
+              />
+            )}
+            {showFollowing && (
+              <FollowingsList
+                handleFollowingClick={() => setShowFollowing(false)}
+                user={curUser.username}
+              />
+            )}
+
+            {activeTab === "posts" && (
+              <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
+                <FileText className="mx-auto h-8 w-8 text-gray-400" />
+                <h3 className="mt-4 text-xl font-bold text-gray-950">
+                  Posts are hidden
+                </h3>
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                  You can view this profile’s details, but the writing stays locked until access is approved.
+                </p>
               </div>
-            </div>
+            )}
 
-            <div className="grid gap-8 p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-                <div className="space-y-6">
-                  <section className="grid gap-4 md:grid-cols-3">
-                    {[
-                      { label: "Posts", value: curUser.postCount || posts.length || 0 },
-                      { label: "Followers", value: curUser.Followers || 0 },
-                      { label: "Following", value: curUser.Followings || 0 },
-                    ].map((item) => (
-                      <div key={item.label} className="border border-gray-200 bg-white px-5 py-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                          {item.label}
-                        </p>
-                        <p className="mt-2 text-2xl font-bold text-gray-950">{item.value}</p>
-                      </div>
-                    ))}
-                  </section>
-
-                  <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
-                    <FileText className="mx-auto h-8 w-8 text-gray-400" />
-                    <h3 className="mt-4 text-xl font-bold text-gray-950">
-                      Posts are hidden
-                    </h3>
-                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
-                      You can view this profile’s details, but the writing stays locked until access is approved.
-                    </p>
-                  </div>
-                </div>
-
-                <aside className="space-y-4">
-                  <section className="border border-gray-200 bg-white p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
-                      Actions
-                    </p>
-                    <div className="mt-5 space-y-3">
-                      <button
-                        onClick={() => submitFollow(curUser.userid)}
-                        type="button"
-                        className={`inline-flex h-10 w-full items-center justify-center gap-2 px-4 text-sm font-semibold transition ${
-                          followed || requested
-                            ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
-                        }`}
-                      >
-                        <UserPlus className="h-4 w-4" />
-                        {followed ? "Unfollow" : requested ? "Cancel request" : "Request access"}
-                      </button>
-                      <button
-                        onClick={handleCopyProfile}
-                        type="button"
-                        className="inline-flex h-10 w-full items-center justify-center gap-2 border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50"
-                      >
-                        <Share2 className="h-4 w-4" />
-                        {copied ? "Copied" : "Share"}
-                      </button>
+            {activeTab === "about" && (
+              <div className="grid gap-5 md:grid-cols-2">
+                <section className="border border-gray-200 bg-white p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Profile
+                  </p>
+                  <dl className="mt-5 space-y-4">
+                    <div>
+                      <dt className="text-sm text-gray-500">Display name</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{displayName(curUser)}</dd>
                     </div>
-                  </section>
-                  <section className="border border-gray-200 bg-white p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
-                      Privacy
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-gray-600">
-                      This profile is private. Followers approved by the owner can see the posts.
-                    </p>
-                  </section>
-                </aside>
+                    <div>
+                      <dt className="text-sm text-gray-500">Username</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">@{curUser.username}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Joined</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(curUser.createdAt)}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section className="border border-gray-200 bg-white p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Details
+                  </p>
+                  <dl className="mt-5 space-y-4">
+                    <div>
+                      <dt className="text-sm text-gray-500">Profile type</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{curUser.profileType || "Personal"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Birthday</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(curUser.dob)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Bio</dt>
+                      <dd className="mt-1 text-base leading-7 text-gray-700">
+                        {curUser.Bio || "No bio added yet."}
+                      </dd>
+                    </div>
+                  </dl>
+                </section>
               </div>
-          </section>
+            )}
+
+            {activeTab === "stats" && (
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: "Likes", value: profileMetrics.likes },
+                  { label: "Comments", value: profileMetrics.comments },
+                  { label: "Bookmarks", value: profileMetrics.saves },
+                  { label: "Reads", value: profileMetrics.views },
+                ].map((item) => (
+                  <section key={item.label} className="border border-gray-200 bg-white p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      {item.label}
+                    </p>
+                    <p className="mt-3 text-3xl font-bold text-gray-950">{item.value}</p>
+                  </section>
+                ))}
+              </div>
+            )}
+          </ProfileShell>
         ) : !curUser ? (
           <section className="border border-gray-200 bg-white p-8 text-center shadow-sm">
             <h1 className="text-2xl font-bold text-gray-950">Profile not available</h1>
