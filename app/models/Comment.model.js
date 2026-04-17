@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 
 const CommentSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true,
   },
   postId: {
@@ -22,8 +21,7 @@ const CommentSchema = new mongoose.Schema({
     default: null,
   },
   likes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
   }],
   likesCount: {
     type: Number,

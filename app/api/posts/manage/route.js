@@ -1,6 +1,9 @@
 import { connectDB } from '../../../lib/db';
 import { auth } from '@clerk/nextjs/server';
 import Posts from '../../../models/Posts.model';
+import Profile from '../../../models/Profile.model';
+import Feed from '../../../models/Feed.model';
+import { buildPostDerivedFields } from '../../../lib/postData';
 
 // PATCH edit a post
 export async function PATCH(req) {
@@ -34,11 +37,26 @@ export async function PATCH(req) {
 
     // Update post
     if (title) post.title = title;
-    if (content) post.content = content;
+    if (content) {
+      post.content = content;
+      Object.assign(post, buildPostDerivedFields(content));
+    }
     post.isEdited = true;
     post.editedAt = new Date();
 
     await post.save();
+    await Feed.updateMany(
+      { 'items.postId': post._id },
+      {
+        $set: {
+          ...(title ? { 'items.$[item].rankReason': `edited:${title}` } : {}),
+          ...(content ? { 'items.$[item].rankReason': 'edited' } : {}),
+        },
+      },
+      {
+        arrayFilters: [{ 'item.postId': post._id }],
+      }
+    );
 
     return Response.json({
       success: true,
@@ -89,6 +107,16 @@ export async function DELETE(req) {
     post.isDeleted = true;
     post.deletedAt = new Date();
     await post.save();
+    await Profile.updateOne(
+      { userid: userId },
+      { $inc: { postCount: -1 } }
+    );
+    await Feed.updateMany(
+      { 'items.postId': post._id },
+      {
+        $pull: { items: { postId: post._id } },
+      },
+    );
 
     return Response.json({
       success: true,

@@ -5,6 +5,7 @@ import axios from "axios";
 import { SimpleEditor } from "../editor/editor";
 import { Input } from "@/components/ui/input";
 import ProfileNav from "../components/Pages/main/ProfileNav";
+import { clearProfileCaches } from "@/app/lib/profileCache";
 
 const Postings = () => {
   const [post, setPost] = useState({ title: "", content: "" });
@@ -39,6 +40,7 @@ const Postings = () => {
       );
 
       if (response.status === 201) {
+        clearProfileCaches();
         alert("Post created successfully!");
       } else {
         alert("Error creating post");

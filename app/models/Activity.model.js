@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 
 const ActivitySchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true,
   },
   type: {
@@ -17,8 +16,7 @@ const ActivitySchema = new mongoose.Schema({
     default: null,
   },
   targetUserId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     default: null,
   },
   score: {

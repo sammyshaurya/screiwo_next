@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getNotifications, markNotificationAsRead } from '../../lib/api';
+import { getNotifications, markNotificationAsRead } from '@/app/lib/api';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -68,7 +68,7 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
           <div className="px-4 py-3 flex items-center gap-3">
-            <Link href="/" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+            <Link href="/home" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
               <ArrowLeft size={20} />
             </Link>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Notifications</h1>
@@ -104,10 +104,10 @@ export default function NotificationsPage() {
                 <div className="flex-1">
                   <div className="flex flex-wrap gap-1">
                     <Link
-                      href={`/user/${notification.fromUserId?.username}`}
+                      href={notification.fromUserId?.username ? `/user/${notification.fromUserId.username}` : '/notifications'}
                       className="font-semibold text-gray-900 dark:text-white hover:underline"
                     >
-                      {notification.fromUserId?.FirstName} {notification.fromUserId?.LastName}
+                      {notification.fromUserId?.FirstName || notification.fromUserId?.username || 'Someone'} {notification.fromUserId?.LastName || ''}
                     </Link>
                     <span className="text-gray-600 dark:text-gray-400">
                       {getNotificationMessage(notification)}

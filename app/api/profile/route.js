@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectdb } from '@/app/lib/db';
 import { currentUser } from '@clerk/nextjs/server';
 import Profile from '@/app/models/Profile.model';
+import { getPostsByAuthorId } from '@/app/lib/postData';
 
 export const GET = async (req, res) => {
     try {
@@ -12,14 +13,20 @@ export const GET = async (req, res) => {
             return NextResponse.json({ message: "Unauthorized access." }, { status: 401 });
         }
         
-        const profile = await Profile.findOne({ userid: user.id });
+        const profile = await Profile.findOne({ userid: user.id }).lean();
         
         if (!profile) {
             return NextResponse.json({ message: "Profile not found.", valid: false }, { status: 404 });
         }
         
-        const userprofile = { profile };
-        return NextResponse.json(userprofile, { status: 200 });
+        const posts = await getPostsByAuthorId(user.id);
+        const userprofile = { profile, posts };
+        return NextResponse.json(userprofile, {
+            status: 200,
+            headers: {
+                "Cache-Control": "no-store",
+            },
+        });
     } catch (error) {
         console.error('Error fetching profile:', error);
         return NextResponse.json({ 

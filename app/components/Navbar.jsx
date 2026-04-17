@@ -61,7 +61,7 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             <SignedIn>
-              <Link href="/">
+              <Link href="/home">
                 <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                   <Home className="w-5 h-5" />
                 </Button>
@@ -129,7 +129,7 @@ const Navbar = () => {
           <div className="md:hidden border-t border-gray-200 py-4">
             <SignedIn>
               <div className="flex flex-col space-y-2">
-                <Link href="/" className="flex items-center space-x-2 px-2 py-2 text-gray-600 hover:text-gray-900">
+                <Link href="/home" className="flex items-center space-x-2 px-2 py-2 text-gray-600 hover:text-gray-900">
                   <Home className="w-5 h-5" />
                   <span>Home</span>
                 </Link>

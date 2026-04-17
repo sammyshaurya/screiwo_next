@@ -4,7 +4,7 @@ import Like from '../../../models/Like.model';
 import Posts from '../../../models/Posts.model';
 import Notification from '../../../models/Notification.model';
 import Activity from '../../../models/Activity.model';
-import User from '../../../models/User.model';
+import Profile from '../../../models/Profile.model';
 
 export async function POST(req, context) {
   try {
@@ -54,8 +54,8 @@ export async function POST(req, context) {
 
     // Create notification (if liker is not the post owner)
     if (post.userid !== userId) {
-      const liker = await User.findById(userId);
-      const likerName = liker?.FirstName || 'Someone';
+      const liker = await Profile.findOne({ userid: userId }, { FirstName: 1, username: 1 }).lean();
+      const likerName = liker?.FirstName || liker?.username || 'Someone';
       
       await Notification.create({
         userId: post.userid,

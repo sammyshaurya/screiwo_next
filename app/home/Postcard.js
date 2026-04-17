@@ -55,15 +55,15 @@ export default function Component({ posts }) {
   return (
     <div className="w-full space-y-6">
       {posts && posts.length > 0 ? (
-        posts.map((post, index) => (
-          <Card key={index} className="w-full bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+        posts.map((post) => (
+          <Card key={post._id} className="w-full bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
             {/* Header with author info */}
             <div className="p-6 pb-4">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Link href={`/user/${post.username}`}>
                     <Avatar className="h-10 w-10 ring-2 ring-gray-100">
-                      <AvatarImage src={post.feed.profileImageUrl} />
+                      <AvatarImage src={post.profileImageUrl || undefined} />
                       <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
                         {post.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
@@ -76,7 +76,7 @@ export default function Component({ posts }) {
                       </p>
                     </Link>
                     <p className="text-sm text-gray-500">
-                      {new Date(post.feed.createdAt).toLocaleDateString('en-US', {
+                      {new Date(post.DateofCreation || post.createdAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
@@ -85,28 +85,35 @@ export default function Component({ posts }) {
                   </div>
                 </div>
                 <div className="text-xs text-gray-400">
-                  {getReadingTime(post.feed.content)} min read
+                  {getReadingTime(post.excerpt || "")} min read
                 </div>
               </div>
 
               {/* Title */}
-              <Link href={`/post/${post.feed._id}`}>
+              <Link href={`/post/${post._id}`}>
                 <h2 className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors leading-tight mb-3">
-                  {post.feed.title}
+                  {post.title}
                 </h2>
               </Link>
 
               {/* Content Preview */}
-              <Link href={`/post/${post.feed._id}`}>
+              <Link href={`/post/${post._id}`}>
                 <div className="text-gray-700 leading-relaxed mb-4">
-                  <article className="prose prose-gray dark:prose-invert opensans max-w-none line-clamp-3">
-                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.feed.content) }} />
-                  </article>
+                  {post.coverImageUrl && (
+                    <div className="mb-3 overflow-hidden rounded-lg border border-gray-100">
+                      <img
+                        src={post.coverImageUrl}
+                        alt={post.title || "Post preview image"}
+                        className="h-44 w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <p className="line-clamp-3">{DOMPurify.sanitize(post.excerpt || "")}</p>
                 </div>
               </Link>
 
               {/* Read More */}
-              <Link href={`/post/${post.feed._id}`}>
+              <Link href={`/post/${post._id}`}>
                 <span className="text-blue-600 hover:text-blue-700 font-medium text-sm">
                   Read more →
                 </span>
@@ -123,7 +130,7 @@ export default function Component({ posts }) {
                     className="text-gray-600 hover:text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <HeartIcon className="w-4 h-4 mr-1" />
-                    <span className="text-sm">{post.feed.likes || 0}</span>
+                    <span className="text-sm">{post.likes || 0}</span>
                   </Button>
                   <Button
                     variant="ghost"
@@ -131,7 +138,7 @@ export default function Component({ posts }) {
                     className="text-gray-600 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                   >
                     <MessageCircleIcon className="w-4 h-4 mr-1" />
-                    <span className="text-sm">0</span>
+                    <span className="text-sm">{post.commentscount || 0}</span>
                   </Button>
                 </div>
                 <Button

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, X, CheckCheck } from 'lucide-react';
-import { getNotifications, getUnreadNotificationCount, markNotificationAsRead } from '../../lib/api';
+import { getNotifications, getUnreadNotificationCount, markNotificationAsRead } from '@/app/lib/api';
 import Link from 'next/link';
 
 export default function NotificationDropdown() {
@@ -158,10 +158,10 @@ export default function NotificationDropdown() {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap gap-1">
                         <Link
-                          href={`/user/${notification.fromUserId?.username}`}
+                          href={notification.fromUserId?.username ? `/user/${notification.fromUserId.username}` : '/notifications'}
                           className="font-semibold text-sm text-gray-900 dark:text-white hover:underline truncate"
                         >
-                          {notification.fromUserId?.FirstName}
+                          {notification.fromUserId?.FirstName || notification.fromUserId?.username || 'Someone'}
                         </Link>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           {getNotificationMessage(notification)}
@@ -174,7 +174,7 @@ export default function NotificationDropdown() {
                           minute: '2-digit',
                         })}
                       </p>
-                      {notification.read && (
+                      {!notification.read && (
                         <div className="w-2 h-2 bg-gray-300 dark:bg-slate-600 rounded-full mt-2"></div>
                       )}
                     </div>

@@ -4,7 +4,8 @@ import Comment from '../../../models/Comment.model';
 import Posts from '../../../models/Posts.model';
 import Notification from '../../../models/Notification.model';
 import Activity from '../../../models/Activity.model';
-import User from '../../../models/User.model';
+import Profile from '../../../models/Profile.model';
+import { getProfileMapByUserIds } from '../../../lib/profileData';
 
 // GET comments for a post with pagination
 export async function GET(req) {
@@ -29,10 +30,10 @@ export async function GET(req) {
       parentCommentId: null,
       isDeleted: { $ne: true },
     })
-      .populate('userId', 'FirstName LastName username profileImageUrl')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     // Get replies for each comment
     const commentsWithReplies = await Promise.all(
@@ -41,16 +42,32 @@ export async function GET(req) {
           parentCommentId: comment._id,
           isDeleted: { $ne: true },
         })
-          .populate('userId', 'FirstName LastName username profileImageUrl')
           .sort({ createdAt: 1 })
-          .limit(5);
+          .limit(5)
+          .lean();
 
         return {
-          ...comment.toObject(),
+          ...comment,
           replies,
         };
       })
     );
+
+    const profileMap = await getProfileMapByUserIds(
+      commentsWithReplies.flatMap((comment) => [
+        comment.userId,
+        ...(comment.replies || []).map((reply) => reply.userId),
+      ])
+    );
+
+    const hydratedComments = commentsWithReplies.map((comment) => ({
+      ...comment,
+      userId: profileMap.get(comment.userId) || null,
+      replies: (comment.replies || []).map((reply) => ({
+        ...reply,
+        userId: profileMap.get(reply.userId) || null,
+      })),
+    }));
 
     const total = await Comment.countDocuments({
       postId,
@@ -60,7 +77,7 @@ export async function GET(req) {
 
     return Response.json({
       success: true,
-      comments: commentsWithReplies,
+      comments: hydratedComments,
       pagination: {
         page,
         limit,
@@ -119,8 +136,6 @@ export async function POST(req) {
       parentCommentId: parentCommentId || null,
     });
     await comment.save();
-    await comment.populate('userId', 'FirstName LastName username profileImageUrl');
-
     // Update post comments count (only for top-level comments)
     if (!parentCommentId) {
       post.commentscount = (post.commentscount || 0) + 1;
@@ -142,8 +157,11 @@ export async function POST(req) {
     });
 
     // Create notification
-    const commenter = await User.findById(userId);
-    const commenterName = commenter?.FirstName || 'Someone';
+    const commenterProfile = await Profile.findOne(
+      { userid: userId },
+      { userid: 1, username: 1, FirstName: 1, LastName: 1, profileImageUrl: 1 }
+    ).lean();
+    const commenterName = commenterProfile?.FirstName || commenterProfile?.username || 'Someone';
 
     if (parentCommentId) {
       // Notify the user whose comment is being replied to (if not self)
@@ -175,7 +193,10 @@ export async function POST(req) {
     return Response.json({
       success: true,
       message: 'Comment created successfully',
-      comment,
+      comment: {
+        ...comment.toObject(),
+        userId: commenterProfile || null,
+      },
     });
   } catch (error) {
     console.error('Error creating comment:', error);

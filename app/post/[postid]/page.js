@@ -16,7 +16,7 @@ import {
   Button,
 } from "@nextui-org/react";
 
-const AuthorCard = ({ author }) => {
+const AuthorCard = ({ author, follows }) => {
   const [isFollowed, setIsFollowed] = useState(false);
   return (
     <Card className="w-full">
@@ -37,7 +37,7 @@ const AuthorCard = ({ author }) => {
             </div>
           </div>
         </Link>
-        {!author.follows == "myself" && (
+        {follows !== "myself" && (
           <Button
             className={
               isFollowed
@@ -155,7 +155,7 @@ const PostPage = () => {
                 </Link>
               </div>
               <span className="text-sm">
-                {new Date(post.createdat).toLocaleDateString()}
+                  {new Date(post.DateofCreation || post.createdAt || post.createdat).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -174,7 +174,7 @@ const PostPage = () => {
           />
         </div>
         <div className="w-full">
-          <AuthorCard author={post.author} />
+          <AuthorCard author={post.author} follows={post.follows} />
         </div>
       </main>
     </div>

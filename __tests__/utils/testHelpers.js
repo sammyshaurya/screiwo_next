@@ -29,7 +29,6 @@ export const mockProfile = {
   Followings: 5,
   FollowersList: [],
   FollowingsList: [],
-  Posts: [],
   postCount: 0,
 }
 
@@ -38,6 +37,8 @@ export const mockPost = {
   userid: 'user_123',
   title: 'Test Post',
   content: '<p>Test content</p>',
+  excerpt: 'Test content',
+  contentText: 'Test content',
   profileImageUrl: 'https://example.com/image.jpg',
   likes: 0,
   commentscount: 0,

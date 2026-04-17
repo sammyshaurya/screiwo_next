@@ -1,13 +1,7 @@
 import axios from 'axios';
+import { clearProfileCaches } from '@/app/lib/profileCache';
 
 const API_BASE = '/api';
-
-// Helper to get user ID from localStorage (assuming Clerk or session storage)
-const getUserId = () => {
-  if (typeof window === 'undefined') return null;
-  // Assuming user ID is stored in localStorage, adjust based on your auth system
-  return localStorage.getItem('userId') || sessionStorage.getItem('userId');
-};
 
 // Create axios instance with default headers
 const apiClient = axios.create({
@@ -15,15 +9,6 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
-
-// Add user ID to all requests
-apiClient.interceptors.request.use((config) => {
-  const userId = getUserId();
-  if (userId) {
-    config.headers['x-user-id'] = userId;
-  }
-  return config;
 });
 
 // LIKE & UNLIKE
@@ -152,6 +137,7 @@ export const editPost = async (postId, title, content) => {
       title,
       content,
     });
+    clearProfileCaches();
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -163,6 +149,7 @@ export const deletePost = async (postId) => {
     const response = await apiClient.delete('/posts/manage', {
       params: { id: postId },
     });
+    clearProfileCaches();
     return response.data;
   } catch (error) {
     throw error.response?.data || error;

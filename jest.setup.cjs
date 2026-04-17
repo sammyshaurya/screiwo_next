@@ -58,6 +58,9 @@ jest.mock('@clerk/nextjs', () => ({
   })),
   useSignIn: jest.fn(),
   useSignUp: jest.fn(),
+  SignedIn: ({ children }) => children,
+  SignedOut: () => null,
+  UserButton: () => null,
 }))
 
 // Mock next/navigation
@@ -76,3 +79,31 @@ jest.mock('next/navigation', () => ({
     return new URLSearchParams()
   },
 }))
+
+jest.mock('next/image', () => (props) => {
+  const { src, alt, ...rest } = props
+  return require('react').createElement('img', { src, alt, ...rest })
+})
+
+class MockResponse {
+  constructor(body = null, init = {}) {
+    this._body = body
+    this.status = init.status ?? 200
+    this.headers = {
+      get(name) {
+        const key = Object.keys(init.headers || {}).find((header) => header.toLowerCase() === name.toLowerCase())
+        return key ? init.headers[key] : null
+      },
+    }
+  }
+
+  static json(body, init = {}) {
+    return new MockResponse(body, init)
+  }
+
+  async json() {
+    return this._body
+  }
+}
+
+global.Response = MockResponse

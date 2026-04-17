@@ -12,8 +12,11 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 
 export default function Posts({ post, profile }) {
-  const givenDate = new Date(post.createdat);
+  const givenDate = new Date(post.createdAt || post.createdat || post.DateofCreation || Date.now());
   const { user: clerkUser } = useUser();
+  const profileImage = post.profileImageUrl || profile.profileImageUrl || clerkUser?.imageUrl || null;
+  const previewText = post.excerpt || post.contentText || "";
+  const coverImageUrl = post.coverImageUrl || null;
 
   function formatTimeDifference(givenDate) {
     const currentDate = new Date();
@@ -69,7 +72,7 @@ export default function Posts({ post, profile }) {
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8 ring-2 ring-gray-100">
-                <AvatarImage src={clerkUser?.imageUrl || "/defaultavatar.png"} />
+                <AvatarImage src={profileImage || undefined} />
                 <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-semibold">
                   {profile.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -80,11 +83,11 @@ export default function Posts({ post, profile }) {
                   {formatTimeDifference(givenDate)}
                 </p>
               </div>
-            </div>
-            <div className="text-xs text-gray-400">
-              {getReadingTime(post?.content || "")} min
-            </div>
           </div>
+          <div className="text-xs text-gray-400">
+              {getReadingTime(previewText || post?.content || "")} min
+          </div>
+        </div>
 
           <CardTitle className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors leading-tight line-clamp-2">
             {post?.title ? post.title : "Untitled Post"}
@@ -92,15 +95,35 @@ export default function Posts({ post, profile }) {
         </CardHeader>
 
         <CardContent className="pt-0">
-          <div className="line-clamp-3 text-gray-700 leading-relaxed">
-            {post?.content ? (
+          {coverImageUrl && (
+            <div className="mb-3 overflow-hidden rounded-lg border border-gray-100">
+              <img
+                src={coverImageUrl}
+                alt={post?.title || "Post preview image"}
+                className="h-40 w-full object-cover"
+              />
+            </div>
+          )}
+          <div className="text-gray-700 leading-relaxed">
+            {previewText ? (
+              <div className="space-y-2">
+                {post.hasHeadings && (
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
+                    Structured post
+                  </p>
+                )}
+                <p className="line-clamp-4 whitespace-pre-line text-sm">
+                  {DOMPurify.sanitize(previewText)}
+                </p>
+              </div>
+            ) : post?.content ? (
               <div
                 className="prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post?.content) }}
               />
             ) : (
               <p className="text-gray-500 italic">
-                This post has no content preview available.
+                This post contains media or rich formatting without text preview yet.
               </p>
             )}
           </div>
@@ -119,7 +142,7 @@ export default function Posts({ post, profile }) {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
-                <span className="text-sm">0</span>
+                  <span className="text-sm">{post.commentscount || 0}</span>
               </div>
             </div>
             <span className="text-blue-600 hover:text-blue-700 font-medium text-sm">

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import Profile from "@/app/models/Profile.model";
 import { connectdb } from "@/app/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
+import { getPostsByAuthorId } from "@/app/lib/postData";
 
 export const GET = async (req,{params})=> {
   await connectdb();
@@ -15,7 +16,7 @@ export const GET = async (req,{params})=> {
             console.error('No username provided');
             return NextResponse.json("Error", { status: 401 });
           }
-        let searchedUsers = await Profile.findOne({ username: user });
+        let searchedUsers = await Profile.findOne({ username: user }).lean();
         if (searchedUsers === null) {
             console.error('No user found');
             return NextResponse.json("No user found", { status: 404 });
@@ -28,7 +29,16 @@ export const GET = async (req,{params})=> {
         else {
             follower = false
           }
-        return NextResponse.json({userProfile: searchedUsers, isFollowing : follower}, {status: 200})
+        const posts = await getPostsByAuthorId(searchedUsers.userid);
+        return NextResponse.json(
+          { userProfile: searchedUsers, posts, isFollowing : follower },
+          {
+            status: 200,
+            headers: {
+              "Cache-Control": "no-store",
+            },
+          }
+        )
       } catch (error) {
         console.error('Error searching for users:', error);
         return NextResponse.json("Internal Server Error", {status: 500})

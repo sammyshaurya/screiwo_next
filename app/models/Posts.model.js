@@ -24,9 +24,33 @@ const PostSchema = new Schema({
     type: String,
     required: true,
   },
-  postcount: {
-    type: Number,
-    default: 0,
+  contentText: {
+    type: String,
+    default: "",
+  },
+  excerpt: {
+    type: String,
+    default: "",
+  },
+  coverImageUrl: {
+    type: String,
+    default: null,
+  },
+  previewType: {
+    type: String,
+    default: "text",
+  },
+  hasImages: {
+    type: Boolean,
+    default: false,
+  },
+  hasLists: {
+    type: Boolean,
+    default: false,
+  },
+  hasHeadings: {
+    type: Boolean,
+    default: false,
   },
   likes: {
     type: Number,
@@ -71,6 +95,7 @@ const PostSchema = new Schema({
 PostSchema.index({ userid: 1, DateofCreation: -1 });
 PostSchema.index({ DateofCreation: -1 });
 PostSchema.index({ isDeleted: 1, DateofCreation: -1 });
+PostSchema.index({ username: 1, DateofCreation: -1 });
 
 const AllPosts = mongoose.models.Posts || mongoose.model("Posts", PostSchema);
 

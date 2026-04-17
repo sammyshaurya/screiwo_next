@@ -1,160 +1,385 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import ProfileNav from "@/app/components/Pages/main/ProfileNav";
-import Posts from "@/app/components/Pages/main/Posts";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; 
 import axios from "axios";
 import Link from "next/link";
-import { Button } from "@nextui-org/button";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Users, UserPlus, FileText, Edit } from "lucide-react";
-import { Divider } from "@nextui-org/divider";
-import { Skeleton } from "@/components/ui/skeleton";
+import ProfileNav from "@/app/components/Pages/main/ProfileNav";
+import Posts from "@/app/components/Pages/main/Posts";
 import FollowersList from "../components/ui/FollowersList";
 import FollowingsList from "../components/ui/FollowingsList";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ArrowRight,
+  BookOpen,
+  Copy,
+  Edit3,
+  FileText,
+  PenLine,
+  Share2,
+  Users,
+} from "lucide-react";
+import ProfileShell from "@/app/components/profile/ProfileShell";
+import {
+  getOwnProfileCache,
+  setOwnProfileCache,
+} from "@/app/lib/profileCache";
 
-const Profile = () => {
+function formatJoinDate(dateValue) {
+  if (!dateValue) {
+    return "Recently joined";
+  }
+
+  return new Date(dateValue).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatBirthday(dateValue) {
+  if (!dateValue) {
+    return "Not shared";
+  }
+
+  return new Date(dateValue).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function displayName(user) {
+  return [user?.FirstName, user?.LastName].filter(Boolean).join(" ") || "Writer";
+}
+
+export default function Profile() {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [activeTab, setActiveTab] = useState("posts");
+  const [isLoading, setIsLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
-  // Verify auth and redirect if not authenticated
   useEffect(() => {
     if (isLoaded && !userId) {
-      router.push('/');
+      router.push("/");
     }
   }, [isLoaded, userId, router]);
 
-  // Only fetch data once auth is verified
+  const fetchProfile = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
+
+    const cached = getOwnProfileCache(userId);
+    if (cached) {
+      setUser(cached.profile);
+      setPosts(cached.posts || []);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.get("/api/profile");
+      const nextData = {
+        profile: response.data.profile,
+        posts: response.data.posts || [],
+      };
+      setUser(nextData.profile);
+      setPosts(nextData.posts);
+      setOwnProfileCache(userId, nextData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId]);
+
   useEffect(() => {
-    if (!isLoaded || !userId) return;
-    
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/api/profile") 
-        setPosts(response.data.profile.posts);
-        setUser(response.data.profile);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
+    if (!isLoaded || !userId) {
+      return;
+    }
 
-    fetchData();
-  }, [isLoaded, userId]);
+    fetchProfile();
+  }, [isLoaded, userId, fetchProfile]);
 
-  const handleFollowersClick = () => {
-    setShowFollowers(!showFollowers);
+  const profileMetrics = useMemo(() => {
+    return posts.reduce(
+      (acc, post) => {
+        acc.likes += post.likes || 0;
+        acc.comments += post.commentscount || 0;
+        acc.saves += post.saves || 0;
+        acc.views += post.viewsCount || 0;
+        return acc;
+      },
+      { likes: 0, comments: 0, saves: 0, views: 0 }
+    );
+  }, [posts]);
+
+  const latestPost = posts[0] || null;
+
+  const handleCopyProfile = async () => {
+    if (!user?.username) {
+      return;
+    }
+
+    try {
+      const profileUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/user/${user.username}`
+          : `/user/${user.username}`;
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch (error) {
+      console.error("Failed to copy profile URL:", error);
+    }
   };
-
-  const handleFollowingClick = () => {
-    setShowFollowing(!showFollowing);
-  };
-
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <ProfileNav />
-      <div className="container mx-auto p-4 max-w-6xl">
-        {!user ? (
-          <div className="mb-4 p-4">
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-3 md:space-y-0 md:space-x-4">
-              <Skeleton className="h-24 w-24 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-5 w-36" />
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-12 w-full" />
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:px-8">
+        {isLoading && !user ? (
+          <section className="border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+              <div className="flex gap-5">
+                <Skeleton className="h-24 w-24 rounded-full" />
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-56" />
+                  <Skeleton className="h-5 w-36" />
+                  <Skeleton className="h-4 w-72" />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Skeleton className="h-10 w-28" />
+                <Skeleton className="h-10 w-28" />
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="mb-4 p-4 bg-gray-100 rounded-lg border border-gray-200">
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-              <Avatar className="h-24 w-24 ring-4 ring-white shadow-lg">
-                <AvatarImage src={user.profileImageUrl} />
-                <AvatarFallback className="text-2xl bg-blue-100 text-blue-600 font-bold">{user.username.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 text-center md:text-left">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2 md:mb-0">{user.username}</h1>
-                  <Link href="/createpost">
-                    <Button
-                      size="sm"
-                      color="primary"
-                      variant="solid"
-                      startContent={<Edit className="w-4 h-4" />}
-                      className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-sm"
-                    >
-                      Create Post
-                    </Button>
+            <div className="mt-8 grid gap-4 md:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-16" />
+              ))}
+            </div>
+          </section>
+        ) : user ? (
+          <ProfileShell
+            profile={user}
+            profileTypeLabel={user.profileType || "Writer"}
+            title={displayName(user)}
+            subtitle={`@${user.username}`}
+            bio={user.Bio}
+            actions={[
+              {
+                href: "/createpost",
+                label: "Write",
+                icon: <PenLine className="h-4 w-4" />,
+                className: "bg-blue-600 text-white hover:bg-blue-700",
+              },
+              {
+                href: "/createprofile",
+                label: "Edit profile",
+                icon: <Edit3 className="h-4 w-4" />,
+                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+              },
+              {
+                onClick: handleCopyProfile,
+                label: copied ? "Copied" : "Share",
+                icon: <Share2 className="h-4 w-4" />,
+                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+              },
+            ]}
+            statCards={[
+              { label: "Posts", value: user.postCount || posts.length || 0, onClick: () => setActiveTab("posts") },
+              { label: "Followers", value: user.Followers || 0, onClick: () => setShowFollowers(true) },
+              { label: "Following", value: user.Followings || 0, onClick: () => setShowFollowing(true) },
+              { label: "Reads", value: profileMetrics.views, onClick: () => setActiveTab("stats") },
+            ]}
+            tabs={[
+              { id: "posts", label: "Posts" },
+              { id: "about", label: "About" },
+              { id: "stats", label: "Stats" },
+            ]}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            sidebarTop={
+              <section className="border border-gray-200 bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  Featured
+                </p>
+                <h3 className="mt-3 text-xl font-bold leading-snug text-gray-950">
+                  {latestPost ? latestPost.title : "No featured post yet"}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-gray-600">
+                  {latestPost
+                    ? latestPost.excerpt || "Your latest post is highlighted here for returning readers."
+                    : "Publish a post and it will become the starting point for readers visiting your profile."}
+                </p>
+                {latestPost ? (
+                  <Link
+                    href={`/post/${latestPost._id}`}
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
+                  >
+                    Read featured post
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+              </section>
+            }
+            sidebarBottom={
+              <>
+                <section className="border border-gray-200 bg-white p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Reader context
+                  </p>
+                  <div className="mt-5 space-y-4 text-sm text-gray-700">
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="h-4 w-4 text-blue-600" />
+                      <span>Joined {formatJoinDate(user.createdAt)}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Users className="h-4 w-4 text-blue-600" />
+                      <span>{user.Followers || 0} followers</span>
+                    </div>
+                  </div>
+                </section>
+              </>
+            }
+            emptyState={null}
+          >
+            {showFollowers && (
+              <FollowersList
+                handleFollowersClick={() => setShowFollowers(false)}
+                user={user.username}
+              />
+            )}
+            {showFollowing && (
+              <FollowingsList
+                handleFollowingClick={() => setShowFollowing(false)}
+                user={user.username}
+              />
+            )}
+
+            {activeTab === "posts" && (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                      Library
+                    </p>
+                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-950">
+                      Published writing
+                    </h2>
+                  </div>
+                  <Link
+                    href="/createpost"
+                    className="hidden items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800 sm:inline-flex"
+                  >
+                    New post
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
-                <div className="flex justify-center md:justify-start space-x-6 mb-3">
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <FileText className="w-4 h-4" />
-                    <span className="font-semibold text-base">{posts?.length || 0}</span>
-                    <span className="text-sm">posts</span>
+
+                {posts.length === 0 ? (
+                  <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
+                    <FileText className="mx-auto h-8 w-8 text-gray-400" />
+                    <h3 className="mt-4 text-xl font-bold text-gray-950">
+                      Start your first post
+                    </h3>
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                      Your profile is ready. Publish a story, note, or idea so readers have something to explore.
+                    </p>
+                    <Link
+                      href="/createpost"
+                      className="mt-6 inline-flex h-10 items-center bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+                    >
+                      Write first post
+                    </Link>
                   </div>
-                  <div
-                    className="flex items-center space-x-2 text-gray-700 cursor-pointer hover:text-blue-600 transition-colors"
-                    onClick={handleFollowersClick}
-                  >
-                    <Users className="w-4 h-4" />
-                    <span className="font-semibold text-base">{user.Followers}</span>
-                    <span className="text-sm">followers</span>
+                ) : (
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    {posts.map((post) => (
+                      <Posts key={post._id} post={post} profile={user} />
+                    ))}
                   </div>
-                  <div
-                    className="flex items-center space-x-2 text-gray-700 cursor-pointer hover:text-blue-600 transition-colors"
-                    onClick={handleFollowingClick}
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span className="font-semibold text-base">{user.Followings}</span>
-                    <span className="text-sm">following</span>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {user.FirstName} {user.LastName}
-                  </h2>
-                  <p className="text-sm text-gray-600 font-medium">{user.profileType}</p>
-                  <p className="text-gray-800 text-sm leading-relaxed">
-                    {user.Bio || "Welcome to my profile! I love sharing ideas and connecting with others."}
+                )}
+              </div>
+            )}
+
+            {activeTab === "about" && (
+              <div className="grid gap-5 md:grid-cols-2">
+                <section className="border border-gray-200 bg-white p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Profile
                   </p>
-                </div>
+                  <dl className="mt-5 space-y-4">
+                    <div>
+                      <dt className="text-sm text-gray-500">Display name</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{displayName(user)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Username</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">@{user.username}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Joined</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(user.createdAt)}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section className="border border-gray-200 bg-white p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Details
+                  </p>
+                  <dl className="mt-5 space-y-4">
+                    <div>
+                      <dt className="text-sm text-gray-500">Profile type</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{user.profileType || "Personal"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Birthday</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(user.dob)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Gender</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{user.gender || "Not shared"}</dd>
+                    </div>
+                  </dl>
+                </section>
               </div>
-            </div>
-          </div>
-        )}
-        {showFollowers && (
-          <FollowersList handleFollowersClick={handleFollowersClick} />
-        )}
-        {showFollowing && (
-          <FollowingsList handleFollowingClick={handleFollowingClick} />
-        )}
-        <Divider className="my-6" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {!user ? (
-            Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                <Skeleton className="h-48 w-full rounded-lg mb-4" />
-                <Skeleton className="h-4 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
+            )}
+
+            {activeTab === "stats" && (
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: "Likes", value: profileMetrics.likes },
+                  { label: "Comments", value: profileMetrics.comments },
+                  { label: "Bookmarks", value: profileMetrics.saves },
+                  { label: "Reads", value: profileMetrics.views },
+                ].map((item) => (
+                  <section key={item.label} className="border border-gray-200 bg-white p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      {item.label}
+                    </p>
+                    <p className="mt-3 text-3xl font-bold text-gray-950">{item.value}</p>
+                  </section>
+                ))}
               </div>
-            ))
-          ) : (
-            posts?.map((post, index) => (
-              <Posts key={index} post={post} profile={user} />
-            ))
-          )}
-        </div>
-      </div>
+            )}
+          </ProfileShell>
+        ) : (
+          <section className="border border-gray-200 bg-white p-8 text-center shadow-sm">
+            <h1 className="text-2xl font-bold text-gray-950">Profile not available</h1>
+            <p className="mt-3 text-gray-600">We could not load your profile right now.</p>
+          </section>
+        )}
+      </main>
     </div>
   );
-};
-
-export default Profile;
+}

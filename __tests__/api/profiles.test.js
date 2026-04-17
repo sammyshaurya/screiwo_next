@@ -27,13 +27,12 @@ describe('Profile API Routes', () => {
         Followings: 0,
         FollowersList: [],
         FollowingsList: [],
-        Posts: [],
         postCount: 0,
       }
       expect(newProfile).toHaveProperty('Bio')
       expect(newProfile).toHaveProperty('Followers', 0)
       expect(newProfile).toHaveProperty('Followings', 0)
-      expect(newProfile).toHaveProperty('Posts')
+      expect(newProfile).toHaveProperty('postCount')
     })
 
     it('should create empty follower/following lists', () => {

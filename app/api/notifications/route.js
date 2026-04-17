@@ -1,6 +1,8 @@
 import { connectDB } from '../../lib/db';
 import { auth } from '@clerk/nextjs/server';
 import Notification from '../../models/Notification.model';
+import Posts from '../../models/Posts.model';
+import { getProfileMapByUserIds } from '../../lib/profileData';
 
 // GET user's notifications
 export async function GET(req) {
@@ -20,18 +22,30 @@ export async function GET(req) {
     }
 
     const notifications = await Notification.find({ userId })
-      .populate('fromUserId', 'FirstName LastName username profileImageUrl')
-      .populate('postId', '_id title')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
+
+    const profileMap = await getProfileMapByUserIds(notifications.map((notification) => notification.fromUserId));
+    const postIds = notifications.map((notification) => notification.postId).filter(Boolean);
+    const posts = postIds.length > 0
+      ? await Posts.find({ _id: { $in: postIds } }, { _id: 1, title: 1 }).lean()
+      : [];
+    const postMap = new Map(posts.map((post) => [post._id.toString(), post]));
+
+    const hydratedNotifications = notifications.map((notification) => ({
+      ...notification,
+      fromUserId: profileMap.get(notification.fromUserId) || null,
+      postId: notification.postId ? postMap.get(notification.postId.toString()) || null : null,
+    }));
 
     const total = await Notification.countDocuments({ userId });
     const unreadCount = await Notification.countDocuments({ userId, read: false });
 
     return Response.json({
       success: true,
-      notifications,
+      notifications: hydratedNotifications,
       unreadCount,
       pagination: {
         page,

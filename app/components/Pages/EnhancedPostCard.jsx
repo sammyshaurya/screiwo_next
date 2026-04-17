@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Trash2, Edit } from 'lucide-react';
 import Link from 'next/link';
-import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '../../../lib/api';
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '@/app/lib/api';
 
 export default function PostCard({ post, onCommentClick, onEditClick, onDeleteClick, isLiked = false, isBookmarked = false, currentUserId }) {
   const [liked, setLiked] = useState(isLiked);
@@ -12,9 +12,15 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
   const [savesCount, setSavesCount] = useState(post.saves || 0);
   const [loading, setLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const authorName = post.username || post.author?.username || 'Unknown user';
+  const authorImage = post.profileImageUrl || post.author?.profileImageUrl || null;
+  const authorId = post.userid || post.author?.userid || null;
+  const authorHref = post.author?.username || post.username ? `/user/${post.author?.username || post.username}` : '#';
+  const previewText = post.excerpt || post.contentText || post.content || '';
+  const coverImageUrl = post.coverImageUrl || null;
 
   // Calculate reading time
-  const wordCount = post.content?.split(/\s+/).length || 0;
+  const wordCount = previewText.split(/\s+/).length || 0;
   const readingTime = Math.ceil(wordCount / 200);
 
   const handleLike = useCallback(async (e) => {
@@ -63,26 +69,26 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
     }
   }, [bookmarked, savesCount, post._id]);
 
-  const isAuthor = currentUserId === post.userid;
+  const isAuthor = currentUserId === authorId;
 
   // Truncate content for preview
-  const contentPreview = post.content?.substring(0, 200) + (post.content?.length > 200 ? '...' : '');
+  const contentPreview = previewText.substring(0, 200) + (previewText.length > 200 ? '...' : '');
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow mb-4">
       {/* Post Header */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {post.profileImageUrl && (
+          {authorImage && (
             <img
-              src={post.profileImageUrl}
-              alt={post.username}
+              src={authorImage}
+              alt={authorName}
               className="w-10 h-10 rounded-full object-cover"
             />
           )}
           <div>
-            <Link href={`/user/${post.username}`} className="text-sm font-semibold text-gray-900 dark:text-white hover:underline">
-              {post.username}
+            <Link href={authorHref} className="text-sm font-semibold text-gray-900 dark:text-white hover:underline">
+              {authorName}
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {post.DateofCreation ? new Date(post.DateofCreation).toLocaleDateString() : 'Recently'}
@@ -134,8 +140,17 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
 
       {/* Post Content */}
       <div className="px-4 py-3">
+        {coverImageUrl && (
+          <div className="mb-3 overflow-hidden rounded-lg border border-gray-100 dark:border-slate-700">
+            <img
+              src={coverImageUrl}
+              alt={post.title || 'Post preview image'}
+              className="h-44 w-full object-cover"
+            />
+          </div>
+        )}
         <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{contentPreview}</p>
-        {post.content?.length > 200 && (
+        {previewText.length > 200 && (
           <Link href={`/post/${post._id}`} className="text-blue-500 hover:text-blue-600 text-sm font-medium">
             Read more →
           </Link>

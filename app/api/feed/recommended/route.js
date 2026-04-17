@@ -2,8 +2,8 @@ import { connectDB } from '../../../lib/db';
 import { auth } from '@clerk/nextjs/server';
 import Posts from '../../../models/Posts.model';
 import Activity from '../../../models/Activity.model';
-import User from '../../../models/User.model';
-import Followers from '../../../models/Followers.model';
+import Profile from '../../../models/Profile.model';
+import { hydratePostSummaries, POST_SUMMARY_PROJECTION } from '../../../lib/postData';
 
 export async function GET(req) {
   try {
@@ -21,16 +21,8 @@ export async function GET(req) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
 
-    if (!userId) {
-      return Response.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Get users that current user follows
-    const followings = await Followers.find({ followerUserId: userId }).select('followingUserId');
-    const followingIds = followings.map((f) => f.followingUserId);
+    const currentProfile = await Profile.findOne({ userid: userId }, { FollowingsList: 1 }).lean();
+    const followingIds = currentProfile?.FollowingsList || [];
 
     // Get user's activity (liked posts, commented posts) to understand preferences
     const userActivity = await Activity.find({ userId })
@@ -52,7 +44,7 @@ export async function GET(req) {
       userid: { $in: followingIds },
       isDeleted: { $ne: true },
       _id: { $nin: likedPostIds }, // Don't recommend posts already interacted with
-    })
+    }, POST_SUMMARY_PROJECTION)
       .sort({ DateofCreation: -1, likes: -1 })
       .limit(limit * 2);
 
@@ -64,7 +56,7 @@ export async function GET(req) {
       similarInterestPosts = await Posts.find({
         _id: { $in: likedPostIds },
         isDeleted: { $ne: true },
-      })
+      }, POST_SUMMARY_PROJECTION)
         .sort({ likes: -1 })
         .limit(5);
     }
@@ -75,7 +67,7 @@ export async function GET(req) {
       isDeleted: { $ne: true },
       likes: { $gte: 5 },
       DateofCreation: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // Last 7 days
-    })
+    }, POST_SUMMARY_PROJECTION)
       .sort({ likes: -1, commentscount: -1, DateofCreation: -1 })
       .limit(limit);
 
@@ -109,17 +101,11 @@ export async function GET(req) {
       .map((item) => item.post)
       .slice(skip, skip + limit);
 
-    // Populate user details for each post
-    await Posts.populate(recommendedPosts, {
-      path: 'userid',
-      select: 'FirstName LastName username profileImageUrl',
-    });
-
     const total = postMap.size;
 
     return Response.json({
       success: true,
-      posts: recommendedPosts,
+      posts: await hydratePostSummaries(recommendedPosts),
       pagination: {
         page,
         limit,

@@ -1,26 +1,119 @@
 "use client";
-import React from "react";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
+import toast, { Toaster } from "react-hot-toast";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import Posts from "@/app/components/Pages/main/Posts";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import axios from "axios";
-import { Button } from "@nextui-org/button";
-import { useEffect, useState } from "react";
-import { Divider } from "@nextui-org/divider";
-import toast, { Toaster } from "react-hot-toast";
-import DOMPurify from "isomorphic-dompurify";
-import { Skeleton } from "@/components/ui/skeleton";
 import FollowersList from "@/app/components/ui/FollowersList";
 import FollowingsList from "@/app/components/ui/FollowingsList";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ArrowRight,
+  Copy,
+  FileText,
+  Share2,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import ProfileShell from "@/app/components/profile/ProfileShell";
+import {
+  getPublicProfileCache,
+  setPublicProfileCache,
+} from "@/app/lib/profileCache";
 
-const UsersProfile = ({ params }) => {
+function formatJoinDate(dateValue) {
+  if (!dateValue) {
+    return "Recently joined";
+  }
+
+  return new Date(dateValue).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatBirthday(dateValue) {
+  if (!dateValue) {
+    return "Not shared";
+  }
+
+  return new Date(dateValue).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function UsersProfile({ params }) {
+  const searchUser = params.username;
   const [curUser, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followed, setFollowed] = useState(false);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const searchUser = params.username;
+  const fetchData = useCallback(async ({ preferCache = true } = {}) => {
+    if (!searchUser) {
+      return;
+    }
+
+    if (preferCache) {
+      const cached = getPublicProfileCache(searchUser);
+      if (cached) {
+        setUser(cached.userProfile);
+        setPosts(cached.posts || []);
+        setFollowed(Boolean(cached.isFollowing));
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `/api/profile/usersprofile?username=${encodeURIComponent(searchUser)}`
+      );
+
+      const nextData = {
+        userProfile: response.data.userProfile,
+        posts: response.data.posts || [],
+        isFollowing: response.data.isFollowing,
+      };
+
+      setUser(nextData.userProfile);
+      setPosts(nextData.posts);
+      setFollowed(Boolean(nextData.isFollowing));
+      setPublicProfileCache(searchUser, nextData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast.error("Could not load this profile right now.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchUser]);
+
+  useEffect(() => {
+    fetchData({ preferCache: true });
+  }, [fetchData]);
+
+  const profileMetrics = useMemo(() => {
+    return posts.reduce(
+      (acc, post) => {
+        acc.likes += post.likes || 0;
+        acc.comments += post.commentscount || 0;
+        acc.saves += post.saves || 0;
+        acc.views += post.viewsCount || 0;
+        return acc;
+      },
+      { likes: 0, comments: 0, saves: 0, views: 0 }
+    );
+  }, [posts]);
+
+  const latestPost = posts[0] || null;
 
   const submitFollow = async (toFollow) => {
     try {
@@ -29,164 +122,265 @@ const UsersProfile = ({ params }) => {
       });
 
       if (response.status >= 200 && response.status < 300) {
-        toast.success("Followed user");
+        toast.success(followed ? "You already follow this profile." : "Now following this profile.");
         setFollowed(true);
-      } else {
-        setFollowed(false);
+        setUser((currentUser) =>
+          currentUser
+            ? {
+                ...currentUser,
+                Followers: (currentUser.Followers || 0) + (followed ? 0 : 1),
+              }
+            : currentUser
+        );
+        const nextProfile = curUser
+          ? {
+              ...curUser,
+              Followers: (curUser.Followers || 0) + (followed ? 0 : 1),
+            }
+          : curUser;
+        setPublicProfileCache(searchUser, {
+          userProfile: nextProfile,
+          posts,
+          isFollowing: true,
+        });
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error following profile:", error);
+      toast.error("We could not follow this profile.");
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `/api/profile/usersprofile?username=${encodeURIComponent(searchUser)}`
-        );
+  const handleCopyProfile = async () => {
+    if (!curUser?.username) {
+      return;
+    }
 
-        const userProfile = response.data.userProfile;
-        setFollowed(response.data.isFollowing);
-        const userprofile = {
-          Bio: userProfile.Bio,
-          FirstName: userProfile.FirstName,
-          Followers: userProfile.Followers,
-          Followings: userProfile.Followings,
-          LastName: userProfile.LastName,
-          Posts: userProfile.Posts,
-          dob: userProfile.dob,
-          gender: userProfile.gender,
-          postCount: userProfile.postCount,
-          profileType: userProfile.profileType,
-          username: userProfile.username,
-          userid: userProfile.userid,
-          profileImageUrl: userProfile.profileImageUrl,
-        };
-        setPosts(userProfile.posts);
-        setUser(userprofile);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchData();
-  }, [searchUser]);
-
-  const handleFollowersClick = () => {
-    setShowFollowers(!showFollowers);
-  };
-
-  const handleFollowingClick = () => {
-    setShowFollowing(!showFollowing);
+    try {
+      const profileUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/user/${curUser.username}`
+          : `/user/${curUser.username}`;
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch (error) {
+      console.error("Failed to copy profile URL:", error);
+    }
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <ProfileNav />
-      <div className="container mx-auto p-4">
-        {!curUser ? (
-          <div className="flex flex-col space-y-3">
-            <Skeleton className="h-[125px] w-[250px] rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center md:flex-row md:items-start">
-            <Avatar className="h-32 w-32 min-w-32">
-              <AvatarImage src={curUser.profileImageUrl} />
-              <AvatarFallback>{curUser.username.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col ml-0 md:ml-8 mt-4 md:mt-0 w-full">
-              <div className="flex justify-between items-center w-full">
-                <div className="username underline mb-3">
-                  {curUser && curUser.username}
-                </div>
-                <div className="ml-auto">
-                  <Button
-                    type="submit"
-                    onClick={() => submitFollow(curUser.userid)}
-                  >
-                    {followed ? "Following" : "Follow"}
-                  </Button>
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:px-8">
+        {!curUser && isLoading ? (
+          <section className="border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+              <div className="flex gap-5">
+                <Skeleton className="h-24 w-24 rounded-full" />
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-56" />
+                  <Skeleton className="h-5 w-36" />
+                  <Skeleton className="h-4 w-72" />
                 </div>
               </div>
-              <div className="flex-col mt-4">
-                <div className="flex mb-2">
-                  <div>{posts && `${posts.length} posts`}</div>
-                  <div
-                    className="ml-4 cursor-pointer"
-                    onClick={handleFollowersClick}
-                  >
-                    {curUser && `${curUser.Followers} followers`}
-                  </div>
-                  {showFollowers && (
-                    <FollowersList
-                      handleFollowersClick={handleFollowersClick}
-                      user={searchUser}
-                    />
-                  )}
-                  {showFollowing && (
-                    <FollowingsList
-                      handleFollowingClick={handleFollowingClick}
-                      user={searchUser}
-                    />
-                  )}
-                  <div
-                    className="ml-4 cursor-pointer"
-                    onClick={handleFollowingClick}
-                  >
-                    {curUser && `${curUser.Followings} following`}
-                  </div>
-                </div>
-                <h5 className="text-gray-700">
-                  {(curUser && curUser.FirstName + " " + curUser.LastName) ||
-                    ""}
-                  <span className="ml-3 text-sm font-light text-slate-700">
-                    {curUser && curUser.profileType}
-                  </span>
-                </h5>
-                <blockquote className="border-l-2 pl-2 italic mt-2">
-                  {curUser && curUser.username !== "sammyshaurya" ? (
-                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(curUser.Bio) }} />
-                  ) : (
-                    <div>
-                      &quot;After all,&quot; he said, &quot;everyone enjoys a
-                      good joke, so it&apos;s only fair that they should pay for
-                      the privilege.&quot;
-                    </div>
-                  )}
-                </blockquote>
+              <div className="flex gap-3">
+                <Skeleton className="h-10 w-28" />
+                <Skeleton className="h-10 w-28" />
               </div>
             </div>
-          </div>
-        )}
-        <Divider className="my-4" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {!curUser && (
-            <>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="flex flex-col space-y-3">
-                  <Skeleton className="h-[225px] w-[350px] rounded-xl" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[350px]" />
-                    <Skeleton className="h-4 w-[300px]" />
-                  </div>
-                </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-16" />
               ))}
-            </>
-          )}
-          {posts &&
-            posts.map((post, index) => (
-              <Posts key={index} post={post} profile={curUser} />
-            ))}
-        </div>
-      </div>
+            </div>
+          </section>
+        ) : !curUser ? (
+          <section className="border border-gray-200 bg-white p-8 text-center shadow-sm">
+            <h1 className="text-2xl font-bold text-gray-950">Profile not available</h1>
+            <p className="mt-3 text-gray-600">We could not load this profile right now.</p>
+          </section>
+        ) : (
+          <ProfileShell
+            profile={curUser}
+            profileTypeLabel={curUser.profileType || "Writer"}
+            title={[curUser.FirstName, curUser.LastName].filter(Boolean).join(" ") || "Profile"}
+            subtitle={`@${curUser.username}`}
+            bio={curUser.Bio}
+            actions={[
+              {
+                onClick: () => submitFollow(curUser.userid),
+                label: followed ? "Following" : "Follow",
+                icon: <UserPlus className="h-4 w-4" />,
+                className: followed
+                  ? "cursor-not-allowed border border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "bg-blue-600 text-white hover:bg-blue-700",
+                disabled: followed,
+              },
+              {
+                onClick: handleCopyProfile,
+                label: copied ? "Copied" : "Share",
+                icon: <Share2 className="h-4 w-4" />,
+                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+              },
+            ]}
+            statCards={[
+              { label: "Posts", value: curUser.postCount || posts.length || 0 },
+              { label: "Followers", value: curUser.Followers || 0, onClick: () => setShowFollowers(true) },
+              { label: "Following", value: curUser.Followings || 0, onClick: () => setShowFollowing(true) },
+              { label: "Reads", value: profileMetrics.views },
+            ]}
+            tabs={[]}
+            sidebarTop={
+              <section className="border border-gray-200 bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  Featured
+                </p>
+                <h3 className="mt-3 text-xl font-bold leading-snug text-gray-950">
+                  {latestPost ? latestPost.title : "No featured post yet"}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-gray-600">
+                  {latestPost
+                    ? latestPost.excerpt || "Their newest post is the easiest way to get a feel for what they write about."
+                    : "Follow this profile and check back later for their first published post."}
+                </p>
+                {latestPost ? (
+                  <Link
+                    href={`/post/${latestPost._id}`}
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
+                  >
+                    Read latest post
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+              </section>
+            }
+            sidebarBottom={
+              <section className="border border-gray-200 bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  Reader context
+                </p>
+                <div className="mt-5 space-y-4 text-sm text-gray-700">
+                  <div className="flex items-center gap-3">
+                    <Users className="h-4 w-4 text-blue-600" />
+                    <span>{curUser.Followers || 0} followers</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <ArrowRight className="h-4 w-4 text-blue-600" />
+                    <span>{curUser.Followings || 0} following</span>
+                  </div>
+                </div>
+              </section>
+            }
+          >
+            {showFollowers && (
+              <FollowersList
+                handleFollowersClick={() => setShowFollowers(false)}
+                user={curUser.username}
+              />
+            )}
+            {showFollowing && (
+              <FollowingsList
+                handleFollowingClick={() => setShowFollowing(false)}
+                user={curUser.username}
+              />
+            )}
+
+            <div className="space-y-5">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Library
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-950">
+                    Published writing
+                  </h2>
+                </div>
+              </div>
+
+              {posts.length === 0 ? (
+                <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
+                  <FileText className="mx-auto h-8 w-8 text-gray-400" />
+                  <h3 className="mt-4 text-xl font-bold text-gray-950">
+                    This profile is still quiet
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                    Once they publish something, it will show up here. For now, you can follow them and check back later.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {posts.map((post) => (
+                    <Posts key={post._id} post={post} profile={curUser} />
+                  ))}
+                </div>
+              )}
+
+              <section className="grid gap-5 md:grid-cols-2">
+                <section className="border border-gray-200 bg-white p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Profile
+                  </p>
+                  <dl className="mt-5 space-y-4">
+                    <div>
+                      <dt className="text-sm text-gray-500">Display name</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">
+                        {[curUser.FirstName, curUser.LastName].filter(Boolean).join(" ") || "Not shared"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Username</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">@{curUser.username}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Joined</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(curUser.createdAt)}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section className="border border-gray-200 bg-white p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    Details
+                  </p>
+                  <dl className="mt-5 space-y-4">
+                    <div>
+                      <dt className="text-sm text-gray-500">Profile type</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{curUser.profileType || "Personal"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Birthday</dt>
+                      <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(curUser.dob)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Bio</dt>
+                      <dd className="mt-1 text-base leading-7 text-gray-700">
+                        {curUser.Bio || "No bio added yet."}
+                      </dd>
+                    </div>
+                  </dl>
+                </section>
+              </section>
+
+              <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: "Likes", value: profileMetrics.likes },
+                  { label: "Comments", value: profileMetrics.comments },
+                  { label: "Bookmarks", value: profileMetrics.saves },
+                  { label: "Reads", value: profileMetrics.views },
+                ].map((item) => (
+                  <section key={item.label} className="border border-gray-200 bg-white p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      {item.label}
+                    </p>
+                    <p className="mt-3 text-3xl font-bold text-gray-950">{item.value}</p>
+                  </section>
+                ))}
+              </section>
+            </div>
+          </ProfileShell>
+        )}
+      </main>
       <Toaster />
     </div>
   );
-};
-
-export default UsersProfile;
+}

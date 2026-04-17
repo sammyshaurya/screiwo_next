@@ -1,37 +1,20 @@
-/**
- * __tests__/components/navbar.test.js
- * Tests for Navbar component
- */
-
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import '@testing-library/jest-dom'
+import Navbar from '@/app/components/Navbar'
 
-// Mock the actual Navbar component for testing structure
+jest.mock('@/app/components/NotificationDropdown', () => () => <div data-testid="notification-dropdown" />)
+
 describe('Navbar Component', () => {
-  it('should render navigation elements', () => {
-    // Placeholder: Tests that navbar exists and can be tested
-    const navbarExists = true
-    expect(navbarExists).toBe(true)
+  it('sends signed-in users to the feed route from the Home navigation', () => {
+    render(<Navbar />)
+
+    const homeLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/home')
+    expect(homeLinks.length).toBeGreaterThan(0)
   })
 
-  it('should include logo', () => {
-    // Validates navbar structure
-    const navItems = ['Logo', 'Home', 'Profile']
-    expect(navItems).toContain('Logo')
-  })
+  it('renders the notification dropdown for signed-in navigation', () => {
+    render(<Navbar />)
 
-  it('should display user menu when authenticated', () => {
-    // Validates conditional rendering based on auth
-    const authenticated = true
-    const menuItems = authenticated ? ['Profile', 'Settings', 'Logout'] : ['Login', 'Signup']
-    expect(menuItems).toContain('Logout')
-  })
-
-  it('should show login/signup links when not authenticated', () => {
-    const authenticated = false
-    const navItems = authenticated ? ['Profile'] : ['Login', 'Signup']
-    expect(navItems).toContain('Login')
-    expect(navItems).toContain('Signup')
+    expect(screen.getByTestId('notification-dropdown')).toBeInTheDocument()
   })
 })

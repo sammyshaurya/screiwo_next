@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Heart, Reply, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { getComments, createComment, deleteComment } from '../../../lib/api';
+import { getComments, createComment, deleteComment } from '@/app/lib/api';
 import Link from 'next/link';
 
 export default function CommentsSection({ postId, currentUserId, currentUserName, currentUserImage }) {
@@ -163,7 +163,7 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
                     <Reply size={12} />
                     Reply
                   </button>
-                  {currentUserId === comment.userId?._id && (
+                  {currentUserId === comment.userId?.userid && (
                     <button
                       onClick={() => handleDeleteComment(comment._id)}
                       className="hover:text-red-600 flex items-center gap-1"
@@ -247,7 +247,7 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
                           </div>
                           <div className="flex gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                             <span>{new Date(reply.createdAt).toLocaleDateString()}</span>
-                            {currentUserId === reply.userId?._id && (
+                            {currentUserId === reply.userId?.userid && (
                               <button
                                 onClick={() => handleDeleteComment(reply._id)}
                                 className="hover:text-red-600 flex items-center gap-1"

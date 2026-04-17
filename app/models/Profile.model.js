@@ -2,46 +2,6 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const PostSchema = new Schema({
-  userid: {
-    type: String,
-    ref: "Profile",
-    required: true,
-  },
-  profileImageUrl:{
-    type: String,
-    default: null
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-  postcount: {
-    type: Number,
-    default: 0,
-  },
-  likes: {
-    type: Number,
-    default: 0,
-  },
-  commentscount: {
-    type: Number,
-    default: 0,
-  },
-  saves: {
-    type: Number,
-    default: 0,
-  },
-  createdat: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
 const ProfileSchema = new Schema({
   userid: {
     type: String,
@@ -79,10 +39,6 @@ const ProfileSchema = new Schema({
     type: [{ type: String, ref: 'Profile' }],
     default: [],
   },
-  Posts: {
-    type: Number,
-    default: 0,
-  },
   Bio: {
     type: String,
     default: "I am using Screiwo",
@@ -107,14 +63,14 @@ const ProfileSchema = new Schema({
     type: String,
     required: true,
   },
-  posts: {
-    type: [PostSchema],
-    default: [],
-  },
+}, { timestamps: true });
+
+ProfileSchema.virtual("postsCount").get(function postsCount() {
+  return this.postCount || 0;
 });
 
-const Profile = mongoose.models.Profile || mongoose.model("Profile", ProfileSchema);
-const Posts = mongoose.models.Posts || mongoose.model("Posts", PostSchema);
+ProfileSchema.index({ userid: 1 }, { unique: true });
+ProfileSchema.index({ username: 1 }, { unique: true });
 
-export { Profile, Posts };
+const Profile = mongoose.models.Profile || mongoose.model("Profile", ProfileSchema);
 export default Profile;

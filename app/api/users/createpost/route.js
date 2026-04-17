@@ -5,6 +5,7 @@ import { FeedUpdate } from "./FeedUpdate";
 import { connectdb } from "@/app/lib/db";
 import AllPosts from "@/app/models/Posts.model";
 import mongoose from "mongoose";
+import { buildPostDerivedFields } from "@/app/lib/postData";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -24,40 +25,34 @@ export const POST = async (req, res) => {
     // Create a new ObjectId
     const postId = new mongoose.Types.ObjectId();
     
+    const derivedFields = buildPostDerivedFields(content);
     const newPost = {
       _id: postId, 
       userid: authorId,
+      username: clerkuser.username,
       title: title,
       content: content,
+      ...derivedFields,
       createdAt: new Date(),
+      DateofCreation: new Date(),
       profileImageUrl: clerkuser.imageUrl,
     };
 
-    // Update the profile with the new post
     const updatedProfile = await Profile.findOneAndUpdate(
       { userid: authorId },
-      {
-        $push: {
-          posts: {
-            $each: [newPost],
-            $position: 0,
-          },
-        },
-      },
-      { new: true, projection: { FollowingsList: 1 } }
+      { $inc: { postCount: 1 } },
+      { new: true, projection: { FollowingsList: 1, postCount: 1 } }
     );
 
     if (!updatedProfile) {
       return NextResponse.json("Profile not found", { status: 404 });
     }
 
-    // Create the post in AllPosts with the same _id
-    const post = await AllPosts.create(newPost);
+    await AllPosts.create(newPost);
 
-    // Update the feed
-    await FeedUpdate(authorId, clerkuser.username, newPost, updatedProfile.FollowingsList);
+    await FeedUpdate(authorId, postId, updatedProfile.FollowingsList);
 
-    return NextResponse.json({ message: "Post created successfully", FollowingsList: updatedProfile.FollowingsList }, { status: 201 });
+    return NextResponse.json({ message: "Post created successfully", postId, postCount: updatedProfile.postCount }, { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);
     return NextResponse.json("Internal Server Error", { status: 500 });

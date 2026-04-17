@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getBookmarks } from '../../lib/api';
+import { getBookmarks } from '@/app/lib/api';
 import EnhancedPostCard from '../components/Pages/EnhancedPostCard';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function BookmarksPage() {
         {/* Header */}
         <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
           <div className="px-4 py-3 flex items-center gap-3">
-            <Link href="/" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+            <Link href="/home" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
               <ArrowLeft size={20} />
             </Link>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Saved Posts</h1>

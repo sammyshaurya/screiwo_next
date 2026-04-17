@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import Bookmark from '../../../models/Bookmark.model';
 import Posts from '../../../models/Posts.model';
 import Activity from '../../../models/Activity.model';
+import { hydratePostSummaries, POST_SUMMARY_PROJECTION } from '../../../lib/postData';
 
 // GET user's bookmarks
 export async function GET(req) {
@@ -22,16 +23,29 @@ export async function GET(req) {
     }
 
     const bookmarks = await Bookmark.find({ userId })
-      .populate('postId')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
+
+    const orderedPostIds = bookmarks.map((bookmark) => bookmark.postId).filter(Boolean);
+    const posts = orderedPostIds.length > 0
+      ? await Posts.find(
+          { _id: { $in: orderedPostIds }, isDeleted: { $ne: true } },
+          POST_SUMMARY_PROJECTION
+        ).lean()
+      : [];
+    const postMap = new Map(posts.map((post) => [post._id.toString(), post]));
+    const orderedPosts = orderedPostIds
+      .map((postId) => postMap.get(postId.toString()))
+      .filter(Boolean);
+    const hydratedBookmarks = await hydratePostSummaries(orderedPosts);
 
     const total = await Bookmark.countDocuments({ userId });
 
     return Response.json({
       success: true,
-      bookmarks: bookmarks.map((b) => b.postId),
+      bookmarks: hydratedBookmarks,
       pagination: {
         page,
         limit,

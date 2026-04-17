@@ -32,8 +32,8 @@ export async function POST(req) {
     }
 
     // Mark single notification as read
-    const notification = await Notification.findByIdAndUpdate(
-      notificationId,
+    const notification = await Notification.findOneAndUpdate(
+      { _id: notificationId, userId },
       { read: true },
       { new: true }
     );
