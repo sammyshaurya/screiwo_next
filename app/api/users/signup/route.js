@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectdb } from "@/app/lib/db";
 import User from "@/app/models/User.model";
 import bcrypt from "bcrypt";
+import { normalizeUsername, createUsernameRegex } from "@/app/lib/username";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -12,14 +13,17 @@ export const POST = async (req, res) => {
 
   try {
     const { username, email, password, firstname, lastname } = body;
-    if (!username || !email || !password || !firstname || !lastname) {
+    const normalizedUsername = normalizeUsername(username);
+    if (!normalizedUsername || !email || !password || !firstname || !lastname) {
       
       return new NextResponse("Please fill all the fields", {status: 400})
 
     }
     const existingUser = await User.findOne({
-      email: email,
-      username: username,
+      $or: [
+        { email: email },
+        { username: createUsernameRegex(normalizedUsername) },
+      ],
     });
     if (existingUser) {
       return new NextResponse("Email or username already exists", {status:400})
@@ -28,7 +32,7 @@ export const POST = async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      username,
+      username: normalizedUsername,
       email,
       password: hash,
       firstname,

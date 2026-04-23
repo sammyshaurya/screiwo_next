@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { normalizeUsername } from "@/app/lib/username";
 
 export const POST = async (req) => {
   await connectdb();
@@ -22,9 +23,9 @@ export const POST = async (req) => {
 
     if (!existProfile) {
       // Create new profile
-      const newProfile = new Profile({
+        const newProfile = new Profile({
         userid: userId,
-        username: user.username,
+        username: normalizeUsername(user.username),
         FirstName: user.firstName,
         LastName: user.lastName,
         profileType,

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import ProfileShell from "@/app/components/profile/ProfileShell";
 import { followUser as followProfile, unfollowUser as unfollowProfile } from "@/app/lib/api";
+import { normalizeUsername } from "@/app/lib/username";
 
 function formatJoinDate(dateValue) {
   if (!dateValue) {
@@ -47,7 +48,7 @@ function displayName(user) {
 }
 
 export default function UsersProfile({ params }) {
-  const searchUser = params.username;
+  const searchUser = normalizeUsername(params.username);
   const [curUser, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [relationship, setRelationship] = useState("none");

@@ -5,6 +5,7 @@ import Profile from '@/app/models/Profile.model';
 import { getPostsByAuthorId } from '@/app/lib/postData';
 import Posts from '@/app/models/Posts.model';
 import { syncProfileCounters, withLiveProfileCounts } from '@/app/lib/profileData';
+import { normalizeUsername, createUsernameRegex } from '@/app/lib/username';
 
 function normalizeString(value) {
     return typeof value === "string" ? value.trim() : value;
@@ -60,10 +61,11 @@ export const PATCH = async (req) => {
         const profileData = body.profileData || {};
         const settings = body.settings || {};
 
-        const nextUsername = normalizeString(profileData.username);
-        if (nextUsername && nextUsername !== profile.username) {
+        const nextUsername = normalizeUsername(profileData.username);
+        const currentUsername = normalizeUsername(profile.username);
+        if (nextUsername && nextUsername !== currentUsername) {
             const usernameExists = await Profile.findOne({
-                username: nextUsername,
+                username: createUsernameRegex(nextUsername),
                 userid: { $ne: user.id },
             }).lean();
 
@@ -91,7 +93,9 @@ export const PATCH = async (req) => {
 
         profileFields.forEach((field) => {
             if (profileData[field] !== undefined) {
-                profile[field] = normalizeString(profileData[field]);
+                profile[field] = field === "username"
+                    ? normalizeUsername(profileData[field])
+                    : normalizeString(profileData[field]);
             }
         });
 
@@ -128,7 +132,7 @@ export const PATCH = async (req) => {
             {
                 message: "Profile updated successfully.",
                 profile: withLiveProfileCounts(updatedProfile),
-                previousUsername: profile.username,
+                previousUsername: currentUsername,
             },
             {
                 status: 200,

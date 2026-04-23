@@ -7,6 +7,7 @@ import AllPosts from "@/app/models/Posts.model";
 import mongoose from "mongoose";
 import { buildPostDerivedFields } from "@/app/lib/postData";
 import { syncProfileCounters } from "@/app/lib/profileData";
+import { normalizeUsername } from "@/app/lib/username";
 
 export const POST = async (req, res) => {
   await connectdb();
@@ -30,7 +31,7 @@ export const POST = async (req, res) => {
     const newPost = {
       _id: postId, 
       userid: authorId,
-      username: clerkuser.username,
+      username: normalizeUsername(clerkuser.username),
       title: title,
       content: content,
       ...derivedFields,

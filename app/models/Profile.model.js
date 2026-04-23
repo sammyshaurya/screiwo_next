@@ -10,6 +10,8 @@ const ProfileSchema = new Schema({
   username: {
     type: String,
     required: true,
+    trim: true,
+    lowercase: true,
   },
   profileImageUrl: {
     type: String,

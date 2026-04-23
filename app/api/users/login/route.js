@@ -3,19 +3,20 @@ import { connectdb } from "@/app/lib/db";
 import User from "@/app/models/User.model";
 import Profile from "@/app/models/Profile.model";
 import bcrypt from "bcrypt";
+import { normalizeUsername, createUsernameRegex } from "@/app/lib/username";
 
 export const GET = async (req) => {
   await connectdb();
   const searchParams = new URL(req.url).searchParams;
   try {
-    const username = searchParams.get("username");
+    const username = normalizeUsername(searchParams.get("username"));
     const password = searchParams.get("password");
 
     if (!username || !password) {
       return NextResponse.json("Username and password are required", { status: 400 });
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username: createUsernameRegex(username) });
 
     if (!user) {
       return NextResponse.json("Invalid username or password", { status: 400 });

@@ -6,6 +6,7 @@ import { getPostsByAuthorId } from "@/app/lib/postData";
 import { canViewProfile } from "@/app/lib/profilePrivacy";
 import { withLiveProfileCounts } from "@/app/lib/profileData";
 import Posts from "@/app/models/Posts.model";
+import { normalizeUsername, createUsernameRegex } from "@/app/lib/username";
 
 export const GET = async (req,{params})=> {
   await connectdb();
@@ -13,13 +14,13 @@ export const GET = async (req,{params})=> {
   if (!signeduser) {
     return NextResponse.json("Unauthorized access", { status: 401 });
   }
-  const user = req.nextUrl.searchParams.get('username') || null;
+  const user = normalizeUsername(req.nextUrl.searchParams.get('username')) || null;
     try {
         if (!user){
             console.error('No username provided');
             return NextResponse.json("Error", { status: 401 });
           }
-        let searchedUsers = await Profile.findOne({ username: user }).lean();
+        let searchedUsers = await Profile.findOne({ username: createUsernameRegex(user) }).lean();
         if (searchedUsers === null) {
             console.error('No user found');
             return NextResponse.json("No user found", { status: 404 });

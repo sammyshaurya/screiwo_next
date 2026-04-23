@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { connectdb } from "@/app/lib/db";
 import Profile from '@/app/models/Profile.model';
+import { normalizeUsername } from "@/app/lib/username";
 
 export const GET = async (req, res) => {
   await connectdb();
-  const query = req.nextUrl.searchParams.get('q') || null;
+  const query = normalizeUsername(req.nextUrl.searchParams.get('q')) || null;
   if (!query){
     return NextResponse.json("Error fetching users", { status: 400 });
   }
