@@ -127,7 +127,7 @@ export default function CommentsSection({ postId, currentPostOwnerId = null, cur
                     type="button"
                     onClick={() => setNewComment('')}
                     disabled={isBusy}
-                    className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
+                    className="inline-flex h-9 items-center rounded-full border border-slate-200 px-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -135,7 +135,7 @@ export default function CommentsSection({ postId, currentPostOwnerId = null, cur
                     type="submit"
                     disabled={!newComment.trim() || loading || isBusy}
                     aria-busy={activeKey === `comment:${postId}` ? "true" : undefined}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                    className="inline-flex h-9 items-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {activeKey === `comment:${postId}` ? (
                       <>
@@ -197,7 +197,7 @@ export default function CommentsSection({ postId, currentPostOwnerId = null, cur
                       onClick={() => handleDeleteComment(comment._id)}
                       disabled={isBusy}
                       aria-busy={activeKey === `delete:${comment._id}` ? "true" : undefined}
-                      className="hover:text-red-600 flex items-center gap-1"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {activeKey === `delete:${comment._id}` ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -225,7 +225,7 @@ export default function CommentsSection({ postId, currentPostOwnerId = null, cur
                     type="submit"
                     disabled={!replyText.trim() || isBusy}
                     aria-busy={activeKey === `reply:${comment._id}` ? "true" : undefined}
-                    className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                    className="inline-flex h-9 items-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {activeKey === `reply:${comment._id}` ? (
                       <>
@@ -242,7 +242,7 @@ export default function CommentsSection({ postId, currentPostOwnerId = null, cur
                       setReplyingTo(null);
                       setReplyText('');
                     }}
-                    className="px-2 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
+                    className="inline-flex h-9 items-center rounded-full border border-slate-200 px-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
                   >
                     ✕
                   </button>
@@ -293,9 +293,14 @@ export default function CommentsSection({ postId, currentPostOwnerId = null, cur
                             {canDeleteComment(reply.userId?.userid) && (
                               <button
                                 onClick={() => handleDeleteComment(reply._id)}
-                                className="hover:text-red-600 flex items-center gap-1"
+                                disabled={isBusy}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                               >
-                                <Trash2 size={12} />
+                                {activeKey === `delete:${reply._id}` ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                  <Trash2 size={12} />
+                                )}
                               </button>
                             )}
                           </div>

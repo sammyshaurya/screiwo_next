@@ -3,6 +3,8 @@ import { connectdb } from "@/app/lib/db";
 import Profile from '@/app/models/Profile.model';
 import { normalizeUsername } from "@/app/lib/username";
 
+export const dynamic = "force-dynamic";
+
 export const GET = async (req, res) => {
   await connectdb();
   const query = normalizeUsername(req.nextUrl.searchParams.get('q')) || null;

@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://img.clerk.com" />
         <link rel="preconnect" href="https://settled-pangolin-47.clerk.accounts.dev" />
       </head>
-        <body className="h-full antialiased">
+        <body className="h-full pb-24 antialiased lg:pb-0">
           <Provider>{children}</Provider>
         </body>
       </html>

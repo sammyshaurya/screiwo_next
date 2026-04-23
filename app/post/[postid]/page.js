@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import CommentsSection from "../../components/Pages/CommentsSection";
+import { recordRecentlyViewedPost } from "@/app/lib/readingHistory";
 import {
   Card,
   CardHeader,
@@ -153,11 +154,12 @@ const PostPage = () => {
     if (postid) {
       const countView = shouldCountView(postid);
 
-      axios
+        axios
         .get(`/api/getpost?postid=${postid}&countView=${countView ? "1" : "0"}`)
         .then((response) => {
           setPost(response.data);
           setLoading(false);
+          recordRecentlyViewedPost(response.data);
           if (countView) {
             markViewSettled(postid);
           }
