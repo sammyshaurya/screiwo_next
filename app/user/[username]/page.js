@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
+import { useAuth } from "@clerk/nextjs";
+import { useParams } from "next/navigation";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import Posts from "@/app/components/Pages/main/Posts";
 import FollowersList from "@/app/components/ui/FollowersList";
@@ -47,8 +49,10 @@ function displayName(user) {
   return [user?.FirstName, user?.LastName].filter(Boolean).join(" ") || user?.username || "Profile";
 }
 
-export default function UsersProfile({ params }) {
-  const searchUser = normalizeUsername(params.username);
+export default function UsersProfile() {
+  const { userId: signedUserId } = useAuth();
+  const params = useParams();
+  const searchUser = normalizeUsername(params?.username);
   const [curUser, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [relationship, setRelationship] = useState("none");
@@ -119,29 +123,48 @@ export default function UsersProfile({ params }) {
 
   const latestPost = posts[0] || null;
   const showProfileDetails = curUser?.preferences?.showProfileDetails !== false;
+  const isOwner = Boolean(curUser?.userid && signedUserId && curUser.userid === signedUserId);
+  const canOpenRelationshipLists = !isPrivate || isOwner;
 
   const submitFollow = async (toFollow) => {
     try {
-      const response = followed || requested
+      const responseData = followed || requested
         ? await unfollowProfile(toFollow)
         : await followProfile(toFollow);
 
-      if (response.status >= 200 && response.status < 300) {
-        const nextRelationship = response.data?.relationship || ((followed || requested) ? "none" : "following");
-        const actorSnapshot = response.data?.actorProfile || null;
-        const targetSnapshot = response.data?.targetProfile || null;
-        setRelationship(nextRelationship);
-        toast.success(
-          nextRelationship === "following"
-            ? "Now following this profile."
-            : followed || requested
-              ? "Relationship removed."
-              : "Follow request sent."
-        );
-        const nextProfile = targetSnapshot ? { ...targetSnapshot } : curUser;
-        setIsPrivate(Boolean(nextProfile?.preferences?.profileVisibility === "private"));
-        setUser(nextProfile);
+      const nextRelationship = responseData?.relationship || ((followed || requested) ? "none" : "following");
+      const actorSnapshot = responseData?.actorProfile || null;
+      const targetSnapshot = responseData?.targetProfile || null;
+
+      setRelationship(nextRelationship);
+
+      if (targetSnapshot) {
+        setUser({ ...targetSnapshot });
+        setIsPrivate(Boolean(targetSnapshot?.preferences?.profileVisibility === "private"));
       }
+
+      if (actorSnapshot && actorSnapshot.userid === curUser?.userid) {
+        setUser((prev) => ({
+          ...(prev || {}),
+          Followers: actorSnapshot.Followers ?? prev?.Followers ?? 0,
+          Followings: actorSnapshot.Followings ?? prev?.Followings ?? 0,
+          postCount: actorSnapshot.postCount ?? prev?.postCount ?? 0,
+        }));
+      }
+
+      if (!targetSnapshot) {
+        await fetchData({ preferCache: false });
+      }
+
+      toast.success(
+        nextRelationship === "following"
+          ? "Now following this profile."
+          : nextRelationship === "requested"
+            ? "Follow request sent."
+            : followed || requested
+              ? "Unfollowed."
+              : "Follow request sent."
+      );
     } catch (error) {
       console.error("Error following profile:", error);
       toast.error("We could not follow this profile.");
@@ -220,8 +243,16 @@ export default function UsersProfile({ params }) {
             ]}
             statCards={[
               { label: "Posts", value: profilePostCount, onClick: () => setActiveTab("posts") },
-              { label: "Followers", value: curUser.Followers || 0, onClick: () => setShowFollowers(true) },
-              { label: "Following", value: curUser.Followings || 0, onClick: () => setShowFollowing(true) },
+              {
+                label: "Followers",
+                value: curUser.Followers || 0,
+                onClick: canOpenRelationshipLists ? () => setShowFollowers(true) : undefined,
+              },
+              {
+                label: "Following",
+                value: curUser.Followings || 0,
+                onClick: canOpenRelationshipLists ? () => setShowFollowing(true) : undefined,
+              },
               { label: "Reads", value: profileMetrics.views, onClick: () => setActiveTab("stats") },
             ]}
             tabs={[

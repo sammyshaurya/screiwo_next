@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
 import { normalizeUsername, createUsernameRegex } from "@/app/lib/username";
+import { isPrivateProfile, isProfileOwner } from "@/app/lib/profilePrivacy";
 
 export const GET = async (req) => {
     await connectdb();
@@ -17,11 +18,26 @@ export const GET = async (req) => {
         : await Profile.findOne({ userid: userId }, { FollowersList: 1 }).lean();
 
     if (!targetProfile) {
-        return NextResponse.json([], { status: 200 });
+      return NextResponse.json([], { status: 200 });
+    }
+
+    if (isPrivateProfile(targetProfile) && !isProfileOwner(targetProfile, userId)) {
+      return NextResponse.json(
+        {
+          message: "Followers are private for this profile.",
+          privacyBlocked: true,
+        },
+        {
+          status: 403,
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
     }
 
     const usersList = await Profile.find(
-        { userid: { $in: targetProfile.FollowersList || [] } },
+      { userid: { $in: targetProfile.FollowersList || [] } },
         { username: 1, userid: 1, FirstName: 1, LastName: 1, profileImageUrl: 1 }
     ).lean();
 

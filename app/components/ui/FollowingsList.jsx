@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 const FollowingsList = ({ handleFollowingClick, user = null }) => {
   const [followings, setFollowings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [privacyBlocked, setPrivacyBlocked] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -20,17 +22,30 @@ const FollowingsList = ({ handleFollowingClick, user = null }) => {
         const response = await fetch(`/api/profile/follow/followings${searchParams}`);
 
         if (!response.ok) {
+          if (response.status === 403) {
+            const errorData = await response.json().catch(() => ({}));
+            if (isMounted) {
+              setPrivacyBlocked(true);
+              setMessage(errorData?.message || "Following list is private for this profile.");
+              setFollowings([]);
+            }
+            return;
+          }
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
         if (isMounted) {
           setFollowings(Array.isArray(data) ? data : []);
+          setPrivacyBlocked(false);
+          setMessage("");
         }
       } catch (error) {
         console.error("Fetch Error:", error);
         if (isMounted) {
           setFollowings([]);
+          setPrivacyBlocked(false);
+          setMessage("");
         }
       } finally {
         if (isMounted) {
@@ -90,9 +105,13 @@ const FollowingsList = ({ handleFollowingClick, user = null }) => {
                 <div className="mx-auto flex h-12 w-12 items-center justify-center bg-white shadow-sm">
                   <Compass className="h-5 w-5 text-slate-500" />
                 </div>
-                <p className="mt-4 text-sm font-semibold text-slate-900">Not following anyone yet</p>
+                <p className="mt-4 text-sm font-semibold text-slate-900">
+                  {privacyBlocked ? "Following list is private" : "Not following anyone yet"}
+                </p>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Once this profile starts following others, they’ll appear here.
+                  {privacyBlocked
+                    ? message || "This profile has chosen to keep following details private."
+                    : "Once this profile starts following others, they’ll appear here."}
                 </p>
               </div>
             )}

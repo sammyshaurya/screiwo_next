@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 const FollowersList = ({ handleFollowersClick, user = null }) => {
   const [followers, setFollowers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [privacyBlocked, setPrivacyBlocked] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -20,17 +22,30 @@ const FollowersList = ({ handleFollowersClick, user = null }) => {
         const response = await fetch(`/api/profile/follow/followers${searchParams}`);
 
         if (!response.ok) {
+          if (response.status === 403) {
+            const errorData = await response.json().catch(() => ({}));
+            if (isMounted) {
+              setPrivacyBlocked(true);
+              setMessage(errorData?.message || "Followers are private for this profile.");
+              setFollowers([]);
+            }
+            return;
+          }
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
         if (isMounted) {
           setFollowers(Array.isArray(data) ? data : []);
+          setPrivacyBlocked(false);
+          setMessage("");
         }
       } catch (error) {
         console.error("Fetch Error:", error);
         if (isMounted) {
           setFollowers([]);
+          setPrivacyBlocked(false);
+          setMessage("");
         }
       } finally {
         if (isMounted) {
@@ -90,9 +105,13 @@ const FollowersList = ({ handleFollowersClick, user = null }) => {
                 <div className="mx-auto flex h-12 w-12 items-center justify-center bg-white shadow-sm">
                   <Users className="h-5 w-5 text-slate-500" />
                 </div>
-                <p className="mt-4 text-sm font-semibold text-slate-900">No followers yet</p>
+                <p className="mt-4 text-sm font-semibold text-slate-900">
+                  {privacyBlocked ? "Followers are private" : "No followers yet"}
+                </p>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Once people start following this profile, they’ll show up here.
+                  {privacyBlocked
+                    ? message || "This profile has chosen to keep follower details private."
+                    : "Once people start following this profile, they’ll show up here."}
                 </p>
               </div>
             )}

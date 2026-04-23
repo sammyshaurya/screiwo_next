@@ -140,8 +140,11 @@ export const POST = async (req) => {
         }
       );
 
+      const actorProfile = await getProfileSnapshot(followerID);
+      const targetProfile = await getProfileSnapshot(followeeID);
+
       return NextResponse.json(
-        { message: "Follow request sent", relationship: "requested" },
+        { message: "Follow request sent", relationship: "requested", actorProfile, targetProfile },
         { status: 202 }
       );
     }
@@ -256,8 +259,11 @@ export const DELETE = async (req) => {
 
       await removeFeedEntries(followerID, followeeID);
 
+      const actorProfile = await getProfileSnapshot(followerID);
+      const targetProfile = await getProfileSnapshot(followeeID);
+
       return NextResponse.json(
-        { message: "Unfollowed successfully", relationship: "none" },
+        { message: "Unfollowed successfully", relationship: "none", actorProfile, targetProfile },
         { status: 200 }
       );
     }

@@ -129,19 +129,27 @@ export default function ProfileShell({
           </div>
         </div>
 
-      {statCards.length > 0 ? (
+          {statCards.length > 0 ? (
         <div className="grid divide-y divide-gray-100 md:grid-cols-4 md:divide-x md:divide-y-0">
             {statCards.map((stat) => (
-              <button
-                key={stat.label}
-                type="button"
-                onClick={stat.onClick}
-                className="px-6 py-5 text-left transition hover:bg-gray-50"
-              >
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">{stat.label}</p>
-                <p className="mt-2 text-2xl font-bold text-gray-950">{stat.value}</p>
-                {stat.hint ? <p className="mt-1 text-xs text-gray-500">{stat.hint}</p> : null}
-              </button>
+              stat.onClick ? (
+                <button
+                  key={stat.label}
+                  type="button"
+                  onClick={stat.onClick}
+                  className="px-6 py-5 text-left transition hover:bg-gray-50"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">{stat.label}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-950">{stat.value}</p>
+                  {stat.hint ? <p className="mt-1 text-xs text-gray-500">{stat.hint}</p> : null}
+                </button>
+              ) : (
+                <div key={stat.label} className="px-6 py-5 text-left">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">{stat.label}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-950">{stat.value}</p>
+                  {stat.hint ? <p className="mt-1 text-xs text-gray-500">{stat.hint}</p> : null}
+                </div>
+              )
             ))}
           </div>
         ) : null}
