@@ -235,11 +235,11 @@ export default function EditProfilePage() {
   }[usernameStatus.state];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="app-page">
       <ProfileNav />
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:px-8">
+      <main className="app-shell">
         {loading ? (
-          <section className="border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+          <section className="app-panel p-6 md:p-8">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="flex gap-5">
                 <Skeleton className="h-24 w-24 rounded-full" />
@@ -261,9 +261,9 @@ export default function EditProfilePage() {
             </div>
           </section>
         ) : error && !profileMeta ? (
-          <section className="border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <h1 className="text-2xl font-bold text-gray-950">Edit profile</h1>
-            <p className="mt-3 text-gray-600">{error}</p>
+          <section className="app-panel p-8 text-center">
+            <h1 className="text-2xl font-black text-slate-950">Edit profile</h1>
+            <p className="mt-3 text-slate-600">{error}</p>
                 <Link
               href="/profile"
               className="mt-6 inline-flex h-10 items-center bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
@@ -272,8 +272,8 @@ export default function EditProfilePage() {
             </Link>
           </section>
         ) : (
-          <section className="border border-gray-200 bg-white shadow-sm">
-            <div className="border-b border-gray-100 px-6 py-7 md:px-8">
+            <section className="app-panel">
+            <div className="border-b border-slate-100 px-6 py-7 md:px-8">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
                   <Avatar className="h-24 w-24 border border-gray-200 bg-gray-100">
@@ -300,7 +300,7 @@ export default function EditProfilePage() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href="/profile"
-                    className="inline-flex h-10 items-center gap-2 border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50"
+                    className="app-action-secondary"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Back
@@ -309,7 +309,7 @@ export default function EditProfilePage() {
                     onClick={handleSubmit}
                     disabled={saving || usernameStatus.state === "checking" || usernameStatus.state === "taken" || usernameStatus.state === "invalid"}
                     type="button"
-                    className="inline-flex h-10 items-center gap-2 bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="app-action-primary"
                   >
                     <Save className="h-4 w-4" />
                     {saving ? "Saving..." : "Save changes"}
@@ -320,7 +320,7 @@ export default function EditProfilePage() {
 
             <div className="grid gap-8 p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_320px]">
               <form onSubmit={handleSubmit} className="space-y-6">
-                <section className="border border-gray-200 bg-white p-6">
+                  <section className="app-section">
                   <div className="mb-5 flex items-center gap-2">
                     <UserRound className="h-4 w-4 text-blue-600" />
                     <h2 className="text-lg font-bold text-gray-950">Identity</h2>
@@ -367,7 +367,7 @@ export default function EditProfilePage() {
                   </div>
                 </section>
 
-                <section className="border border-gray-200 bg-white p-6">
+                  <section className="app-section">
                   <div className="mb-5 flex items-center gap-2">
                     <BookOpen className="h-4 w-4 text-blue-600" />
                     <h2 className="text-lg font-bold text-gray-950">About</h2>
@@ -407,7 +407,7 @@ export default function EditProfilePage() {
                   </div>
                 </section>
 
-                <section className="border border-gray-200 bg-white p-6">
+                  <section className="app-section">
                   <div className="mb-5 flex items-center gap-2">
                     <Shield className="h-4 w-4 text-blue-600" />
                     <h2 className="text-lg font-bold text-gray-950">Personal details</h2>
@@ -434,7 +434,7 @@ export default function EditProfilePage() {
                 <div className="flex gap-3 md:hidden">
                   <Link
                     href="/profile"
-                    className="inline-flex h-10 items-center gap-2 border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50"
+                    className="app-action-secondary"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Back
@@ -450,7 +450,7 @@ export default function EditProfilePage() {
               </form>
 
               <aside className="space-y-4">
-                <section className="border border-gray-200 bg-white p-6">
+                <section className="app-section">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">Preview</p>
                   <div className="mt-5 space-y-4">
                     <div className="flex items-center gap-3">
@@ -475,7 +475,7 @@ export default function EditProfilePage() {
                   </div>
                 </section>
 
-                <section className="border border-gray-200 bg-white p-6">
+                <section className="app-section">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">Notes</p>
                   <ul className="mt-4 space-y-3 text-sm leading-6 text-gray-700">
                     <li>Username changes will update your post author cards and profile links.</li>

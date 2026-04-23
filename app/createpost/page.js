@@ -52,10 +52,16 @@ const Postings = () => {
   return (
     <>
     <ProfileNav />
-    <div className="max-w-4xl mx-auto py-8 px-6">
-      <h1 className="text-4xl font-bold mb-8 text-center noto">
-        Share Your Story
-      </h1>
+    <div className="app-page">
+    <main className="app-shell max-w-4xl">
+      <section className="app-panel p-6 md:p-8">
+      <div className="mb-8">
+        <p className="app-kicker">Create</p>
+        <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+          Share your story
+        </h1>
+        <p className="app-subtitle">Write, preview, and publish from a calm, focused editor surface.</p>
+      </div>
       <form className="space-y-6">
         <div>
           <label
@@ -101,12 +107,14 @@ const Postings = () => {
             onClick={handleSubmitPost}
             color="primary"
             variant="ghost"
-            className="px-8 py-3 rounded-sm font-semibold"
+            className="app-action-primary"
           >
             Publish
           </Button>
         </div>
       </form>
+      </section>
+    </main>
     </div>
     </>
   );

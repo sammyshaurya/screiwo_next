@@ -59,11 +59,11 @@ export default function FollowRequestsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="app-page">
       <ProfileNav />
-      <main className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 lg:px-8">
-        <section className="border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-6 py-7 md:px-8">
+      <main className="app-shell max-w-5xl">
+        <section className="app-panel">
+          <div className="border-b border-slate-100 px-6 py-7 md:px-8">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
               Inbox
             </p>
@@ -79,7 +79,7 @@ export default function FollowRequestsPage() {
             {loading ? (
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="flex items-center gap-4 border border-gray-200 p-4">
+                  <div key={index} className="flex items-center gap-4 border border-slate-200 bg-white p-4">
                     <Skeleton className="h-14 w-14 rounded-full" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-40" />
@@ -91,15 +91,15 @@ export default function FollowRequestsPage() {
                 ))}
               </div>
             ) : requests.length === 0 ? (
-              <div className="border border-dashed border-gray-300 bg-white px-8 py-16 text-center">
-                <Users className="mx-auto h-8 w-8 text-gray-400" />
-                <h2 className="mt-4 text-xl font-bold text-gray-950">No pending requests</h2>
-                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-600">
+              <div className="border border-dashed border-slate-300 bg-white px-8 py-16 text-center">
+                <Users className="mx-auto h-8 w-8 text-slate-400" />
+                <h2 className="mt-4 text-xl font-bold text-slate-950">No pending requests</h2>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
                   When someone requests access to your private profile, it will appear here for review.
                 </p>
                 <Link
                   href="/settings"
-                  className="mt-6 inline-flex h-10 items-center border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50"
+                  className="mt-6 inline-flex h-10 items-center border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50"
                 >
                   Review privacy settings
                 </Link>
@@ -109,7 +109,7 @@ export default function FollowRequestsPage() {
                 {requests.map((request) => (
                   <div
                     key={request.userid}
-                    className="flex flex-col gap-4 border border-gray-200 bg-white p-4 md:flex-row md:items-center md:justify-between"
+                    className="flex flex-col gap-4 border border-slate-200 bg-white p-4 md:flex-row md:items-center md:justify-between"
                   >
                     <Link href={`/user/${request.username}`} className="flex items-center gap-4">
                       <Avatar className="h-14 w-14 border border-gray-200">
@@ -119,9 +119,9 @@ export default function FollowRequestsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-base font-semibold text-gray-950">{displayName(request)}</p>
-                        <p className="text-sm text-gray-500">@{request.username}</p>
-                        <p className="mt-1 max-w-xl text-sm leading-6 text-gray-600">
+                        <p className="text-base font-semibold text-slate-950">{displayName(request)}</p>
+                        <p className="text-sm text-slate-500">@{request.username}</p>
+                        <p className="mt-1 max-w-xl text-sm leading-6 text-slate-600">
                           {request.Bio || "This reader has requested access to your private profile."}
                         </p>
                       </div>
@@ -132,7 +132,7 @@ export default function FollowRequestsPage() {
                         onClick={() => handleAccept(request)}
                         disabled={isBusy}
                         aria-busy={activeKey === `accept:${request.userid}` ? "true" : undefined}
-                        className="inline-flex h-10 items-center gap-2 bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex h-10 items-center gap-2 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {activeKey === `accept:${request.userid}` ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -146,7 +146,7 @@ export default function FollowRequestsPage() {
                         onClick={() => handleDecline(request)}
                         disabled={isBusy}
                         aria-busy={activeKey === `decline:${request.userid}` ? "true" : undefined}
-                        className="inline-flex h-10 items-center gap-2 border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex h-10 items-center gap-2 border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {activeKey === `decline:${request.userid}` ? (
                           <Loader2 className="h-4 w-4 animate-spin" />

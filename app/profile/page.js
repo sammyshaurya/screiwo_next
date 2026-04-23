@@ -9,12 +9,13 @@ import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import Posts from "@/app/components/Pages/main/Posts";
 import FollowersList from "../components/ui/FollowersList";
 import FollowingsList from "../components/ui/FollowingsList";
+import { formatRelativeTime } from "@/app/lib/time";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowRight,
   BookOpen,
-  Edit3,
   FileText,
+  Settings,
   PenLine,
   Share2,
   Users,
@@ -23,7 +24,7 @@ import ProfileShell from "@/app/components/profile/ProfileShell";
 
 function formatJoinDate(dateValue) {
   if (!dateValue) {
-    return "Recently joined";
+    return null;
   }
 
   return new Date(dateValue).toLocaleDateString("en-US", {
@@ -104,6 +105,30 @@ export default function Profile() {
   }, [posts]);
 
   const latestPost = posts[0] || null;
+  const latestPostAt = latestPost?.createdAt || latestPost?.createdat || latestPost?.DateofCreation || null;
+  const joinedLabel = formatJoinDate(user?.createdAt);
+  const activitySnapshot = [
+    {
+      label: "Latest post",
+      value: latestPost ? "Published" : "No posts",
+      hint: latestPost?.title || "Publish a post to surface your latest writing here.",
+    },
+    {
+      label: "Last post",
+      value: latestPostAt ? formatRelativeTime(latestPostAt) : "No posts yet",
+      hint: latestPost ? "Most recent writing activity." : "Your publishing timeline will appear here.",
+    },
+    {
+      label: "Reads",
+      value: profileMetrics.views,
+      hint: "All-time reads across your library.",
+    },
+    {
+      label: "Followers",
+      value: user?.Followers || 0,
+      hint: "Audience currently following your profile.",
+    },
+  ];
   const showProfileDetails = user?.preferences?.showProfileDetails !== false;
 
   const handleCopyProfile = async () => {
@@ -125,11 +150,11 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="app-page">
       <ProfileNav />
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:px-8">
+      <main className="app-shell">
         {isLoading && !user ? (
-          <section className="border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+          <section className="app-panel p-6 md:p-8">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="flex gap-5">
                 <Skeleton className="h-24 w-24 rounded-full" />
@@ -157,24 +182,31 @@ export default function Profile() {
             title={displayName(user)}
             subtitle={`@${user.username}`}
             bio={user.Bio}
+            featuredPost={latestPost ? {
+              title: latestPost.title,
+              excerpt: latestPost.excerpt || latestPost.contentText || "",
+              href: `/post/${latestPost._id}`,
+              coverImageUrl: latestPost.coverImageUrl || null,
+            } : null}
+            activitySnapshot={activitySnapshot}
             actions={[
               {
                 href: "/createpost",
                 label: "Write",
                 icon: <PenLine className="h-4 w-4" />,
-                className: "bg-blue-600 text-white hover:bg-blue-700",
+                className: "bg-slate-950 text-white hover:bg-slate-800",
               },
               {
-                href: "/editprofile",
-                label: "Edit profile",
-                icon: <Edit3 className="h-4 w-4" />,
-                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+                href: "/settings",
+                label: "Settings",
+                icon: <Settings className="h-4 w-4" />,
+                className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
               },
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
                 icon: <Share2 className="h-4 w-4" />,
-                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+                className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
               },
             ]}
             statCards={[
@@ -191,14 +223,14 @@ export default function Profile() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             sidebarTop={
-              <section className="border border-gray-200 bg-white p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+            <section className="app-section">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Featured
                 </p>
-                <h3 className="mt-3 text-xl font-bold leading-snug text-gray-950">
+                <h3 className="mt-3 text-xl font-black leading-snug text-slate-950">
                   {latestPost ? latestPost.title : "No featured post yet"}
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-gray-600">
+                <p className="mt-3 text-sm leading-7 text-slate-600">
                   {latestPost
                     ? latestPost.excerpt || "Your latest post is highlighted here for returning readers."
                     : "Publish a post and it will become the starting point for readers visiting your profile."}
@@ -206,7 +238,7 @@ export default function Profile() {
                 {latestPost ? (
                   <Link
                     href={`/post/${latestPost._id}`}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-950 hover:text-slate-600"
                   >
                     Read featured post
                     <ArrowRight className="h-4 w-4" />
@@ -216,23 +248,23 @@ export default function Profile() {
             }
             sidebarBottom={
               <>
-                <section className="border border-gray-200 bg-white p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
-                    Reader context
-                  </p>
-                  <div className="mt-5 space-y-4 text-sm text-gray-700">
-                    {showProfileDetails ? (
-                      <div className="flex items-center gap-3">
-                        <BookOpen className="h-4 w-4 text-blue-600" />
-                        <span>Joined {formatJoinDate(user.createdAt)}</span>
-                      </div>
-                    ) : (
-                      <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-                        Profile details are hidden on the main profile.
-                      </div>
-                    )}
+            <section className="app-section">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Reader context
+                </p>
+                <div className="mt-5 space-y-4 text-sm text-slate-700">
+                  {showProfileDetails && joinedLabel ? (
                     <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-blue-600" />
+                      <BookOpen className="h-4 w-4 text-slate-950" />
+                      <span>Joined {joinedLabel}</span>
+                    </div>
+                  ) : !showProfileDetails ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                      Profile details are hidden on the main profile.
+                    </div>
+                  ) : null}
+                    <div className="flex items-center gap-3">
+                      <Users className="h-4 w-4 text-slate-950" />
                       <span>{user.Followers || 0} followers</span>
                     </div>
                   </div>
@@ -302,7 +334,7 @@ export default function Profile() {
 
             {activeTab === "about" && (
               <div className="grid gap-5 md:grid-cols-2">
-                <section className="border border-gray-200 bg-white p-6">
+            <section className="app-section">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Profile
                   </p>
@@ -338,7 +370,7 @@ export default function Profile() {
                   )}
                 </section>
 
-                <section className="border border-gray-200 bg-white p-6">
+            <section className="app-section">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Details
                   </p>
@@ -385,9 +417,9 @@ export default function Profile() {
             )}
           </ProfileShell>
         ) : (
-          <section className="border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <h1 className="text-2xl font-bold text-gray-950">Profile not available</h1>
-            <p className="mt-3 text-gray-600">We could not load your profile right now.</p>
+          <section className="app-panel p-8 text-center">
+            <h1 className="text-2xl font-black text-slate-950">Profile not available</h1>
+            <p className="mt-3 text-slate-600">We could not load your profile right now.</p>
           </section>
         )}
       </main>

@@ -179,7 +179,7 @@ const PostPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="app-page flex items-center justify-center">
         Loading...
       </div>
     );
@@ -187,7 +187,7 @@ const PostPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="app-page flex items-center justify-center">
         {error}
       </div>
     );
@@ -195,23 +195,24 @@ const PostPage = () => {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="app-page flex items-center justify-center">
         Post not found
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="app-page text-slate-950">
       <ProfileNav />
-      <header className="bg-muted py-12 md:py-20">
-        <div className="container max-w-4xl mx-auto px-4">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold md:text-5xl noto">
+      <header className="app-shell max-w-4xl py-8 md:py-10">
+        <div className="app-panel overflow-hidden">
+          <div className="space-y-4 p-6 md:p-8">
+            <p className="app-kicker">Reading</p>
+            <h1 className="text-3xl font-black tracking-tight md:text-5xl">
               {post.title}
             </h1>
-            <div className="flex items-center space-x-4 text-muted-foreground">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-4 text-slate-500">
+              <div className="flex items-center gap-2">
                 <Avatar>
                   <AvatarImage src={post.profileImageUrl} />
                   <AvatarFallback>
@@ -219,7 +220,7 @@ const PostPage = () => {
                   </AvatarFallback>
                 </Avatar>
                 <Link href={`/user/${post.author.username}`}>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-semibold text-slate-950">
                     {post.author.username}
                   </span>
                 </Link>
@@ -231,9 +232,9 @@ const PostPage = () => {
           </div>
         </div>
       </header>
-      <main className="container max-w-6xl mx-auto py-12 md:py-20 px-4 grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
+      <main className="app-shell grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-8 w-full">
-          <article className="prose max-w-none text-lg prose-gray opensans dark:prose-invert md:border-r-2 border-gray-200 md:pr-8 pr-4 w-full">
+          <article className="prose max-w-none rounded-[1.75rem] border border-slate-200 bg-white p-6 text-lg prose-gray shadow-sm md:p-8 md:pr-8">
             <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
           </article>
           <CommentsSection

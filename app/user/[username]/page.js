@@ -21,11 +21,12 @@ import {
 } from "lucide-react";
 import ProfileShell from "@/app/components/profile/ProfileShell";
 import { followUser as followProfile, unfollowUser as unfollowProfile } from "@/app/lib/api";
+import { formatRelativeTime } from "@/app/lib/time";
 import { normalizeUsername } from "@/app/lib/username";
 
 function formatJoinDate(dateValue) {
   if (!dateValue) {
-    return "Recently joined";
+    return null;
   }
 
   return new Date(dateValue).toLocaleDateString("en-US", {
@@ -124,9 +125,34 @@ export default function UsersProfile() {
   }, [posts]);
 
   const latestPost = posts[0] || null;
+  const latestPostAt = latestPost?.createdAt || latestPost?.createdat || latestPost?.DateofCreation || null;
+  const joinedLabel = formatJoinDate(curUser?.createdAt);
   const showProfileDetails = curUser?.preferences?.showProfileDetails !== false;
   const isOwner = Boolean(curUser?.userid && signedUserId && curUser.userid === signedUserId);
   const canOpenRelationshipLists = !isPrivate || isOwner;
+  const hasLatestPost = Boolean(latestPost?._id);
+  const activitySnapshot = [
+    {
+      label: "Latest post",
+      value: latestPost ? "Published" : "No posts",
+      hint: latestPost?.title || "This creator has not published anything yet.",
+    },
+    {
+      label: "Last post",
+      value: latestPostAt ? formatRelativeTime(latestPostAt) : "No posts yet",
+      hint: latestPost ? "Most recent writing activity." : "Once they publish, this will update automatically.",
+    },
+    {
+      label: "Reads",
+      value: profileMetrics.views,
+      hint: "Total reads across visible posts.",
+    },
+    {
+      label: "Followers",
+      value: curUser?.Followers || 0,
+      hint: "People following this profile.",
+    },
+  ];
 
   const submitFollow = async (toFollow) => {
     const followKey = `follow:${toFollow}`;
@@ -201,11 +227,11 @@ export default function UsersProfile() {
   const profilePostCount = curUser?.postCount || posts.length || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="app-page">
       <ProfileNav />
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:px-8">
+      <main className="app-shell">
         {!curUser && isLoading ? (
-          <section className="border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+          <section className="app-panel p-6 md:p-8">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="flex gap-5">
                 <Skeleton className="h-24 w-24 rounded-full" />
@@ -233,25 +259,40 @@ export default function UsersProfile() {
             title={displayName(curUser)}
             subtitle={`@${curUser.username}`}
             bio={curUser.Bio || "This profile is private. Follow to request access to posts and details."}
+            featuredPost={hasLatestPost ? {
+              title: latestPost.title,
+              excerpt: latestPost.excerpt || latestPost.contentText || "",
+              href: `/post/${latestPost._id}`,
+              coverImageUrl: latestPost.coverImageUrl || null,
+            } : null}
+            activitySnapshot={activitySnapshot}
             badgeLabel={followed ? "Following" : requested ? "Request sent" : "Private"}
             actions={[
               {
                 onClick: () => submitFollow(curUser.userid),
-            label: followed ? "Unfollow" : requested ? "Cancel request" : "Request access",
-            icon: <UserPlus className="h-4 w-4" />,
-            loading: isBusy && activeKey === `follow:${curUser.userid}`,
-            loadingLabel: followed ? "Unfollowing..." : requested ? "Cancelling..." : "Requesting...",
-            className: followed || requested
-              ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
-              : "bg-blue-600 text-white hover:bg-blue-700",
-          },
+                label: followed ? "Unfollow" : requested ? "Cancel request" : "Request access",
+                icon: <UserPlus className="h-4 w-4" />,
+                loading: isBusy && activeKey === `follow:${curUser.userid}`,
+                loadingLabel: followed ? "Unfollowing..." : requested ? "Cancelling..." : "Requesting...",
+                className: followed || requested
+                  ? "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
+                  : "bg-slate-950 text-white hover:bg-slate-800",
+              },
+              hasLatestPost
+                ? {
+                    href: `/post/${latestPost._id}`,
+                    label: "Read latest",
+                    icon: <FileText className="h-4 w-4" />,
+                    className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
+                  }
+                : null,
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
                 icon: <Share2 className="h-4 w-4" />,
-                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+                className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
               },
-            ]}
+            ].filter(Boolean)}
             statCards={[
               { label: "Posts", value: profilePostCount, onClick: () => setActiveTab("posts") },
               {
@@ -274,33 +315,33 @@ export default function UsersProfile() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             sidebarTop={
-              <section className="border border-gray-200 bg-white p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+              <section className="app-section">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Privacy
                 </p>
-                <p className="mt-3 text-sm leading-6 text-gray-600">
+                <p className="mt-3 text-sm leading-6 text-slate-600">
                   This profile is private. Followers approved by the owner can see the posts.
                 </p>
               </section>
             }
             sidebarBottom={
-              <section className="border border-gray-200 bg-white p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+              <section className="app-section">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Reader context
                 </p>
-                <div className="mt-5 space-y-4 text-sm text-gray-700">
+                <div className="mt-5 space-y-4 text-sm text-slate-700">
                   {showProfileDetails ? (
                     <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-blue-600" />
+                      <Users className="h-4 w-4 text-slate-950" />
                       <span>{curUser.Followers || 0} followers</span>
                     </div>
                   ) : (
-                    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                       Profile details are hidden on the main profile.
                     </div>
                   )}
                   <div className="flex items-center gap-3">
-                    <ArrowRight className="h-4 w-4 text-blue-600" />
+                    <ArrowRight className="h-4 w-4 text-slate-950" />
                     <span>{curUser.Followings || 0} following</span>
                   </div>
                 </div>
@@ -321,12 +362,12 @@ export default function UsersProfile() {
             )}
 
             {activeTab === "posts" && (
-              <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
-                <FileText className="mx-auto h-8 w-8 text-gray-400" />
-                <h3 className="mt-4 text-xl font-bold text-gray-950">
+              <div className="border border-dashed border-slate-300 bg-white px-8 py-12 text-center">
+                <FileText className="mx-auto h-8 w-8 text-slate-400" />
+                <h3 className="mt-4 text-xl font-black text-slate-950">
                   Posts are hidden
                 </h3>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600">
                   You can view this profile’s details, but the writing stays locked until access is approved.
                 </p>
               </div>
@@ -334,28 +375,28 @@ export default function UsersProfile() {
 
             {activeTab === "about" && (
               <div className="grid gap-5 md:grid-cols-2">
-                <section className="border border-gray-200 bg-white p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                <section className="app-section">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                     Profile
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-gray-500">Display name</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{displayName(curUser)}</dd>
+                        <dt className="text-sm text-slate-500">Display name</dt>
+                        <dd className="mt-1 font-semibold text-slate-950">{displayName(curUser)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Username</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">@{curUser.username}</dd>
+                        <dt className="text-sm text-slate-500">Username</dt>
+                        <dd className="mt-1 font-semibold text-slate-950">@{curUser.username}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Joined</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(curUser.createdAt)}</dd>
+                        <dt className="text-sm text-slate-500">Joined</dt>
+                        <dd className="mt-1 font-semibold text-slate-950">{joinedLabel || "Not available"}</dd>
                       </div>
                       {curUser.website ? (
                         <div>
-                          <dt className="text-sm text-gray-500">Website</dt>
-                          <dd className="mt-1 font-semibold text-blue-700">
+                          <dt className="text-sm text-slate-500">Website</dt>
+                          <dd className="mt-1 font-semibold text-slate-950">
                             <a href={curUser.website.startsWith("http") ? curUser.website : `https://${curUser.website}`} target="_blank" rel="noreferrer">
                               {curUser.website}
                             </a>
@@ -364,35 +405,35 @@ export default function UsersProfile() {
                       ) : null}
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                    <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-sm leading-6 text-slate-600">
                       Profile details are hidden by the owner.
                     </div>
                   )}
                 </section>
 
-                <section className="border border-gray-200 bg-white p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                <section className="app-section">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                     Details
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-gray-500">Profile type</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{curUser.profileType || "Personal"}</dd>
+                        <dt className="text-sm text-slate-500">Profile type</dt>
+                        <dd className="mt-1 font-semibold text-slate-950">{curUser.profileType || "Personal"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Birthday</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(curUser.dob)}</dd>
+                        <dt className="text-sm text-slate-500">Birthday</dt>
+                        <dd className="mt-1 font-semibold text-slate-950">{formatBirthday(curUser.dob)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Bio</dt>
-                        <dd className="mt-1 text-base leading-7 text-gray-700">
+                        <dt className="text-sm text-slate-500">Bio</dt>
+                        <dd className="mt-1 text-base leading-7 text-slate-700">
                           {curUser.Bio || "No bio added yet."}
                         </dd>
                       </div>
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                    <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-sm leading-6 text-slate-600">
                       Only the public writing feed is shown here.
                     </div>
                   )}
@@ -408,20 +449,20 @@ export default function UsersProfile() {
                   { label: "Bookmarks", value: profileMetrics.saves },
                   { label: "Reads", value: profileMetrics.views },
                 ].map((item) => (
-                  <section key={item.label} className="border border-gray-200 bg-white p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  <section key={item.label} className="app-section">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                       {item.label}
                     </p>
-                    <p className="mt-3 text-3xl font-bold text-gray-950">{item.value}</p>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-slate-950">{item.value}</p>
                   </section>
                 ))}
               </div>
             )}
           </ProfileShell>
         ) : !curUser ? (
-          <section className="border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <h1 className="text-2xl font-bold text-gray-950">Profile not available</h1>
-            <p className="mt-3 text-gray-600">We could not load this profile right now.</p>
+          <section className="app-panel p-8 text-center">
+            <h1 className="text-2xl font-black text-slate-950">Profile not available</h1>
+            <p className="mt-3 text-slate-600">We could not load this profile right now.</p>
           </section>
         ) : (
           <ProfileShell
@@ -430,6 +471,13 @@ export default function UsersProfile() {
             title={[curUser.FirstName, curUser.LastName].filter(Boolean).join(" ") || "Profile"}
             subtitle={`@${curUser.username}`}
             bio={curUser.Bio}
+            featuredPost={hasLatestPost ? {
+              title: latestPost.title,
+              excerpt: latestPost.excerpt || latestPost.contentText || "",
+              href: `/post/${latestPost._id}`,
+              coverImageUrl: latestPost.coverImageUrl || null,
+            } : null}
+            activitySnapshot={activitySnapshot}
             actions={[
               {
                 onClick: () => submitFollow(curUser.userid),
@@ -457,14 +505,14 @@ export default function UsersProfile() {
             ]}
             tabs={[]}
             sidebarTop={
-              <section className="border border-gray-200 bg-white p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+              <section className="app-section">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Featured
                 </p>
-                <h3 className="mt-3 text-xl font-bold leading-snug text-gray-950">
+                <h3 className="mt-3 text-xl font-black leading-snug text-slate-950">
                   {latestPost ? latestPost.title : "No featured post yet"}
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-gray-600">
+                <p className="mt-3 text-sm leading-7 text-slate-600">
                   {latestPost
                     ? latestPost.excerpt || "Their newest post is the easiest way to get a feel for what they write about."
                     : "Follow this profile and check back later for their first published post."}
@@ -472,7 +520,7 @@ export default function UsersProfile() {
                 {latestPost ? (
                   <Link
                     href={`/post/${latestPost._id}`}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-950 hover:text-slate-600"
                   >
                     Read latest post
                     <ArrowRight className="h-4 w-4" />
@@ -481,17 +529,17 @@ export default function UsersProfile() {
               </section>
             }
             sidebarBottom={
-              <section className="border border-gray-200 bg-white p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+              <section className="app-section">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Reader context
                 </p>
-                <div className="mt-5 space-y-4 text-sm text-gray-700">
+                <div className="mt-5 space-y-4 text-sm text-slate-700">
                   <div className="flex items-center gap-3">
-                    <Users className="h-4 w-4 text-blue-600" />
+                    <Users className="h-4 w-4 text-slate-950" />
                     <span>{curUser.Followers || 0} followers</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <ArrowRight className="h-4 w-4 text-blue-600" />
+                    <ArrowRight className="h-4 w-4 text-slate-950" />
                     <span>{curUser.Followings || 0} following</span>
                   </div>
                 </div>
@@ -557,10 +605,10 @@ export default function UsersProfile() {
                       <dt className="text-sm text-gray-500">Username</dt>
                       <dd className="mt-1 font-semibold text-gray-950">@{curUser.username}</dd>
                     </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Joined</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(curUser.createdAt)}</dd>
-                    </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Joined</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{joinedLabel || "Not available"}</dd>
+                      </div>
                   </dl>
                 </section>
 
