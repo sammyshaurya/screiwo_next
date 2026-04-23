@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Heart, Reply, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Reply, Trash2, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { getComments, createComment, deleteComment } from '@/app/lib/api';
 import Link from 'next/link';
+import { useActionLock } from '@/app/lib/useActionLock';
 
-export default function CommentsSection({ postId, currentUserId, currentUserName, currentUserImage, allowComments = true }) {
+export default function CommentsSection({ postId, currentPostOwnerId = null, currentUserId, currentUserName, currentUserImage, allowComments = true }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -14,6 +15,7 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
   const [expandedReplies, setExpandedReplies] = useState({});
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
+  const { run, activeKey, isBusy } = useActionLock(650);
 
   const fetchComments = React.useCallback(async () => {
     try {
@@ -32,6 +34,12 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
     }
   }, [postId, page]);
 
+  const refreshComments = React.useCallback(async () => {
+    const data = await getComments(postId, 1);
+    setPage(1);
+    setComments(Array.isArray(data.comments) ? data.comments : []);
+  }, [postId]);
+
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
@@ -41,11 +49,10 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
     if (!newComment.trim()) return;
 
     try {
-      await createComment(postId, newComment.trim());
+      const created = await run(`comment:${postId}`, async () => createComment(postId, newComment.trim()));
+      if (!created) return;
       setNewComment('');
-      // Refresh comments
-      setPage(1);
-      await fetchComments();
+      await refreshComments();
     } catch (err) {
       setError('Failed to post comment');
       console.error(err);
@@ -57,12 +64,11 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
     if (!replyText.trim()) return;
 
     try {
-      await createComment(postId, replyText.trim(), commentId);
+      const created = await run(`reply:${commentId}`, async () => createComment(postId, replyText.trim(), commentId));
+      if (!created) return;
       setReplyText('');
       setReplyingTo(null);
-      // Refresh comments
-      setPage(1);
-      await fetchComments();
+      await refreshComments();
     } catch (err) {
       setError('Failed to post reply');
       console.error(err);
@@ -71,9 +77,9 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
 
   const handleDeleteComment = async (commentId) => {
     try {
-      await deleteComment(commentId);
-      setPage(1);
-      await fetchComments();
+      const deleted = await run(`delete:${commentId}`, async () => deleteComment(commentId));
+      if (!deleted) return;
+      await refreshComments();
     } catch (err) {
       setError('Failed to delete comment');
       console.error(err);
@@ -85,6 +91,13 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
       ...prev,
       [commentId]: !prev[commentId],
     }));
+  };
+
+  const canDeleteComment = (commentAuthorId) => {
+    return Boolean(
+      currentUserId &&
+        (currentUserId === commentAuthorId || currentUserId === currentPostOwnerId)
+    );
   };
 
   return (
@@ -113,16 +126,25 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
                   <button
                     type="button"
                     onClick={() => setNewComment('')}
+                    disabled={isBusy}
                     className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    disabled={!newComment.trim() || loading}
+                    disabled={!newComment.trim() || loading || isBusy}
+                    aria-busy={activeKey === `comment:${postId}` ? "true" : undefined}
                     className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                   >
-                    Post
+                    {activeKey === `comment:${postId}` ? (
+                      <>
+                        <Loader2 size={12} className="mr-1 inline animate-spin" />
+                        Posting...
+                      </>
+                    ) : (
+                      "Post"
+                    )}
                   </button>
                 </div>
               </div>
@@ -164,17 +186,24 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
                   </button>
                   <button
                     onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
+                    disabled={isBusy}
                     className="hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1"
                   >
                     <Reply size={12} />
                     Reply
                   </button>
-                  {currentUserId === comment.userId?.userid && (
+                  {canDeleteComment(comment.userId?.userid) && (
                     <button
                       onClick={() => handleDeleteComment(comment._id)}
+                      disabled={isBusy}
+                      aria-busy={activeKey === `delete:${comment._id}` ? "true" : undefined}
                       className="hover:text-red-600 flex items-center gap-1"
                     >
-                      <Trash2 size={12} />
+                      {activeKey === `delete:${comment._id}` ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={12} />
+                      )}
                     </button>
                   )}
                 </div>
@@ -194,10 +223,18 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
                   />
                   <button
                     type="submit"
-                    disabled={!replyText.trim()}
+                    disabled={!replyText.trim() || isBusy}
+                    aria-busy={activeKey === `reply:${comment._id}` ? "true" : undefined}
                     className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                   >
-                    Reply
+                    {activeKey === `reply:${comment._id}` ? (
+                      <>
+                        <Loader2 size={12} className="mr-1 inline animate-spin" />
+                        Replying...
+                      </>
+                    ) : (
+                      "Reply"
+                    )}
                   </button>
                   <button
                     type="button"
@@ -253,7 +290,7 @@ export default function CommentsSection({ postId, currentUserId, currentUserName
                           </div>
                           <div className="flex gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                             <span>{new Date(reply.createdAt).toLocaleDateString()}</span>
-                            {currentUserId === reply.userId?.userid && (
+                            {canDeleteComment(reply.userId?.userid) && (
                               <button
                                 onClick={() => handleDeleteComment(reply._id)}
                                 className="hover:text-red-600 flex items-center gap-1"

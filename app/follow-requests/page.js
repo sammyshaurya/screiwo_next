@@ -7,7 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import { acceptFollowRequest, declineFollowRequest, getFollowRequests } from "@/app/lib/api";
 import toast, { Toaster } from "react-hot-toast";
-import { Check, CircleX, Users } from "lucide-react";
+import { Check, CircleX, Loader2, Users } from "lucide-react";
+import { useActionLock } from "@/app/lib/useActionLock";
 
 function displayName(user) {
   return [user?.FirstName, user?.LastName].filter(Boolean).join(" ") || user?.username || "Writer";
@@ -16,7 +17,7 @@ function displayName(user) {
 export default function FollowRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState(null);
+  const { run, activeKey, isBusy } = useActionLock(700);
 
   const fetchRequests = async () => {
     try {
@@ -36,31 +37,25 @@ export default function FollowRequestsPage() {
   }, []);
 
   const handleAccept = async (requestUser) => {
-    try {
-      setBusyId(requestUser.userid);
+    await run(`accept:${requestUser.userid}`, async () => {
       await acceptFollowRequest(requestUser.userid);
       toast.success("Follow request accepted.");
       setRequests((current) => current.filter((item) => item.userid !== requestUser.userid));
-    } catch (error) {
+    }).catch((error) => {
       console.error("Failed to accept request:", error);
       toast.error(error?.message || "Could not accept request.");
-    } finally {
-      setBusyId(null);
-    }
+    });
   };
 
   const handleDecline = async (requestUser) => {
-    try {
-      setBusyId(requestUser.userid);
+    await run(`decline:${requestUser.userid}`, async () => {
       await declineFollowRequest(requestUser.userid);
       toast.success("Follow request declined.");
       setRequests((current) => current.filter((item) => item.userid !== requestUser.userid));
-    } catch (error) {
+    }).catch((error) => {
       console.error("Failed to decline request:", error);
       toast.error(error?.message || "Could not decline request.");
-    } finally {
-      setBusyId(null);
-    }
+    });
   };
 
   return (
@@ -135,20 +130,30 @@ export default function FollowRequestsPage() {
                       <button
                         type="button"
                         onClick={() => handleAccept(request)}
-                        disabled={busyId === request.userid}
+                        disabled={isBusy}
+                        aria-busy={activeKey === `accept:${request.userid}` ? "true" : undefined}
                         className="inline-flex h-10 items-center gap-2 bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        <Check className="h-4 w-4" />
-                        Accept
+                        {activeKey === `accept:${request.userid}` ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}
+                        {activeKey === `accept:${request.userid}` ? "Accepting..." : "Accept"}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDecline(request)}
-                        disabled={busyId === request.userid}
+                        disabled={isBusy}
+                        aria-busy={activeKey === `decline:${request.userid}` ? "true" : undefined}
                         className="inline-flex h-10 items-center gap-2 border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        <CircleX className="h-4 w-4" />
-                        Decline
+                        {activeKey === `decline:${request.userid}` ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <CircleX className="h-4 w-4" />
+                        )}
+                        {activeKey === `decline:${request.userid}` ? "Declining..." : "Decline"}
                       </button>
                     </div>
                   </div>

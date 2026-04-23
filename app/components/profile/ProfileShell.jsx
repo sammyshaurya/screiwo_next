@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUiPreferences } from "@/app/lib/uiPreferences";
+import { Loader2 } from "lucide-react";
 import {
   PROFILE_AVATAR_CLASS,
   PROFILE_AVATAR_FALLBACK_CLASS,
@@ -107,21 +108,27 @@ export default function ProfileShell({
                   <Link
                     key={action.label}
                     href={action.href}
-                    className={`inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold transition ${action.className || "bg-blue-600 text-white hover:bg-blue-700"}`}
+                    aria-disabled={action.loading ? "true" : undefined}
+                    className={`inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold transition ${
+                      action.loading ? "pointer-events-none opacity-70" : ""
+                    } ${action.className || "bg-blue-600 text-white hover:bg-blue-700"}`}
                   >
-                    {action.icon}
-                    {action.label}
+                    {action.loading ? <Loader2 className="h-4 w-4 animate-spin" /> : action.icon}
+                    {action.loading ? action.loadingLabel || "Working..." : action.label}
                   </Link>
                 ) : (
                   <button
                     key={action.label}
                     onClick={action.onClick}
                     type="button"
-                    disabled={action.disabled}
-                    className={`inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold transition ${action.className || "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"}`}
+                    disabled={action.disabled || action.loading}
+                    aria-busy={action.loading ? "true" : undefined}
+                    className={`inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold transition ${
+                      action.loading ? "cursor-wait opacity-70" : ""
+                    } ${action.className || "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"}`}
                   >
-                    {action.icon}
-                    {action.label}
+                    {action.loading ? <Loader2 className="h-4 w-4 animate-spin" /> : action.icon}
+                    {action.loading ? action.loadingLabel || "Working..." : action.label}
                   </button>
                 )
               )}

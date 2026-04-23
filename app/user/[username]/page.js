@@ -6,6 +6,7 @@ import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuth } from "@clerk/nextjs";
 import { useParams } from "next/navigation";
+import { useActionLock } from "@/app/lib/useActionLock";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import Posts from "@/app/components/Pages/main/Posts";
 import FollowersList from "@/app/components/ui/FollowersList";
@@ -62,6 +63,7 @@ export default function UsersProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
+  const { run, activeKey, isBusy } = useActionLock(700);
   const followed = relationship === "following";
   const requested = relationship === "requested";
 
@@ -127,10 +129,17 @@ export default function UsersProfile() {
   const canOpenRelationshipLists = !isPrivate || isOwner;
 
   const submitFollow = async (toFollow) => {
+    const followKey = `follow:${toFollow}`;
     try {
-      const responseData = followed || requested
-        ? await unfollowProfile(toFollow)
-        : await followProfile(toFollow);
+      const responseData = await run(followKey, async () => (
+        followed || requested
+          ? await unfollowProfile(toFollow)
+          : await followProfile(toFollow)
+      ));
+
+      if (!responseData) {
+        return;
+      }
 
       const nextRelationship = responseData?.relationship || ((followed || requested) ? "none" : "following");
       const actorSnapshot = responseData?.actorProfile || null;
@@ -228,12 +237,14 @@ export default function UsersProfile() {
             actions={[
               {
                 onClick: () => submitFollow(curUser.userid),
-                label: followed ? "Unfollow" : requested ? "Cancel request" : "Request access",
-                icon: <UserPlus className="h-4 w-4" />,
-                className: followed || requested
-                  ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
-                  : "bg-blue-600 text-white hover:bg-blue-700",
-              },
+            label: followed ? "Unfollow" : requested ? "Cancel request" : "Request access",
+            icon: <UserPlus className="h-4 w-4" />,
+            loading: isBusy && activeKey === `follow:${curUser.userid}`,
+            loadingLabel: followed ? "Unfollowing..." : requested ? "Cancelling..." : "Requesting...",
+            className: followed || requested
+              ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
+              : "bg-blue-600 text-white hover:bg-blue-700",
+          },
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
@@ -424,6 +435,8 @@ export default function UsersProfile() {
                 onClick: () => submitFollow(curUser.userid),
                 label: followed ? "Unfollow" : requested ? "Cancel request" : isPrivate ? "Request access" : "Follow",
                 icon: <UserPlus className="h-4 w-4" />,
+                loading: isBusy && activeKey === `follow:${curUser.userid}`,
+                loadingLabel: followed ? "Unfollowing..." : requested ? "Cancelling..." : isPrivate ? "Requesting..." : "Following...",
                 className: followed || requested
                   ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
                   : "bg-blue-600 text-white hover:bg-blue-700",

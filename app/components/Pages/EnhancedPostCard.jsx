@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Trash2, Edit } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Trash2, Edit, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '@/app/lib/api';
 import { formatRelativeTime } from '@/app/lib/time';
+import { useActionLock } from '@/app/lib/useActionLock';
 
 export default function PostCard({ post, onCommentClick, onEditClick, onDeleteClick, isLiked = false, isBookmarked = false, currentUserId }) {
   const [liked, setLiked] = useState(isLiked);
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [savesCount, setSavesCount] = useState(post.saves || 0);
-  const [loading, setLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const { run, activeKey, isBusy } = useActionLock(700);
   const authorName = post.username || post.author?.username || 'Unknown user';
   const authorImage = post.profileImageUrl || post.author?.profileImageUrl || null;
   const authorId = post.userid || post.author?.userid || null;
@@ -26,49 +27,49 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
 
   const handleLike = useCallback(async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      if (liked) {
-        await unlikePost(post._id);
-        setLiked(false);
-        setLikesCount(Math.max(likesCount - 1, 0));
-      } else {
-        await likePost(post._id);
-        setLiked(true);
-        setLikesCount(likesCount + 1);
-      }
+      const next = await run(`like:${post._id}`, async () => {
+        if (liked) {
+          await unlikePost(post._id);
+          setLiked(false);
+          setLikesCount((count) => Math.max(count - 1, 0));
+        } else {
+          await likePost(post._id);
+          setLiked(true);
+          setLikesCount((count) => count + 1);
+        }
+        return true;
+      });
+      return next;
     } catch (error) {
       console.error('Error toggling like:', error);
-      // Revert state on error
       setLiked(!liked);
       setLikesCount(liked ? likesCount + 1 : Math.max(likesCount - 1, 0));
-    } finally {
-      setLoading(false);
     }
-  }, [liked, likesCount, post._id]);
+  }, [liked, likesCount, post._id, run]);
 
   const handleBookmark = useCallback(async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      if (bookmarked) {
-        await unbookmarkPost(post._id);
-        setBookmarked(false);
-        setSavesCount(Math.max(savesCount - 1, 0));
-      } else {
-        await bookmarkPost(post._id);
-        setBookmarked(true);
-        setSavesCount(savesCount + 1);
-      }
+      const next = await run(`bookmark:${post._id}`, async () => {
+        if (bookmarked) {
+          await unbookmarkPost(post._id);
+          setBookmarked(false);
+          setSavesCount((count) => Math.max(count - 1, 0));
+        } else {
+          await bookmarkPost(post._id);
+          setBookmarked(true);
+          setSavesCount((count) => count + 1);
+        }
+        return true;
+      });
+      return next;
     } catch (error) {
       console.error('Error toggling bookmark:', error);
-      // Revert state on error
       setBookmarked(!bookmarked);
       setSavesCount(bookmarked ? savesCount + 1 : Math.max(savesCount - 1, 0));
-    } finally {
-      setLoading(false);
     }
-  }, [bookmarked, savesCount, post._id]);
+  }, [bookmarked, savesCount, post._id, run]);
 
   const isAuthor = currentUserId === authorId;
 
@@ -169,15 +170,20 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
       <div className="px-4 py-3 flex gap-1 border-t border-gray-100 dark:border-slate-700">
         <button
           onClick={handleLike}
-          disabled={loading}
+          disabled={isBusy}
+          aria-busy={activeKey === `like:${post._id}` ? "true" : undefined}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors text-sm font-medium ${
             liked
               ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
           }`}
         >
-          <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
-          {liked ? 'Liked' : 'Like'}
+          {activeKey === `like:${post._id}` ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
+          )}
+          {activeKey === `like:${post._id}` ? 'Liking...' : liked ? 'Liked' : 'Like'}
         </button>
 
         <button
@@ -190,15 +196,20 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
 
         <button
           onClick={handleBookmark}
-          disabled={loading}
+          disabled={isBusy}
+          aria-busy={activeKey === `bookmark:${post._id}` ? "true" : undefined}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors text-sm font-medium ${
             bookmarked
               ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
           }`}
         >
-          <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
-          {bookmarked ? 'Saved' : 'Save'}
+          {activeKey === `bookmark:${post._id}` ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+          )}
+          {activeKey === `bookmark:${post._id}` ? 'Saving...' : bookmarked ? 'Saved' : 'Save'}
         </button>
 
         <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">

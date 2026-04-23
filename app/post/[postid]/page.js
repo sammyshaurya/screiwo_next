@@ -236,6 +236,7 @@ const PostPage = () => {
           </article>
           <CommentsSection
             postId={postid}
+            currentPostOwnerId={post.userid}
             currentUserId={isLoaded ? user?.id : null}
             currentUserName={user?.firstName || user?.username}
             currentUserImage={user?.imageUrl}

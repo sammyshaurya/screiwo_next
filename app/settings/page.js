@@ -18,9 +18,11 @@ import {
   Sparkles,
   Users,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { useClerk } from "@clerk/nextjs";
 import toast, { Toaster } from "react-hot-toast";
+import { useActionLock } from "@/app/lib/useActionLock";
 
 const DEFAULT_SETTINGS = {
   profileVisibility: "public",
@@ -63,7 +65,7 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState(null);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { run, isBusy, activeKey } = useActionLock(700);
 
   useEffect(() => {
     let mounted = true;
@@ -100,8 +102,7 @@ export default function SettingsPage() {
   };
 
   const saveSettings = async () => {
-    try {
-      setSaving(true);
+    await run("save-settings", async () => {
       const response = await axios.patch("/api/profile", {
         settings,
       });
@@ -111,12 +112,10 @@ export default function SettingsPage() {
       });
       setProfile(response.data?.profile);
       toast.success("Settings saved.");
-    } catch (error) {
+    }).catch((error) => {
       console.error("Failed to save settings:", error);
       toast.error(error?.response?.data?.message || "Failed to save settings.");
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   return (
@@ -160,11 +159,15 @@ export default function SettingsPage() {
                 </Link>
                 <Button
                   onClick={saveSettings}
-                  disabled={saving}
+                  disabled={isBusy}
                   className="h-10 bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
                 >
-                  <Save className="h-4 w-4" />
-                  {saving ? "Saving..." : "Save settings"}
+                  {activeKey === "save-settings" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  {activeKey === "save-settings" ? "Saving..." : "Save settings"}
                 </Button>
               </div>
             </div>

@@ -25,8 +25,12 @@ export async function DELETE(req) {
       );
     }
 
-    // Check if user is the comment author
-    if (comment.userId.toString() !== userId) {
+    const post = await Posts.findById(comment.postId, { userid: 1 }).lean();
+    const isCommentAuthor = comment.userId.toString() === userId;
+    const isPostOwner = post?.userid?.toString?.() === userId;
+
+    // Only the comment author or the post owner can delete it
+    if (!isCommentAuthor && !isPostOwner) {
       return Response.json(
         { success: false, error: 'Unauthorized' },
         { status: 403 }
