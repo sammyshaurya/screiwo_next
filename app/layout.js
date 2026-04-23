@@ -1,4 +1,3 @@
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Provider from "./provider";
 import {
@@ -6,8 +5,6 @@ import {
   SignedIn,
   UserButton,
 } from "@clerk/nextjs";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Screiwo",
@@ -22,7 +19,7 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://img.clerk.com" />
         <link rel="preconnect" href="https://settled-pangolin-47.clerk.accounts.dev" />
       </head>
-        <body className={`${inter.className} h-full`}>
+        <body className="h-full antialiased">
           <Provider>{children}</Provider>
         </body>
       </html>

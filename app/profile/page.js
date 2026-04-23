@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowRight,
   BookOpen,
-  Copy,
   Edit3,
   FileText,
   PenLine,
@@ -105,6 +104,7 @@ export default function Profile() {
   }, [posts]);
 
   const latestPost = posts[0] || null;
+  const showProfileDetails = user?.preferences?.showProfileDetails !== false;
 
   const handleCopyProfile = async () => {
     if (!user?.username) {
@@ -221,10 +221,16 @@ export default function Profile() {
                     Reader context
                   </p>
                   <div className="mt-5 space-y-4 text-sm text-gray-700">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="h-4 w-4 text-blue-600" />
-                      <span>Joined {formatJoinDate(user.createdAt)}</span>
-                    </div>
+                    {showProfileDetails ? (
+                      <div className="flex items-center gap-3">
+                        <BookOpen className="h-4 w-4 text-blue-600" />
+                        <span>Joined {formatJoinDate(user.createdAt)}</span>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                        Profile details are hidden on the main profile.
+                      </div>
+                    )}
                     <div className="flex items-center gap-3">
                       <Users className="h-4 w-4 text-blue-600" />
                       <span>{user.Followers || 0} followers</span>
@@ -300,40 +306,62 @@ export default function Profile() {
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Profile
                   </p>
-                  <dl className="mt-5 space-y-4">
-                    <div>
-                      <dt className="text-sm text-gray-500">Display name</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{displayName(user)}</dd>
+                  {showProfileDetails ? (
+                    <dl className="mt-5 space-y-4">
+                      <div>
+                        <dt className="text-sm text-gray-500">Display name</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{displayName(user)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Username</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">@{user.username}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Joined</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(user.createdAt)}</dd>
+                      </div>
+                      {user.website ? (
+                        <div>
+                          <dt className="text-sm text-gray-500">Website</dt>
+                          <dd className="mt-1 font-semibold text-blue-700">
+                            <a href={user.website.startsWith("http") ? user.website : `https://${user.website}`} target="_blank" rel="noreferrer">
+                              {user.website}
+                            </a>
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  ) : (
+                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                      Profile details are hidden by your preference. Your bio and posts remain visible where allowed.
                     </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Username</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">@{user.username}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Joined</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(user.createdAt)}</dd>
-                    </div>
-                  </dl>
+                  )}
                 </section>
 
                 <section className="border border-gray-200 bg-white p-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Details
                   </p>
-                  <dl className="mt-5 space-y-4">
-                    <div>
-                      <dt className="text-sm text-gray-500">Profile type</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{user.profileType || "Personal"}</dd>
+                  {showProfileDetails ? (
+                    <dl className="mt-5 space-y-4">
+                      <div>
+                        <dt className="text-sm text-gray-500">Profile type</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{user.profileType || "Personal"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Birthday</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(user.dob)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Gender</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{user.gender || "Not shared"}</dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                      Only your posts and public activity are shown here.
                     </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Birthday</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(user.dob)}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Gender</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{user.gender || "Not shared"}</dd>
-                    </div>
-                  </dl>
+                  )}
                 </section>
               </div>
             )}

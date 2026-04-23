@@ -118,6 +118,7 @@ export default function UsersProfile({ params }) {
   }, [posts]);
 
   const latestPost = posts[0] || null;
+  const showProfileDetails = curUser?.preferences?.showProfileDetails !== false;
 
   const submitFollow = async (toFollow) => {
     try {
@@ -246,10 +247,16 @@ export default function UsersProfile({ params }) {
                   Reader context
                 </p>
                 <div className="mt-5 space-y-4 text-sm text-gray-700">
-                  <div className="flex items-center gap-3">
-                    <Users className="h-4 w-4 text-blue-600" />
-                    <span>{curUser.Followers || 0} followers</span>
-                  </div>
+                  {showProfileDetails ? (
+                    <div className="flex items-center gap-3">
+                      <Users className="h-4 w-4 text-blue-600" />
+                      <span>{curUser.Followers || 0} followers</span>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                      Profile details are hidden on the main profile.
+                    </div>
+                  )}
                   <div className="flex items-center gap-3">
                     <ArrowRight className="h-4 w-4 text-blue-600" />
                     <span>{curUser.Followings || 0} following</span>
@@ -289,42 +296,64 @@ export default function UsersProfile({ params }) {
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Profile
                   </p>
-                  <dl className="mt-5 space-y-4">
-                    <div>
-                      <dt className="text-sm text-gray-500">Display name</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{displayName(curUser)}</dd>
+                  {showProfileDetails ? (
+                    <dl className="mt-5 space-y-4">
+                      <div>
+                        <dt className="text-sm text-gray-500">Display name</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{displayName(curUser)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Username</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">@{curUser.username}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Joined</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(curUser.createdAt)}</dd>
+                      </div>
+                      {curUser.website ? (
+                        <div>
+                          <dt className="text-sm text-gray-500">Website</dt>
+                          <dd className="mt-1 font-semibold text-blue-700">
+                            <a href={curUser.website.startsWith("http") ? curUser.website : `https://${curUser.website}`} target="_blank" rel="noreferrer">
+                              {curUser.website}
+                            </a>
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  ) : (
+                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                      Profile details are hidden by the owner.
                     </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Username</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">@{curUser.username}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Joined</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(curUser.createdAt)}</dd>
-                    </div>
-                  </dl>
+                  )}
                 </section>
 
                 <section className="border border-gray-200 bg-white p-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Details
                   </p>
-                  <dl className="mt-5 space-y-4">
-                    <div>
-                      <dt className="text-sm text-gray-500">Profile type</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{curUser.profileType || "Personal"}</dd>
+                  {showProfileDetails ? (
+                    <dl className="mt-5 space-y-4">
+                      <div>
+                        <dt className="text-sm text-gray-500">Profile type</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{curUser.profileType || "Personal"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Birthday</dt>
+                        <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(curUser.dob)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Bio</dt>
+                        <dd className="mt-1 text-base leading-7 text-gray-700">
+                          {curUser.Bio || "No bio added yet."}
+                        </dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                      Only the public writing feed is shown here.
                     </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Birthday</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(curUser.dob)}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Bio</dt>
-                      <dd className="mt-1 text-base leading-7 text-gray-700">
-                        {curUser.Bio || "No bio added yet."}
-                      </dd>
-                    </div>
-                  </dl>
+                  )}
                 </section>
               </div>
             )}

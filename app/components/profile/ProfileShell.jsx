@@ -34,6 +34,12 @@ export default function ProfileShell({
   const initials = (profile?.username || "U").charAt(0).toUpperCase();
   const uiPrefs = getUiPreferences();
   const compactMode = Boolean(profile?.preferences?.compactMode ?? uiPrefs.compactMode);
+  const showProfileDetails = profile?.preferences?.showProfileDetails !== false;
+  const websiteUrl = profile?.website
+    ? profile.website.startsWith("http://") || profile.website.startsWith("https://")
+      ? profile.website
+      : `https://${profile.website}`
+    : null;
 
   return (
     <div className="space-y-8">
@@ -59,6 +65,25 @@ export default function ProfileShell({
                 <p className="mt-5 max-w-2xl border-l-2 border-gray-200 pl-4 text-base leading-7 text-gray-700">
                   {bio || "No bio yet. Add a short introduction so readers know what you write about."}
                 </p>
+                {showProfileDetails && (profile?.website || profile?.location) ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {profile?.website ? (
+                      <a
+                        href={websiteUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-semibold text-gray-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        Website
+                      </a>
+                    ) : null}
+                    {profile?.location ? (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-semibold text-gray-700">
+                        {profile.location}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
                 {badgeLabel ? (
                   <div className="mt-4">
                     {badgeHref ? (

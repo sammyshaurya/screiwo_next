@@ -115,6 +115,10 @@ const ProfileSchema = new Schema({
       type: Boolean,
       default: false,
     },
+    showProfileDetails: {
+      type: Boolean,
+      default: true,
+    },
   },
 }, { timestamps: true });
 

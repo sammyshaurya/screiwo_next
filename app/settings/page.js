@@ -25,6 +25,7 @@ import toast, { Toaster } from "react-hot-toast";
 const DEFAULT_SETTINGS = {
   profileVisibility: "public",
   allowComments: true,
+  showProfileDetails: true,
   likeNotifications: true,
   commentNotifications: true,
   followNotifications: true,
@@ -193,6 +194,12 @@ export default function SettingsPage() {
                     description="Let readers comment on your posts."
                     checked={settings.allowComments}
                     onChange={(value) => updateSetting("allowComments", value)}
+                  />
+                  <Toggle
+                    label="Show profile & website details"
+                    description="Display profile details and website information on your main profile when this is enabled."
+                    checked={settings.showProfileDetails}
+                    onChange={(value) => updateSetting("showProfileDetails", value)}
                   />
                 </div>
               </section>
