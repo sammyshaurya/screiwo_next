@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import Profile from "@/app/models/Profile.model";
+import Follow from "@/app/models/Follow.model";
 import { FeedUpdate } from "./FeedUpdate";
 import { connectdb } from "@/app/lib/db";
 import AllPosts from "@/app/models/Posts.model";
@@ -40,10 +41,12 @@ export const POST = async (req, res) => {
       profileImageUrl: clerkuser.imageUrl,
     };
 
-    const updatedProfile = await Profile.findOne(
-      { userid: authorId },
-      { FollowingsList: 1 }
+    const followings = await Follow.find(
+      { followerId: authorId, status: "following" },
+      { followingId: 1, _id: 0 }
     ).lean();
+
+    const updatedProfile = await Profile.findOne({ userid: authorId }).lean();
 
     if (!updatedProfile) {
       return NextResponse.json("Profile not found", { status: 404 });
@@ -52,7 +55,7 @@ export const POST = async (req, res) => {
     const createdPost = await AllPosts.create(newPost);
     const liveCounts = await syncProfileCounters(authorId);
 
-    await FeedUpdate(authorId, postId, updatedProfile.FollowingsList);
+    await FeedUpdate(authorId, postId, followings.map((item) => item.followingId));
 
     return NextResponse.json({
       message: "Post created successfully",

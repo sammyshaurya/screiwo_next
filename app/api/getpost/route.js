@@ -5,6 +5,7 @@ import { connectdb } from "@/app/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { toProfileSummary } from "@/app/lib/profileData";
 import { canViewProfile, canCommentOnPost } from "@/app/lib/profilePrivacy";
+import { getFollowRelationshipState } from "@/app/lib/followService";
 
 export const GET = async (req, res) => {
   await connectdb();
@@ -40,7 +41,7 @@ export const GET = async (req, res) => {
       return NextResponse.json({ error: "Author not found" }, { status: 404 });
     }
 
-    if (!canViewProfile(author, userObj)) {
+    if (!(await canViewProfile(author, userObj))) {
       return NextResponse.json(
         { error: "This profile is private." },
         { status: 403 }
@@ -59,15 +60,19 @@ export const GET = async (req, res) => {
       if (userObj === author.userid) {
         follows = "myself";
       } else {
-        follows = (author.FollowersList || []).some((id) => id.toString() === userObj) || false;
+        const followState = await getFollowRelationshipState({
+          viewerId: userObj,
+          targetId: author.userid,
+        });
+        follows = followState.isFollowing;
       }
     }
 
     const Post = {
       ...posts.toObject(),
-      author: toProfileSummary(author),
+      author: await toProfileSummary(author),
       follows,
-      allowComments: canCommentOnPost(author, userObj),
+      allowComments: await canCommentOnPost(author, userObj),
       profileVisibility: author.preferences?.profileVisibility || "public",
     };
 

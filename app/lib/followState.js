@@ -1,7 +1,8 @@
-export function getFollowRelationship({
+import Follow from "@/app/models/Follow.model";
+
+export async function getFollowRelationship({
   targetProfile = null,
   viewerId = null,
-  viewerProfile = null,
 } = {}) {
   const targetId = targetProfile?.userid?.toString?.() || null;
   const currentViewerId = viewerId?.toString?.() || null;
@@ -11,6 +12,7 @@ export function getFollowRelationship({
       relationship: "none",
       isFollowing: false,
       isRequested: false,
+      isFollowBack: false,
       isSelf: false,
     };
   }
@@ -20,34 +22,41 @@ export function getFollowRelationship({
       relationship: "self",
       isFollowing: false,
       isRequested: false,
+      isFollowBack: false,
       isSelf: true,
     };
   }
 
-  const followersList = Array.isArray(targetProfile?.FollowersList) ? targetProfile.FollowersList : [];
-  const receivedRequests = Array.isArray(targetProfile?.FollowRequestsReceived) ? targetProfile.FollowRequestsReceived : [];
-  const sentRequests = Array.isArray(viewerProfile?.FollowRequestsSent) ? viewerProfile.FollowRequestsSent : [];
-  const viewerFollowing = Array.isArray(viewerProfile?.FollowingsList) ? viewerProfile.FollowingsList : [];
+  const [directRelation, reverseRelation] = await Promise.all([
+    Follow.findOne({
+      followerId: currentViewerId,
+      followingId: targetId,
+    }).lean(),
+    Follow.findOne({
+      followerId: targetId,
+      followingId: currentViewerId,
+      status: "following",
+    }).lean(),
+  ]);
 
-  const isFollowing = followersList.some((id) => id?.toString?.() === currentViewerId)
-    || viewerFollowing.some((id) => id?.toString?.() === targetId);
-  const isRequested = receivedRequests.some((id) => id?.toString?.() === currentViewerId)
-    || sentRequests.some((id) => id?.toString?.() === targetId);
+  const directStatus = directRelation?.status || null;
+  const isFollowing = directStatus === "following";
+  const isRequested = directStatus === "requested";
 
   return {
-    relationship: isFollowing ? "following" : isRequested ? "requested" : "none",
+    relationship: isFollowing ? "following" : isRequested ? "requested" : reverseRelation ? "follow_back" : "none",
     isFollowing,
     isRequested,
+    isFollowBack: Boolean(reverseRelation && !isFollowing && !isRequested),
     isSelf: false,
   };
 }
 
-export function getFollowStatePayload({
+export async function getFollowStatePayload({
   targetProfile = null,
   viewerId = null,
-  viewerProfile = null,
 } = {}) {
-  const relationshipState = getFollowRelationship({ targetProfile, viewerId, viewerProfile });
+  const relationshipState = await getFollowRelationship({ targetProfile, viewerId });
 
   return {
     ...relationshipState,

@@ -63,6 +63,19 @@ jest.mock('@clerk/nextjs', () => ({
   UserButton: () => null,
 }))
 
+jest.mock('@/app/models/Follow.model', () => ({
+  __esModule: true,
+  default: {
+    aggregate: jest.fn(),
+    countDocuments: jest.fn(),
+    find: jest.fn(),
+    findOne: jest.fn(),
+    findOneAndUpdate: jest.fn(),
+    updateOne: jest.fn(),
+    deleteOne: jest.fn(),
+  },
+}))
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter() {

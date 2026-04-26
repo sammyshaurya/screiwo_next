@@ -27,7 +27,7 @@ export const GET = async (req, res) => {
         }
         
         const posts = await getPostsByAuthorId(user.id);
-        const userprofile = { profile: withLiveProfileCounts(profile, posts.length), posts };
+        const userprofile = { profile: await withLiveProfileCounts(profile, posts.length), posts };
         return NextResponse.json(userprofile, {
             status: 200,
             headers: {
@@ -131,7 +131,7 @@ export const PATCH = async (req) => {
         return NextResponse.json(
             {
                 message: "Profile updated successfully.",
-                profile: withLiveProfileCounts(updatedProfile),
+                profile: await withLiveProfileCounts(updatedProfile),
                 previousUsername: currentUsername,
             },
             {

@@ -30,7 +30,7 @@ export const GET = async (req,{params})=> {
           viewerId: signeduser.id,
           targetId: searchedUsers.userid,
         });
-        const canView = canViewProfile(searchedUsers, signeduser.id);
+        const canView = await canViewProfile(searchedUsers, signeduser.id);
         const postCount = await Posts.countDocuments({ userid: searchedUsers.userid, isDeleted: { $ne: true } });
         if (!canView) {
           return NextResponse.json(
@@ -38,7 +38,7 @@ export const GET = async (req,{params})=> {
               message: "This profile is private.",
               isPrivate: true,
               userProfile: {
-                ...withLiveProfileCounts(searchedUsers, postCount),
+                ...(await withLiveProfileCounts(searchedUsers, postCount)),
                 preferences: searchedUsers.preferences || {},
               },
               posts: [],
@@ -58,7 +58,7 @@ export const GET = async (req,{params})=> {
         const posts = await getPostsByAuthorId(searchedUsers.userid);
         return NextResponse.json(
           {
-            userProfile: withLiveProfileCounts(searchedUsers, posts.length),
+            userProfile: await withLiveProfileCounts(searchedUsers, posts.length),
             posts,
             isFollowing: followState.isFollowing,
             isRequested: followState.isRequested,

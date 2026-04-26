@@ -4,7 +4,8 @@ import { connectdb } from "@/app/lib/db";
 import Profile from "@/app/models/Profile.model";
 import Posts from "@/app/models/Posts.model";
 import Notification from "@/app/models/Notification.model";
-import { toProfileSummary } from "@/app/lib/profileData";
+import Follow from "@/app/models/Follow.model";
+import { getLiveProfileCounts, toProfileSummary } from "@/app/lib/profileData";
 import { buildTrendingTopics } from "@/app/lib/homeData";
 
 export const GET = async () => {
@@ -36,14 +37,20 @@ export const GET = async () => {
     }
 
     const unreadNotifications = await Notification.countDocuments({ userId, read: false });
+    const [liveCounts, followingRelations, requestRelations] = await Promise.all([
+      getLiveProfileCounts(profile, profile.postCount),
+      Follow.find({ followerId: userId, status: "following" }, { followingId: 1 }).lean(),
+      Follow.find({ followingId: userId, status: "requested" }, { followerId: 1 }).lean(),
+    ]);
     const readsResult = await Posts.aggregate([
       { $match: { userid: userId, isDeleted: { $ne: true } } },
       { $group: { _id: null, totalReads: { $sum: "$viewsCount" } } },
     ]);
+    const followingIds = followingRelations.map((relation) => relation.followingId);
 
     const suggestedProfiles = await Profile.find(
       {
-        userid: { $ne: userId, $nin: profile.FollowingsList || [] },
+        userid: { $ne: userId, $nin: followingIds },
         "preferences.profileVisibility": "public",
       },
       {
@@ -75,17 +82,19 @@ export const GET = async () => {
       {
         success: true,
         stats: {
-          posts: profile.postCount || 0,
-          followers: (profile.FollowersList || []).length,
-          following: (profile.FollowingsList || []).length,
+          posts: liveCounts.postCount || 0,
+          followers: liveCounts.Followers || 0,
+          following: liveCounts.Followings || 0,
           reads: readsResult[0]?.totalReads || 0,
-          requests: (profile.FollowRequestsReceived || []).length,
+          requests: requestRelations.length,
           unreadNotifications,
         },
-        suggestedCreators: suggestedProfiles.map((item) => ({
-          ...toProfileSummary(item),
-          isPrivate: item?.preferences?.profileVisibility === "private",
-        })),
+        suggestedCreators: await Promise.all(
+          suggestedProfiles.map(async (item) => ({
+            ...(await toProfileSummary(item)),
+            isPrivate: item?.preferences?.profileVisibility === "private",
+          }))
+        ),
         trendingTopics: buildTrendingTopics(recentPosts, 8),
       },
       {

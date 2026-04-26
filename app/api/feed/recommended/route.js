@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import Posts from '../../../models/Posts.model';
 import Activity from '../../../models/Activity.model';
 import Profile from '../../../models/Profile.model';
+import Follow from '../../../models/Follow.model';
 import { hydratePostSummaries, POST_SUMMARY_PROJECTION } from '../../../lib/postData';
 
 export async function GET(req) {
@@ -21,8 +22,11 @@ export async function GET(req) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
 
-    const currentProfile = await Profile.findOne({ userid: userId }, { FollowingsList: 1 }).lean();
-    const followingIds = currentProfile?.FollowingsList || [];
+    const followingRelations = await Follow.find(
+      { followerId: userId, status: 'following' },
+      { followingId: 1, _id: 0 }
+    ).lean();
+    const followingIds = followingRelations.map((relation) => relation.followingId);
 
     // Get user's activity (liked posts, commented posts) to understand preferences
     const userActivity = await Activity.find({ userId })

@@ -123,14 +123,14 @@ export async function POST(req) {
       { userid: 1, FollowersList: 1, preferences: 1 }
     ).lean();
 
-    if (!canViewProfile(authorProfile, userId)) {
+    if (!(await canViewProfile(authorProfile, userId))) {
       return Response.json(
         { success: false, error: 'This profile is private' },
         { status: 403 }
       );
     }
 
-    if (!canCommentOnPost(authorProfile, userId)) {
+    if (!(await canCommentOnPost(authorProfile, userId))) {
       return Response.json(
         { success: false, error: 'Comments are disabled for this post' },
         { status: 403 }
