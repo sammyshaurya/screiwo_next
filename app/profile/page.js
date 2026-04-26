@@ -200,13 +200,13 @@ export default function Profile() {
                 href: "/settings",
                 label: "Settings",
                 icon: <Settings className="h-4 w-4" />,
-                className: "border border-slate-700/80 bg-slate-900 text-slate-200 hover:border-slate-500 hover:bg-slate-800",
+                className: "border border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06]",
               },
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
                 icon: <Share2 className="h-4 w-4" />,
-                className: "border border-slate-700/80 bg-slate-900 text-slate-200 hover:border-slate-500 hover:bg-slate-800",
+                className: "border border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06]",
               },
             ]}
             statCards={[
@@ -224,13 +224,13 @@ export default function Profile() {
             onTabChange={setActiveTab}
             sidebarTop={
             <section className="app-section">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                   Featured
                 </p>
                 <h3 className="mt-3 text-xl font-black leading-snug text-white">
                   {latestPost ? latestPost.title : "No featured post yet"}
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-slate-300">
+                <p className="mt-3 text-sm leading-7 text-white/70">
                   {latestPost
                     ? latestPost.excerpt || "Your latest post is highlighted here for returning readers."
                     : "Publish a post and it will become the starting point for readers visiting your profile."}
@@ -238,7 +238,7 @@ export default function Profile() {
                 {latestPost ? (
                   <Link
                     href={`/post/${latestPost._id}`}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-slate-300"
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-white/75"
                   >
                     Read featured post
                     <ArrowRight className="h-4 w-4" />
@@ -248,18 +248,18 @@ export default function Profile() {
             }
             sidebarBottom={
               <>
-            <section className="app-section">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+              <section className="app-section">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                   Reader context
                 </p>
-                <div className="mt-5 space-y-4 text-sm text-slate-300">
+                <div className="mt-5 space-y-4 text-sm text-white/72">
                   {showProfileDetails && joinedLabel ? (
                     <div className="flex items-center gap-3">
                       <BookOpen className="h-4 w-4 text-white" />
                       <span>Joined {joinedLabel}</span>
                     </div>
                   ) : !showProfileDetails ? (
-                    <div className="rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/80 px-4 py-3 text-sm text-slate-400">
+                    <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/55">
                       Profile details are hidden on the main profile.
                     </div>
                   ) : null}
@@ -293,7 +293,7 @@ export default function Profile() {
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                       Library
                     </p>
                     <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
@@ -302,7 +302,7 @@ export default function Profile() {
                   </div>
                   <Link
                     href="/createpost"
-                    className="hidden items-center gap-2 text-sm font-semibold text-slate-200 transition hover:text-white sm:inline-flex"
+                    className="hidden items-center gap-2 text-sm font-semibold text-white/70 transition hover:text-white sm:inline-flex"
                   >
                     New post
                     <ArrowRight className="h-4 w-4" />
@@ -310,17 +310,17 @@ export default function Profile() {
                 </div>
 
                 {posts.length === 0 ? (
-                  <div className="rounded-[28px] border border-dashed border-slate-700/80 bg-slate-900/80 px-8 py-12 text-center">
-                    <FileText className="mx-auto h-8 w-8 text-slate-400" />
+                  <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.02] px-8 py-12 text-center">
+                    <FileText className="mx-auto h-8 w-8 text-white/45" />
                     <h3 className="mt-4 text-xl font-bold text-white">
                       Start your first post
                     </h3>
-                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-400">
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/55">
                       Your profile is ready. Publish a story, note, or idea so readers have something to explore.
                     </p>
                     <Link
                       href="/createpost"
-                      className="mt-6 inline-flex h-10 items-center rounded-full border border-slate-700 bg-white px-4 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+                      className="mt-6 inline-flex h-10 items-center rounded-full border border-white bg-white px-4 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
                     >
                       Write first post
                     </Link>
@@ -337,29 +337,29 @@ export default function Profile() {
 
             {activeTab === "about" && (
               <div className="grid gap-5 md:grid-cols-2">
-            <section className="app-section">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <section className="app-section">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                     Profile
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-slate-400">Display name</dt>
+                        <dt className="text-sm text-white/60">Display name</dt>
                         <dd className="mt-1 font-semibold text-white">{displayName(user)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-400">Username</dt>
+                        <dt className="text-sm text-white/60">Username</dt>
                         <dd className="mt-1 font-semibold text-white">@{user.username}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-400">Joined</dt>
+                        <dt className="text-sm text-white/60">Joined</dt>
                         <dd className="mt-1 font-semibold text-white">{formatJoinDate(user.createdAt) || "Not available"}</dd>
                       </div>
                       {user.website ? (
                         <div>
-                          <dt className="text-sm text-slate-400">Website</dt>
+                          <dt className="text-sm text-white/60">Website</dt>
                           <dd className="mt-1 font-semibold text-white">
-                            <a href={user.website.startsWith("http") ? user.website : `https://${user.website}`} target="_blank" rel="noreferrer" className="transition hover:text-slate-300">
+                            <a href={user.website.startsWith("http") ? user.website : `https://${user.website}`} target="_blank" rel="noreferrer" className="transition hover:text-white/75">
                               {user.website}
                             </a>
                           </dd>
@@ -367,33 +367,33 @@ export default function Profile() {
                       ) : null}
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/80 px-5 py-6 text-sm leading-6 text-slate-400">
+                    <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-6 text-sm leading-6 text-white/55">
                       Profile details are hidden by your preference. Your bio and posts remain visible where allowed.
                     </div>
                   )}
                 </section>
 
             <section className="app-section">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                     Details
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-slate-400">Profile type</dt>
+                        <dt className="text-sm text-white/60">Profile type</dt>
                         <dd className="mt-1 font-semibold text-white">{user.profileType || "Personal"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-400">Birthday</dt>
+                        <dt className="text-sm text-white/60">Birthday</dt>
                         <dd className="mt-1 font-semibold text-white">{formatBirthday(user.dob)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-400">Gender</dt>
+                        <dt className="text-sm text-white/60">Gender</dt>
                         <dd className="mt-1 font-semibold text-white">{user.gender || "Not shared"}</dd>
                       </div>
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/80 px-5 py-6 text-sm leading-6 text-slate-400">
+                    <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-6 text-sm leading-6 text-white/55">
                       Only your posts and public activity are shown here.
                     </div>
                   )}
@@ -409,8 +409,8 @@ export default function Profile() {
                   { label: "Bookmarks", value: profileMetrics.saves },
                   { label: "Reads", value: profileMetrics.views },
                 ].map((item) => (
-                  <section key={item.label} className="rounded-[24px] border border-slate-800/80 bg-slate-900/90 p-6 shadow-[0_20px_50px_rgba(2,6,23,0.35)]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <section key={item.label} className="rounded-[24px] border border-white/10 bg-[#05070d]/90 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
                       {item.label}
                     </p>
                     <p className="mt-3 text-3xl font-black text-white">{item.value}</p>
@@ -422,7 +422,7 @@ export default function Profile() {
         ) : (
           <section className="app-panel rounded-[28px] p-8 text-center">
             <h1 className="text-2xl font-black text-white">Profile not available</h1>
-            <p className="mt-3 text-slate-300">We could not load your profile right now.</p>
+            <p className="mt-3 text-white/70">We could not load your profile right now.</p>
           </section>
         )}
       </main>

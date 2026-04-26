@@ -151,7 +151,7 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
                 <MoreHorizontal size={18} className="text-white/55" />
               </button>
               {showMenu && (
-                <div className="absolute right-0 top-8 z-20 min-w-44 overflow-hidden rounded-xl border border-white/10 bg-[#0a0d14] shadow-xl">
+                <div className="absolute right-0 top-8 z-20 min-w-44 overflow-hidden rounded-xl border border-white/10 bg-[#05070d] shadow-xl">
                   <button
                     onClick={handleShare}
                     className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-white hover:bg-white/10"

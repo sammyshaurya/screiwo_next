@@ -350,22 +350,22 @@ export default function UsersProfile() {
                 loading: isBusy && activeKey === `follow:${curUser.userid}`,
                 loadingLabel,
                 className: followed || requested
-                  ? "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
-                  : "bg-slate-950 text-white hover:bg-slate-800",
+                  ? "border border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
+                  : "bg-[#05070d] text-white hover:bg-white/[0.03]",
               } : null,
               hasLatestPost
                 ? {
                     href: `/post/${latestPost._id}`,
                     label: "Read latest",
                     icon: <FileText className="h-4 w-4" />,
-                    className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
+                    className: "border border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06]",
                   }
                 : null,
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
                 icon: <Share2 className="h-4 w-4" />,
-                className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
+                className: "border border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06]",
               },
             ].filter(Boolean)}
             statCards={[
@@ -391,32 +391,32 @@ export default function UsersProfile() {
             onTabChange={setActiveTab}
             sidebarTop={
               <section className="app-section">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                   Privacy
                 </p>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
+                <p className="mt-3 text-sm leading-6 text-white/70">
                   This profile is private. Followers approved by the owner can see the posts.
                 </p>
               </section>
             }
             sidebarBottom={
               <section className="app-section">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                   Reader context
                 </p>
-                <div className="mt-5 space-y-4 text-sm text-slate-700">
+                <div className="mt-5 space-y-4 text-sm text-white/72">
                   {showProfileDetails ? (
                     <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-slate-950" />
+                      <Users className="h-4 w-4 text-white" />
                       <span>{curUser.Followers || 0} followers</span>
                     </div>
                   ) : (
-                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/55">
                       Profile details are hidden on the main profile.
                     </div>
                   )}
                   <div className="flex items-center gap-3">
-                    <ArrowRight className="h-4 w-4 text-slate-950" />
+                    <ArrowRight className="h-4 w-4 text-white" />
                     <span>{curUser.Followings || 0} following</span>
                   </div>
                 </div>
@@ -440,12 +440,12 @@ export default function UsersProfile() {
             )}
 
             {activeTab === "posts" && (
-              <div className="border border-dashed border-slate-300 bg-white px-8 py-12 text-center">
-                <FileText className="mx-auto h-8 w-8 text-slate-400" />
-                <h3 className="mt-4 text-xl font-black text-slate-950">
+              <div className="border border-dashed border-white/10 bg-white/[0.02] px-8 py-12 text-center">
+                <FileText className="mx-auto h-8 w-8 text-white/45" />
+                <h3 className="mt-4 text-xl font-black text-white">
                   Posts are hidden
                 </h3>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600">
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/70">
                   You can view this profile’s details, but the writing stays locked until access is approved.
                 </p>
               </div>
@@ -454,27 +454,27 @@ export default function UsersProfile() {
             {activeTab === "about" && (
               <div className="grid gap-5 md:grid-cols-2">
                 <section className="app-section">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                     Profile
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-slate-500">Display name</dt>
-                        <dd className="mt-1 font-semibold text-slate-950">{displayName(curUser)}</dd>
+                        <dt className="text-sm text-white/60">Display name</dt>
+                        <dd className="mt-1 font-semibold text-white">{displayName(curUser)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-500">Username</dt>
-                        <dd className="mt-1 font-semibold text-slate-950">@{curUser.username}</dd>
+                        <dt className="text-sm text-white/60">Username</dt>
+                        <dd className="mt-1 font-semibold text-white">@{curUser.username}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-500">Joined</dt>
-                        <dd className="mt-1 font-semibold text-slate-950">{joinedLabel || "Not available"}</dd>
+                        <dt className="text-sm text-white/60">Joined</dt>
+                        <dd className="mt-1 font-semibold text-white">{joinedLabel || "Not available"}</dd>
                       </div>
                       {curUser.website ? (
                         <div>
-                          <dt className="text-sm text-slate-500">Website</dt>
-                          <dd className="mt-1 font-semibold text-slate-950">
+                          <dt className="text-sm text-white/60">Website</dt>
+                          <dd className="mt-1 font-semibold text-white">
                             <a href={curUser.website.startsWith("http") ? curUser.website : `https://${curUser.website}`} target="_blank" rel="noreferrer">
                               {curUser.website}
                             </a>
@@ -483,35 +483,35 @@ export default function UsersProfile() {
                       ) : null}
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-sm leading-6 text-slate-600">
+                    <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-6 text-sm leading-6 text-white/55">
                       Profile details are hidden by the owner.
                     </div>
                   )}
                 </section>
 
                 <section className="app-section">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                     Details
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-slate-500">Profile type</dt>
-                        <dd className="mt-1 font-semibold text-slate-950">{curUser.profileType || "Personal"}</dd>
+                        <dt className="text-sm text-white/60">Profile type</dt>
+                        <dd className="mt-1 font-semibold text-white">{curUser.profileType || "Personal"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-500">Birthday</dt>
-                        <dd className="mt-1 font-semibold text-slate-950">{formatBirthday(curUser.dob)}</dd>
+                        <dt className="text-sm text-white/60">Birthday</dt>
+                        <dd className="mt-1 font-semibold text-white">{formatBirthday(curUser.dob)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-slate-500">Bio</dt>
-                        <dd className="mt-1 text-base leading-7 text-slate-700">
+                        <dt className="text-sm text-white/60">Bio</dt>
+                        <dd className="mt-1 text-base leading-7 text-white/80">
                           {curUser.Bio || "No bio added yet."}
                         </dd>
                       </div>
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-sm leading-6 text-slate-600">
+                    <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-6 text-sm leading-6 text-white/55">
                       Only the public writing feed is shown here.
                     </div>
                   )}
@@ -528,10 +528,10 @@ export default function UsersProfile() {
                   { label: "Reads", value: profileMetrics.views },
                 ].map((item) => (
                   <section key={item.label} className="app-section">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55">
                       {item.label}
                     </p>
-                    <p className="mt-3 text-3xl font-black tracking-tight text-slate-950">{item.value}</p>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-white">{item.value}</p>
                   </section>
                 ))}
               </div>
@@ -539,8 +539,8 @@ export default function UsersProfile() {
           </ProfileShell>
         ) : !curUser ? (
           <section className="app-panel p-8 text-center">
-            <h1 className="text-2xl font-black text-slate-950">Profile not available</h1>
-            <p className="mt-3 text-slate-600">We could not load this profile right now.</p>
+            <h1 className="text-2xl font-black text-white">Profile not available</h1>
+            <p className="mt-3 text-white/70">We could not load this profile right now.</p>
           </section>
         ) : (
           <ProfileShell
@@ -564,15 +564,15 @@ export default function UsersProfile() {
                 loading: isBusy && activeKey === `follow:${curUser.userid}`,
                 loadingLabel,
                 className: followed || requested
-                  ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
-                  : "bg-blue-600 text-white hover:bg-blue-700",
+                  ? "border border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06]"
+                  : "border border-white/10 bg-[#05070d] text-white hover:border-white/20 hover:bg-white/[0.06]",
                 disabled: false,
               } : null,
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
                 icon: <Share2 className="h-4 w-4" />,
-                className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
+                className: "border border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06]",
               },
             ].filter(Boolean)}
             statCards={[
@@ -592,13 +592,13 @@ export default function UsersProfile() {
             tabs={[]}
             sidebarTop={
               <section className="app-section">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                   Featured
                 </p>
-                <h3 className="mt-3 text-xl font-black leading-snug text-slate-950">
+                <h3 className="mt-3 text-xl font-black leading-snug text-white">
                   {latestPost ? latestPost.title : "No featured post yet"}
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">
+                <p className="mt-3 text-sm leading-7 text-white/70">
                   {latestPost
                     ? latestPost.excerpt || "Their newest post is the easiest way to get a feel for what they write about."
                     : "Follow this profile and check back later for their first published post."}
@@ -606,7 +606,7 @@ export default function UsersProfile() {
                 {latestPost ? (
                   <Link
                     href={`/post/${latestPost._id}`}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-950 hover:text-slate-600"
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-white/75"
                   >
                     Read latest post
                     <ArrowRight className="h-4 w-4" />
@@ -616,16 +616,16 @@ export default function UsersProfile() {
             }
             sidebarBottom={
               <section className="app-section">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                   Reader context
                 </p>
-                <div className="mt-5 space-y-4 text-sm text-slate-700">
+                <div className="mt-5 space-y-4 text-sm text-white/72">
                   <div className="flex items-center gap-3">
-                    <Users className="h-4 w-4 text-slate-950" />
+                    <Users className="h-4 w-4 text-white" />
                     <span>{curUser.Followers || 0} followers</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <ArrowRight className="h-4 w-4 text-slate-950" />
+                    <ArrowRight className="h-4 w-4 text-white" />
                     <span>{curUser.Followings || 0} following</span>
                   </div>
                 </div>
@@ -651,22 +651,22 @@ export default function UsersProfile() {
             <div className="space-y-5">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                     Library
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-950">
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
                     Published writing
                   </h2>
                 </div>
               </div>
 
               {posts.length === 0 ? (
-                <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
-                  <FileText className="mx-auto h-8 w-8 text-gray-400" />
-                  <h3 className="mt-4 text-xl font-bold text-gray-950">
+                <div className="border border-dashed border-white/10 bg-white/[0.02] px-8 py-12 text-center">
+                  <FileText className="mx-auto h-8 w-8 text-white/45" />
+                  <h3 className="mt-4 text-xl font-bold text-white">
                     This profile is still quiet
                   </h3>
-                  <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                  <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/55">
                     Once they publish something, it will show up here. For now, you can follow them and check back later.
                   </p>
                 </div>
@@ -679,44 +679,44 @@ export default function UsersProfile() {
               )}
 
               <section className="grid gap-5 md:grid-cols-2">
-                <section className="border border-gray-200 bg-white p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                <section className="border border-white/10 bg-[#05070d]/90 p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                     Profile
                   </p>
                   <dl className="mt-5 space-y-4">
                     <div>
-                      <dt className="text-sm text-gray-500">Display name</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">
+                      <dt className="text-sm text-white/60">Display name</dt>
+                      <dd className="mt-1 font-semibold text-white">
                         {[curUser.FirstName, curUser.LastName].filter(Boolean).join(" ") || "Not shared"}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Username</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">@{curUser.username}</dd>
+                      <dt className="text-sm text-white/60">Username</dt>
+                      <dd className="mt-1 font-semibold text-white">@{curUser.username}</dd>
                     </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Joined</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{joinedLabel || "Not available"}</dd>
+                        <dt className="text-sm text-white/60">Joined</dt>
+                        <dd className="mt-1 font-semibold text-white">{joinedLabel || "Not available"}</dd>
                       </div>
                   </dl>
                 </section>
 
-                <section className="border border-gray-200 bg-white p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                <section className="border border-white/10 bg-[#05070d]/90 p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
                     Details
                   </p>
                   <dl className="mt-5 space-y-4">
                     <div>
-                      <dt className="text-sm text-gray-500">Profile type</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{curUser.profileType || "Personal"}</dd>
+                      <dt className="text-sm text-white/60">Profile type</dt>
+                      <dd className="mt-1 font-semibold text-white">{curUser.profileType || "Personal"}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Birthday</dt>
-                      <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(curUser.dob)}</dd>
+                      <dt className="text-sm text-white/60">Birthday</dt>
+                      <dd className="mt-1 font-semibold text-white">{formatBirthday(curUser.dob)}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Bio</dt>
-                      <dd className="mt-1 text-base leading-7 text-gray-700">
+                      <dt className="text-sm text-white/60">Bio</dt>
+                      <dd className="mt-1 text-base leading-7 text-white/80">
                         {curUser.Bio || "No bio added yet."}
                       </dd>
                     </div>
@@ -731,11 +731,11 @@ export default function UsersProfile() {
                   { label: "Bookmarks", value: profileMetrics.saves },
                   { label: "Reads", value: profileMetrics.views },
                 ].map((item) => (
-                  <section key={item.label} className="border border-gray-200 bg-white p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  <section key={item.label} className="border border-white/10 bg-[#05070d]/90 p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
                       {item.label}
                     </p>
-                    <p className="mt-3 text-3xl font-bold text-gray-950">{item.value}</p>
+                    <p className="mt-3 text-3xl font-bold text-white">{item.value}</p>
                   </section>
                 ))}
               </section>

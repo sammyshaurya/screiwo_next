@@ -44,16 +44,16 @@ function normalizeSettings(preferences = {}) {
 
 function Toggle({ label, description, checked, onChange }) {
   return (
-    <label className="flex cursor-pointer items-start justify-between gap-4 rounded-2xl border border-slate-700/80 bg-slate-900/90 px-4 py-4 transition hover:border-slate-500 hover:bg-slate-800/90">
+    <label className="flex cursor-pointer items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 transition hover:border-white/20 hover:bg-white/[0.06]">
       <div>
         <p className="text-sm font-semibold text-white">{label}</p>
-        <p className="mt-1 text-sm leading-6 text-slate-300">{description}</p>
+        <p className="mt-1 text-sm leading-6 text-white/70">{description}</p>
       </div>
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="mt-1 h-5 w-5 rounded border-slate-600 text-white focus:ring-white"
+        className="mt-1 h-5 w-5 rounded border-white/20 text-white focus:ring-white"
       />
     </label>
   );
@@ -61,10 +61,10 @@ function Toggle({ label, description, checked, onChange }) {
 
 function SummaryCard({ label, value, hint }) {
   return (
-    <div className="rounded-2xl border border-slate-700/80 bg-slate-900/90 p-4 shadow-[0_18px_42px_rgba(2,6,23,0.28)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">{label}</p>
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-[0_18px_42px_rgba(0,0,0,0.28)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55">{label}</p>
       <p className="mt-2 text-lg font-black tracking-tight text-white">{value}</p>
-      {hint ? <p className="mt-1 text-xs leading-5 text-slate-400">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-xs leading-5 text-white/55">{hint}</p> : null}
     </div>
   );
 }
@@ -153,34 +153,34 @@ export default function SettingsPage() {
           <section className="app-panel p-6 md:p-8">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="space-y-4">
-                <div className="h-8 w-44 rounded-full bg-slate-800" />
-                <div className="h-12 w-3/4 rounded-2xl bg-slate-800" />
-                <div className="h-20 rounded-2xl bg-slate-800" />
+                <div className="h-8 w-44 rounded-full bg-white/5" />
+                <div className="h-12 w-3/4 rounded-2xl bg-white/5" />
+                <div className="h-20 rounded-2xl bg-white/5" />
               </div>
-              <div className="h-56 rounded-3xl bg-slate-800" />
+              <div className="h-56 rounded-3xl bg-white/5" />
             </div>
           </section>
         ) : (
           <section className="app-panel overflow-hidden">
             <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="border-b border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 px-6 py-8 text-white md:px-8 md:py-10 lg:border-b-0 lg:border-r">
+              <div className="border-b border-white/10 bg-gradient-to-br from-[#05070d] via-[#05070d] to-black px-6 py-8 text-white md:px-8 md:py-10 lg:border-b-0 lg:border-r">
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-                    <Avatar className="h-24 w-24 border border-slate-700/80 bg-slate-900 shadow-[0_0_0_6px_rgba(15,23,42,0.6)]">
+                    <Avatar className="h-24 w-24 border border-white/10 bg-[#05070d] shadow-[0_0_0_6px_rgba(0,0,0,0.55)]">
                       <AvatarImage src={profile?.profileImageUrl || undefined} />
-                      <AvatarFallback className="bg-slate-800 text-2xl font-semibold text-white">
+                      <AvatarFallback className="bg-white/5 text-2xl font-semibold text-white">
                         {(profile?.username || "S").charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
 
                     <div className="max-w-2xl">
-                      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
+                      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
                         Settings
                       </p>
                       <h1 className="mt-2 text-3xl font-black tracking-tight md:text-4xl">
                         Account control center
                       </h1>
-                      <p className="mt-2 max-w-xl text-sm leading-7 text-slate-300 md:text-base">
+                      <p className="mt-2 max-w-xl text-sm leading-7 text-white/70 md:text-base">
                         Fine-tune your profile, privacy, and reading experience from one calm, focused place.
                       </p>
                     </div>
@@ -195,23 +195,23 @@ export default function SettingsPage() {
                   <div className="flex flex-wrap items-center gap-3">
                     <span
                       className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
-                        isDirty
+                          isDirty
                           ? "border-white/15 bg-white text-slate-950"
-                          : "border-slate-700/80 bg-slate-900 text-slate-300"
+                          : "border-white/10 bg-white/[0.03] text-white/70"
                       }`}
                     >
                       {isDirty ? "Unsaved changes" : "All changes saved"}
                     </span>
                     <Link
                       href="/profile"
-                      className="app-action-secondary border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                      className="app-action-secondary border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                     >
                       <Users className="h-4 w-4" />
                       Open profile
                     </Link>
                     <Link
                       href="/editprofile"
-                      className="app-action-secondary border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                      className="app-action-secondary border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                     >
                       <FilePenLine className="h-4 w-4" />
                       Edit profile
@@ -240,13 +240,13 @@ export default function SettingsPage() {
                   </div>
                   <div className="grid gap-4">
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-300">
+                      <label className="mb-2 block text-sm font-medium text-white/70">
                         Profile visibility
                       </label>
                       <select
                         value={settings.profileVisibility}
                         onChange={(event) => updateSetting("profileVisibility", event.target.value)}
-                        className="h-11 w-full rounded-2xl border border-slate-700/80 bg-slate-950 px-3 text-sm text-slate-100 outline-none transition focus:border-white"
+                        className="h-11 w-full rounded-2xl border border-white/10 bg-[#05070d] px-3 text-sm text-white outline-none transition focus:border-white"
                       >
                         <option value="public">Public</option>
                         <option value="private">Private</option>
@@ -323,36 +323,36 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="border-t border-slate-800/80 bg-slate-950/90 px-6 py-6 md:px-8">
+            <div className="border-t border-white/10 bg-[#05070d]/95 px-6 py-6 md:px-8">
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 shadow-[0_18px_42px_rgba(2,6,23,0.28)]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-[0_18px_42px_rgba(0,0,0,0.28)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
                       Edit profile
                     </p>
                     <Link
                       href="/editprofile"
-                      className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-slate-300"
+                      className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-white/75"
                     >
                       Open profile editor
                       <FilePenLine className="h-4 w-4" />
                     </Link>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                    <p className="mt-2 text-sm leading-6 text-white/70">
                       Update your name, username, bio, avatar, and contact info here.
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/90 p-5 shadow-[0_18px_42px_rgba(2,6,23,0.28)]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-[0_18px_42px_rgba(0,0,0,0.28)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
                       Current state
                     </p>
                     <p className="mt-3 text-lg font-black tracking-tight text-white">
                       {profile?.FirstName || profile?.username || "Your profile"}
                     </p>
-                    <p className="mt-1 text-sm text-slate-400">
+                    <p className="mt-1 text-sm text-white/55">
                       @{profile?.username || "username"}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                    <p className="mt-2 text-sm leading-6 text-white/70">
                       {settings.profileVisibility === "private" ? "Private profile mode is active." : "Public profile mode is active."}
                     </p>
                   </div>
@@ -360,27 +360,27 @@ export default function SettingsPage() {
 
                 <aside className="space-y-4">
                   <section className="app-section">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
                       Quick links
                     </p>
                     <div className="mt-4 grid gap-3">
                       <Link
                         href="/profile"
-                        className="flex items-center justify-between rounded-2xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800"
+                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                       >
                         Open profile
                         <Users className="h-4 w-4" />
                       </Link>
                       <Link
                         href="/bookmarks"
-                        className="flex items-center justify-between rounded-2xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800"
+                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                       >
                         Saved posts
                         <Bookmark className="h-4 w-4" />
                       </Link>
                       <Link
                         href="/follow-requests"
-                        className="flex items-center justify-between rounded-2xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800"
+                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                       >
                         Follow requests
                         <Shield className="h-4 w-4" />
@@ -389,13 +389,13 @@ export default function SettingsPage() {
                   </section>
 
                   <section className="app-section">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
                       Session
                     </p>
                     <button
                       onClick={() => signOut({ redirectUrl: "/" })}
                       type="button"
-                      className="mt-4 inline-flex h-11 w-full items-center justify-between rounded-full border border-slate-700 bg-slate-900 px-4 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800"
+                      className="mt-4 inline-flex h-11 w-full items-center justify-between rounded-full border border-white/10 bg-white/[0.03] px-4 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
                     >
                       Sign out
                       <LogOut className="h-4 w-4" />
@@ -408,13 +408,13 @@ export default function SettingsPage() {
         )}
       </main>
       {!loading ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-800/80 bg-slate-950/95 px-4 py-3 backdrop-blur-xl md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#05070d]/95 px-4 py-3 backdrop-blur-xl md:hidden">
           <div className="mx-auto flex max-w-3xl items-center gap-3">
             <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55">
                 {isDirty ? "Unsaved changes" : "Saved"}
               </p>
-              <p className="truncate text-sm text-slate-300">
+              <p className="truncate text-sm text-white/70">
                 {isDirty ? "Tap save to publish your latest settings." : "Your settings are up to date."}
               </p>
             </div>

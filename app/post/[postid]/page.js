@@ -73,13 +73,13 @@ function clearViewPending(postid) {
 const AuthorCard = ({ author, follows }) => {
   const [isFollowed, setIsFollowed] = useState(false);
   return (
-    <Card className="w-full border border-slate-800/80 bg-slate-900/90 text-slate-100 shadow-[0_20px_60px_rgba(2,6,23,0.35)]">
-      <CardHeader className="justify-between gap-4 border-b border-slate-800/70">
+    <Card className="w-full border border-white/10 bg-[#05070d]/95 text-white shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <CardHeader className="justify-between gap-4 border-b border-white/10">
         <Link href={`/user/${author.username}`}>
           <div className="flex gap-5">
-            <Avatar className="border border-slate-700/80 bg-slate-900">
+            <Avatar className="border border-white/10 bg-[#05070d]">
               <AvatarImage src={author.profileImageUrl} />
-              <AvatarFallback className="bg-slate-800 text-white">
+              <AvatarFallback className="bg-white/5 text-white">
                 {author.username.charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -87,7 +87,7 @@ const AuthorCard = ({ author, follows }) => {
               <h4 className="text-small font-semibold leading-none text-white">
                 {author.username}
               </h4>
-              <h5 className="text-small tracking-tight text-slate-400">
+              <h5 className="text-small tracking-tight text-white/60">
                 @{author.username}
               </h5>
             </div>
@@ -95,20 +95,16 @@ const AuthorCard = ({ author, follows }) => {
         </Link>
         {follows !== "myself" && (
           <Button
-            className={
-              isFollowed
-                ? "border border-slate-700/80 bg-slate-950 text-slate-200"
-                : ""
-            }
-            variant={isFollowed ? "outline" : "default"}
-            size="sm"
-            onClick={() => setIsFollowed(!isFollowed)}
-          >
+              className={isFollowed ? "border border-white/10 bg-white/[0.03] text-white/80" : ""}
+              variant={isFollowed ? "outline" : "default"}
+              size="sm"
+              onClick={() => setIsFollowed(!isFollowed)}
+            >
             {isFollowed ? "Unfollow" : "Follow"}
           </Button>
         )}
       </CardHeader>
-      <CardContent className="px-3 py-0 text-small text-slate-300">
+      <CardContent className="px-3 py-0 text-small text-white/70">
         <p>
           {author.bio ||
             "Frontend developer and UI/UX enthusiast. Join me on this coding adventure!"}
@@ -120,18 +116,18 @@ const AuthorCard = ({ author, follows }) => {
           </span>
         </span>
       </CardContent>
-      <CardFooter className="gap-3 border-t border-slate-800/70 bg-slate-950/60">
+      <CardFooter className="gap-3 border-t border-white/10 bg-[#05070d]/80">
         <div className="flex gap-1">
           <p className="font-semibold text-white text-small">
             {author.Followers}
           </p>
-          <p className="text-slate-400 text-small">Following</p>
+          <p className="text-white/55 text-small">Following</p>
         </div>
         <div className="flex gap-1">
           <p className="font-semibold text-white text-small">
             {author.Followings}
           </p>
-          <p className="text-slate-400 text-small">Followers</p>
+          <p className="text-white/55 text-small">Followers</p>
         </div>
       </CardFooter>
     </Card>
@@ -197,26 +193,26 @@ const PostPage = () => {
   }
 
   return (
-    <div className="app-page text-slate-100">
+    <div className="app-page text-white">
       <ProfileNav />
       <header className="app-shell max-w-6xl py-8 md:py-10">
-        <div className="space-y-5 border-b border-slate-800/80 pb-8">
+        <div className="space-y-5 border-b border-white/10 pb-8">
           <p className="app-kicker">Reading</p>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
               {post.title}
             </h1>
-            <div className="flex items-center gap-3 text-sm text-slate-400">
+            <div className="flex items-center gap-3 text-sm text-white/55">
               <span>{new Date(post.DateofCreation || post.createdAt || post.createdat).toLocaleDateString()}</span>
-              <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:block" />
+              <span className="hidden h-1 w-1 rounded-full bg-white/20 sm:block" />
               <span>{post.allowComments !== false ? "Comments open" : "Comments closed"}</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-3">
-              <Avatar className="border border-slate-700/80 bg-slate-900">
+              <Avatar className="border border-white/10 bg-[#05070d]">
                 <AvatarImage src={post.profileImageUrl} />
-                <AvatarFallback className="bg-slate-800 text-white">
+                <AvatarFallback className="bg-white/5 text-white">
                   {post.author.username.charAt(0)}
                 </AvatarFallback>
               </Avatar>
@@ -224,7 +220,7 @@ const PostPage = () => {
                 <Link href={`/user/${post.author.username}`}>
                   <span className="text-sm font-semibold text-white">{post.author.username}</span>
                 </Link>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-white/55">
                   {post.follows === "myself" ? "Your post" : "Creator profile"}
                 </p>
               </div>

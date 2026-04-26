@@ -37,7 +37,7 @@ function NavPill({ href, label, icon: Icon, active = false, badge = null }) {
       className={`inline-flex h-10 items-center gap-2 rounded-full border px-3.5 text-sm font-semibold transition ${
         active
           ? "border-white/15 bg-white text-slate-950 shadow-sm"
-          : "border-transparent text-slate-300 hover:border-slate-700 hover:bg-slate-800 hover:text-white"
+          : "border-transparent text-white/65 hover:border-white/10 hover:bg-white/[0.03] hover:text-white"
       }`}
     >
       <Icon className="h-4 w-4" />
@@ -265,14 +265,14 @@ const SearchInput = ({
     >
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute -inset-2 hidden rounded-full bg-gradient-to-r from-slate-100 via-white to-slate-100 blur-xl transition-all duration-500 ease-out motion-reduce:transition-none lg:block ${
+        className={`pointer-events-none absolute -inset-2 hidden rounded-full bg-gradient-to-r from-white/10 via-white/20 to-white/10 blur-xl transition-all duration-500 ease-out motion-reduce:transition-none lg:block ${
           isExpanded ? "scale-100 opacity-100" : "scale-95 opacity-0"
         }`}
       />
       <div className="relative">
         <SearchIcon
           size={18}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/45"
         />
         <Input
           type="search"
@@ -290,7 +290,7 @@ const SearchInput = ({
           aria-expanded={showPanel}
           aria-controls="nav-search-results"
           aria-autocomplete="list"
-          className={`h-11 rounded-full border border-slate-700/80 bg-slate-900/90 pl-11 pr-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(2,6,23,0.28)] transition-all duration-500 ease-out placeholder:text-slate-500 hover:border-slate-600 focus-visible:border-white/20 focus-visible:ring-white/10 motion-reduce:transition-none ${
+          className={`h-11 rounded-full border border-white/10 bg-[#05070d]/95 pl-11 pr-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] transition-all duration-500 ease-out placeholder:text-white/35 hover:border-white/20 focus-visible:border-white/20 focus-visible:ring-white/10 motion-reduce:transition-none ${
             isExpanded ? "lg:h-12 lg:-translate-y-0.5 lg:shadow-[0_22px_52px_rgba(2,6,23,0.5)]" : ""
           }`}
         />
@@ -301,12 +301,12 @@ const SearchInput = ({
           role="listbox"
           aria-label="Search results"
           onMouseDown={(event) => event.preventDefault()}
-          className="absolute top-[calc(100%+0.8rem)] z-[70] w-full origin-top overflow-hidden rounded-[1.5rem] border border-slate-800/90 bg-slate-900 shadow-[0_34px_90px_rgba(2,6,23,0.38)] backdrop-blur-xl motion-safe:animate-[searchPanelIn_220ms_cubic-bezier(0.16,1,0.3,1)]"
+          className="absolute top-[calc(100%+0.8rem)] z-[70] w-full origin-top overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#05070d] shadow-[0_34px_90px_rgba(0,0,0,0.42)] backdrop-blur-xl motion-safe:animate-[searchPanelIn_220ms_cubic-bezier(0.16,1,0.3,1)]"
         >
-          <div className="border-b border-slate-800 bg-gradient-to-b from-slate-900/95 to-slate-900 px-5 py-4">
+          <div className="border-b border-white/10 bg-gradient-to-b from-[#05070d]/95 to-[#05070d] px-5 py-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55">
                   Search
                 </p>
                 <p className="mt-1 text-sm font-semibold tracking-tight text-white">
@@ -333,10 +333,10 @@ const SearchInput = ({
                     key={index}
                     className="flex items-center gap-3 rounded-2xl border border-transparent px-4 py-4"
                   >
-                    <div className="h-11 w-11 animate-pulse rounded-full bg-slate-700" />
+                    <div className="h-11 w-11 animate-pulse rounded-full bg-white/8" />
                     <div className="min-w-0 flex-1 space-y-2.5">
-                      <div className="h-3.5 w-36 animate-pulse rounded-full bg-slate-700" />
-                      <div className="h-3 w-28 animate-pulse rounded-full bg-slate-800" />
+                      <div className="h-3.5 w-36 animate-pulse rounded-full bg-white/8" />
+                      <div className="h-3 w-28 animate-pulse rounded-full bg-white/5" />
                     </div>
                   </div>
                 ))}
@@ -355,8 +355,8 @@ const SearchInput = ({
                       onClick={() => handleSelectResult(user)}
                     className={`flex w-full items-center gap-3 rounded-[1.15rem] border px-4 py-4 text-left transition-all duration-300 ease-out last:border-b-0 motion-reduce:transition-none ${
                         active
-                          ? "border-slate-600 bg-slate-800 shadow-[0_10px_24px_rgba(2,6,23,0.3)] translate-y-[-1px]"
-                          : "border-transparent hover:border-slate-700 hover:bg-slate-800"
+                          ? "border-white/15 bg-[#05070d] shadow-[0_10px_24px_rgba(0,0,0,0.3)] translate-y-[-1px]"
+                          : "border-transparent hover:border-white/10 hover:bg-white/[0.03]"
                       }`}
                     >
                       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-sm font-bold text-slate-950 shadow-sm">
@@ -364,9 +364,9 @@ const SearchInput = ({
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold tracking-tight text-white">@{user.username}</p>
-                        <p className="text-xs leading-5 text-slate-400">Open profile</p>
+                        <p className="text-xs leading-5 text-white/60">Open profile</p>
                       </div>
-                      <span className="text-xs font-semibold text-slate-500">↵</span>
+                      <span className="text-xs font-semibold text-white/45">↵</span>
                     </button>
                   );
                 })}
@@ -377,7 +377,7 @@ const SearchInput = ({
                   <SearchIcon size={16} />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold tracking-tight text-white">No results found</h3>
-                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-400">
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-white/60">
                   Try a shorter username or check the spelling. The search becomes more useful after three characters.
                 </p>
               </div>
@@ -387,7 +387,7 @@ const SearchInput = ({
                   <SearchIcon size={16} />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold tracking-tight text-white">Search the network</h3>
-                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-400">
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-white/60">
                   Find people and open their profiles with a quick search.
                 </p>
               </div>
@@ -621,10 +621,10 @@ export const ProfileNav = () => {
             width: `${notificationPreviewCoords.width}px`,
           }}
         >
-          <div className="overflow-hidden rounded-[1.5rem] border border-slate-800/90 bg-slate-950 shadow-[0_40px_100px_rgba(2,6,23,0.45)] backdrop-blur-xl motion-safe:animate-[searchPanelIn_220ms_cubic-bezier(0.16,1,0.3,1)]">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 bg-gradient-to-b from-slate-950/95 to-slate-900 px-5 py-4">
+          <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#05070d] shadow-[0_40px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl motion-safe:animate-[searchPanelIn_220ms_cubic-bezier(0.16,1,0.3,1)]">
+            <div className="flex items-start justify-between gap-3 border-b border-white/10 bg-gradient-to-b from-[#05070d]/95 to-[#05070d] px-5 py-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/55">
                   Notifications
                 </p>
                 <p className="mt-1 text-sm font-semibold tracking-tight text-white">
@@ -650,10 +650,10 @@ export const ProfileNav = () => {
                       key={index}
                       className="flex items-center gap-3 rounded-[1.15rem] border border-transparent px-4 py-4"
                     >
-                      <div className="h-11 w-11 animate-pulse rounded-full bg-slate-800" />
+                      <div className="h-11 w-11 animate-pulse rounded-full bg-white/5" />
                       <div className="min-w-0 flex-1 space-y-2">
-                        <div className="h-3.5 w-36 animate-pulse rounded-full bg-slate-800" />
-                        <div className="h-3 w-28 animate-pulse rounded-full bg-slate-900" />
+                        <div className="h-3.5 w-36 animate-pulse rounded-full bg-white/5" />
+                        <div className="h-3 w-28 animate-pulse rounded-full bg-white/4" />
                       </div>
                     </div>
                   ))}
@@ -676,14 +676,14 @@ export const ProfileNav = () => {
                         onClick={hideNotificationPreview}
                         className={`flex w-full items-start gap-3 rounded-[1.15rem] border px-4 py-4 text-left transition-all duration-300 ease-out motion-reduce:transition-none ${
                           notification.read
-                            ? "border-transparent hover:border-slate-700 hover:bg-slate-900/80"
-                            : "border-slate-700/70 bg-slate-900/95 hover:border-slate-600 hover:bg-slate-800/90"
+                            ? "border-transparent hover:border-white/10 hover:bg-white/[0.03]"
+                            : "border-white/10 bg-[#05070d] hover:border-white/15 hover:bg-white/[0.03]"
                         }`}
                       >
                         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${
                           notification.read
-                            ? "bg-slate-800 shadow-slate-950/20"
-                            : "bg-blue-600 shadow-blue-600/20"
+                            ? "bg-[#05070d] shadow-black/20"
+                            : "bg-white text-slate-950 shadow-white/10"
                         }`}>
                           {getNotificationPreviewIcon(notification)}
                         </div>
@@ -693,16 +693,16 @@ export const ProfileNav = () => {
                             <span className="max-w-full truncate text-sm font-semibold tracking-tight text-white">
                               {senderName}
                             </span>
-                            <span className="text-sm leading-6 text-slate-300">
+                            <span className="text-sm leading-6 text-white/72">
                               {getNotificationPreviewLabel(notification)}
                             </span>
                           </div>
                           {notification.postId?.title ? (
-                            <p className="mt-1 break-words text-sm leading-6 text-slate-400">
+                            <p className="mt-1 break-words text-sm leading-6 text-white/60">
                               {notification.postId.title}
                             </p>
                           ) : null}
-                          <p className="mt-2 text-xs font-medium text-slate-500">
+                          <p className="mt-2 text-xs font-medium text-white/45">
                             {formatRelativeTime(notification.createdAt)}
                           </p>
                         </div>
@@ -718,18 +718,18 @@ export const ProfileNav = () => {
                   <h3 className="mt-4 text-sm font-semibold tracking-tight text-white">
                     No recent notifications
                   </h3>
-                  <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-400">
+                  <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-white/60">
                     When people like, follow, or comment, the latest activity will appear here.
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-slate-800/80 bg-slate-950 px-5 py-3">
+            <div className="border-t border-white/10 bg-[#05070d] px-5 py-3">
               <Link
                 href="/notifications"
                 onClick={hideNotificationPreview}
-                className="inline-flex w-full items-center justify-between rounded-full border border-slate-700/80 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                className="inline-flex w-full items-center justify-between rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-semibold text-white/80 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
               >
                 View all notifications
                 <ArrowRight className="h-4 w-4" />
@@ -743,10 +743,10 @@ export const ProfileNav = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#05070d]/98 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="grid min-h-[4.75rem] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3">
-            <Link href="/home" className="flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 transition hover:border-white/20 hover:bg-white/15">
+            <Link href="/home" className="flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-[#05070d] px-3 py-1.5 transition hover:border-white/20 hover:bg-white/[0.02]">
               <Image
                 src={logo}
                 alt="Screiwo"
@@ -754,7 +754,7 @@ export const ProfileNav = () => {
                 height={56}
                 priority
                 sizes="(max-width: 1024px) 140px, 176px"
-                className="h-9 w-auto sm:h-10 lg:h-11 brightness-0 invert contrast-125 saturate-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"
+                className="h-9 w-auto sm:h-10 lg:h-11 brightness-0 invert contrast-125 saturate-0"
               />
             </Link>
 
@@ -804,15 +804,15 @@ export const ProfileNav = () => {
             <div className="hidden items-center gap-2 lg:flex">
               <Link
                 href="/follow-requests"
-                className="relative inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-slate-700 bg-slate-900 px-4 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                className="relative inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.03] px-4 text-sm font-semibold text-white/70 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white"
               >
                 <Users className="h-4 w-4" />
                 Requests
                 {requestCount > 0 ? (
-                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-slate-950 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                    {requestCount}
-                  </span>
-                ) : null}
+                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px] font-bold text-slate-950">
+                      {requestCount}
+                    </span>
+                  ) : null}
               </Link>
               <Link
                 href="/createpost"
@@ -830,15 +830,15 @@ export const ProfileNav = () => {
                 <Link
                   href="/notifications"
                   onClick={hideNotificationPreview}
-                  className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                  className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#05070d] text-white/65 transition hover:border-white/20 hover:bg-white/[0.04] hover:text-white"
                   aria-label="Notifications"
                 >
                   <Bell className="h-4 w-4" />
                   {notificationCount > 0 ? (
-                    <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
-                      {notificationCount}
-                    </span>
-                  ) : null}
+                  <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-slate-950">
+                    {notificationCount}
+                  </span>
+                ) : null}
                 </Link>
               </div>
               <SignedIn>
@@ -849,7 +849,7 @@ export const ProfileNav = () => {
             <div className="col-start-3 ml-auto flex items-center gap-2 lg:hidden">
               <Link
                 href="/notifications"
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/65 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white"
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
@@ -861,7 +861,7 @@ export const ProfileNav = () => {
               </Link>
               <Link
                 href="/follow-requests"
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/65 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white"
                 aria-label="Follow requests"
               >
                 <Users className="h-4 w-4" />
@@ -896,7 +896,7 @@ export const ProfileNav = () => {
 
       {notificationPreviewPanel}
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-800 bg-slate-950/95 px-2 py-2 backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#05070d]/96 px-2 py-2 backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-7xl grid-cols-5 gap-2">
           {mobileLinks.map((item) => {
             const Icon = item.icon;
@@ -905,10 +905,10 @@ export const ProfileNav = () => {
               (item.href === "/home" && pathname === "/") ||
               (item.href === "/home?tab=trending" && pathname === "/home");
             const activeStyles = item.primary
-              ? "bg-white text-slate-950 shadow-lg shadow-slate-950/20"
+              ? "bg-white text-slate-950 shadow-lg shadow-black/20"
               : active
-                ? "bg-slate-800 text-white"
-                : "text-slate-400";
+                ? "bg-white/[0.04] text-white"
+                : "text-white/55";
 
             return (
               <Link

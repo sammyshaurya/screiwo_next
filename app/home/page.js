@@ -83,7 +83,7 @@ function matchesTopic(post, topic) {
 
 function HeroStat({ label, value, hint }) {
   return (
-    <Card className="border-white/10 bg-[#0a0d14] shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition-shadow hover:border-white/20 hover:shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
+    <Card className="border-white/10 bg-[#05070d] shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition-shadow hover:border-white/20 hover:shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
       <CardContent className="p-4 md:p-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/45">{label}</p>
         <p className="mt-2 text-2xl font-black tracking-tight text-white">{value}</p>
@@ -116,7 +116,7 @@ function ContinueCard({ item }) {
   return (
     <Link
       href={`/post/${item._id}`}
-      className="group min-w-[260px] rounded-[1.5rem] border border-white/10 bg-[#0a0d14] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_60px_rgba(0,0,0,0.48)]"
+      className="group min-w-[260px] rounded-[1.5rem] border border-white/10 bg-[#05070d] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_60px_rgba(0,0,0,0.48)]"
     >
       {item.coverImageUrl ? (
         <div className="mb-4 overflow-hidden rounded-2xl border border-white/10">
@@ -149,7 +149,7 @@ function CreatorCard({ profile, onFollow, status, busy }) {
   const label = status === "following" ? "Following" : status === "requested" ? "Requested" : profile?.isPrivate ? "Request" : "Follow";
 
   return (
-    <Card className="border-white/10 bg-[#0a0d14] shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+    <Card className="border-white/10 bg-[#05070d] shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
       <CardContent className="flex items-start gap-3 p-4">
         <Link href={`/user/${profile.username}`} className="shrink-0">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 text-sm font-bold text-white">
