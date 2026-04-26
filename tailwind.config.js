@@ -1,5 +1,3 @@
-const { nextui } = require('@nextui-org/theme');
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -8,7 +6,6 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,jsx}",
-    "./node_modules/@nextui-org/theme/dist/components/(avatar|button|card|date-input|divider|input|navbar|ripple|spinner).js"
   ],
   prefix: "",
   theme: {
@@ -74,7 +71,6 @@ module.exports = {
     },
   },
   plugins: [
-    nextui(),
     require("tailwindcss-animate"),
     require('@tailwindcss/typography')
   ],
