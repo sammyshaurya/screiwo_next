@@ -5,13 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
-import { SignedIn, UserButton } from "@clerk/nextjs";
+import { SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import { useClickOutside } from "react-click-outside-hook";
 import logo from "@/public/Logo.png";
 import SearchIcon from "/public/assets/Search";
 import { formatRelativeTime } from "@/app/lib/time";
 import useNotificationStream from "@/app/lib/useNotificationStream";
 import { getNotificationSummary } from "@/app/lib/api";
+import { clerkUserButtonProps } from "@/app/lib/clerkConfig";
 import { Input } from "@/components/ui/input";
 import {
   ArrowRight,
@@ -115,6 +116,7 @@ const SearchInput = ({
   setIsExpanded,
   className = "",
   requestBadge = null,
+  currentUserId = null,
 }) => {
   const router = useRouter();
   const [searchWrapperRef, hasClickedOutside] = useClickOutside();
@@ -126,7 +128,14 @@ const SearchInput = ({
 
   const query = searchTerm.trim();
   const hasQuery = query.length > 0;
-  const hasResults = searchList.length > 0;
+  const visibleSearchList = useMemo(() => {
+    if (!currentUserId) {
+      return searchList;
+    }
+
+    return searchList.filter((user) => user?.userid?.toString?.() !== currentUserId.toString());
+  }, [currentUserId, searchList]);
+  const hasResults = visibleSearchList.length > 0;
   const showPanel = isDropdownOpen && (isFocused || hasQuery || hasInteracted || isLoading);
 
   const closeSearch = () => {
@@ -211,34 +220,34 @@ const SearchInput = ({
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setActiveIndex((current) => (current + 1) % searchList.length);
+      setActiveIndex((current) => (current + 1) % visibleSearchList.length);
       setIsDropdownOpen(true);
       return;
     }
 
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActiveIndex((current) => (current <= 0 ? searchList.length - 1 : current - 1));
+      setActiveIndex((current) => (current <= 0 ? visibleSearchList.length - 1 : current - 1));
       setIsDropdownOpen(true);
       return;
     }
 
     if (event.key === "Enter") {
-      if (activeIndex >= 0 && searchList[activeIndex]) {
+      if (activeIndex >= 0 && visibleSearchList[activeIndex]) {
         event.preventDefault();
-        handleSelectResult(searchList[activeIndex]);
-      } else if (searchList[0]) {
+        handleSelectResult(visibleSearchList[activeIndex]);
+      } else if (visibleSearchList[0]) {
         event.preventDefault();
-        handleSelectResult(searchList[0]);
+        handleSelectResult(visibleSearchList[0]);
       }
     }
   };
 
   useEffect(() => {
-    if (activeIndex >= searchList.length) {
-      setActiveIndex(searchList.length - 1);
+    if (activeIndex >= visibleSearchList.length) {
+      setActiveIndex(visibleSearchList.length - 1);
     }
-  }, [searchList.length, activeIndex]);
+  }, [visibleSearchList.length, activeIndex]);
 
   useEffect(() => {
     if (hasClickedOutside) {
@@ -334,7 +343,7 @@ const SearchInput = ({
               </div>
             ) : hasResults ? (
               <div className="p-3">
-                {searchList.map((user, index) => {
+                {visibleSearchList.map((user, index) => {
                   const active = index === activeIndex;
                   return (
                     <button
@@ -393,6 +402,7 @@ const SearchInput = ({
 export const ProfileNav = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useUser();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -736,7 +746,7 @@ export const ProfileNav = () => {
       <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="grid min-h-[4.75rem] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3">
-            <Link href="/home" className="flex shrink-0 items-center gap-3 rounded-full bg-white/5 px-2 py-1 transition hover:bg-white/10">
+            <Link href="/home" className="flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 transition hover:border-white/20 hover:bg-white/15">
               <Image
                 src={logo}
                 alt="Screiwo"
@@ -744,7 +754,7 @@ export const ProfileNav = () => {
                 height={56}
                 priority
                 sizes="(max-width: 1024px) 140px, 176px"
-                className="h-10 w-auto sm:h-11 lg:h-12 brightness-0 invert contrast-125 saturate-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"
+                className="h-9 w-auto sm:h-10 lg:h-11 brightness-0 invert contrast-125 saturate-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"
               />
             </Link>
 
@@ -787,6 +797,7 @@ export const ProfileNav = () => {
                 isExpanded={isSearchExpanded}
                 setIsExpanded={setIsSearchExpanded}
                 requestBadge={requestCount > 0 ? requestCount : null}
+                currentUserId={user?.id || null}
               />
             </div>
 
@@ -831,7 +842,7 @@ export const ProfileNav = () => {
                 </Link>
               </div>
               <SignedIn>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton {...clerkUserButtonProps} />
               </SignedIn>
             </div>
 
@@ -861,7 +872,7 @@ export const ProfileNav = () => {
                 ) : null}
               </Link>
               <SignedIn>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton {...clerkUserButtonProps} />
               </SignedIn>
             </div>
           </div>
@@ -877,6 +888,7 @@ export const ProfileNav = () => {
               isExpanded={isSearchExpanded}
               setIsExpanded={setIsSearchExpanded}
               requestBadge={requestCount > 0 ? requestCount : null}
+              currentUserId={user?.id || null}
             />
           </div>
         </div>

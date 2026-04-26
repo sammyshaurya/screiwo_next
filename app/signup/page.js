@@ -1,4 +1,5 @@
 import { SignedOut, SignUp } from "@clerk/nextjs";
+import { clerkAppearance } from "@/app/lib/clerkConfig";
 
 export default function Signin() {
   return (
@@ -11,21 +12,23 @@ export default function Signin() {
               Join Screiwo and start writing.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-8 text-slate-300 sm:text-lg">
-              Create a clean, premium profile, publish writing, and follow creators in a fast social publishing experience.
+              Create a profile, publish writing, and follow creators in a focused publishing network built for readers and writers.
             </p>
           </div>
 
           <div className="mx-auto w-full max-w-md">
             <SignedOut>
-              <div className="app-panel overflow-hidden rounded-[28px]">
-                <div className="bg-slate-950/70 px-6 py-7">
+              <div className="app-panel overflow-hidden rounded-[28px] border border-white/10">
+                <div className="bg-black/70 px-5 py-6 sm:px-6">
                   <p className="app-kicker">Sign up</p>
                   <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
                     Start your account
                   </h2>
                 </div>
-                <div className="bg-slate-950/50 p-4">
-                  <SignUp routing="hash" />
+                <div className="bg-black/50 p-3 sm:p-4">
+                  <div className="overflow-hidden rounded-[22px]">
+                    <SignUp routing="hash" appearance={clerkAppearance} />
+                  </div>
                 </div>
               </div>
             </SignedOut>

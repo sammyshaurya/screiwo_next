@@ -1,0 +1,1 @@
+export { clerkAppearance } from "./clerkConfig";

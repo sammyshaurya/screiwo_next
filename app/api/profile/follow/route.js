@@ -19,6 +19,10 @@ export const POST = async (req) => {
       return NextResponse.json({ message: "Following ID is missing" }, { status: 400 });
     }
 
+    if (followUser === signeduser.id.toString()) {
+      return NextResponse.json({ message: "You cannot follow yourself" }, { status: 400 });
+    }
+
     const result = await followUserRelationship({
       followerId: signeduser.id.toString(),
       followingId: followUser,
@@ -51,6 +55,10 @@ export const DELETE = async (req) => {
 
     if (!followUser) {
       return NextResponse.json({ message: "Following ID is missing" }, { status: 400 });
+    }
+
+    if (followUser === signeduser.id.toString()) {
+      return NextResponse.json({ message: "You cannot unfollow yourself" }, { status: 400 });
     }
 
     const result = await unfollowUserRelationship({

@@ -1,8 +1,19 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import Signin from "./components/signin";
 
 export default function Home() {
+  const router = useRouter();
+  const { isLoaded, isSignedIn } = useUser();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.replace("/home");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
   return (
     <div className="app-page">
       <main className="flex min-h-screen items-center justify-center px-4 py-10">
@@ -10,10 +21,10 @@ export default function Home() {
           <div className="max-w-2xl">
             <p className="app-kicker">Screiwo</p>
             <h1 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Write, read, and follow in one calm, premium space.
+              Publish writing, build an audience, and keep every reader in one place.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-8 text-slate-300 sm:text-lg">
-              A monochrome-first social publishing app built for focused reading, polished profile pages, and a fast creator workflow.
+              A focused social publishing platform for reading, writing, saving, and following the creators you care about.
             </p>
             <div className="mt-8 flex flex-wrap gap-3 text-sm text-slate-400">
               <span className="app-chip">Editorial profiles</span>

@@ -14,6 +14,10 @@ export const POST = async (_req, { params }) => {
     return NextResponse.json("Unauthorized access", { status: 401 });
   }
 
+  if (params?.id?.toString?.() === signeduser.id.toString()) {
+    return NextResponse.json({ message: "You cannot unfollow yourself" }, { status: 400 });
+  }
+
   const result = await unfollowUserRelationship({
     followerId: signeduser.id.toString(),
     followingId: params?.id?.toString?.(),

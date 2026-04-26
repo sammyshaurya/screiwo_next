@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { clerkUserButtonProps } from "@/app/lib/clerkConfig";
 import {
   Home,
   Search,
@@ -80,7 +81,7 @@ const Navbar = () => {
               <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                 <MessageCircle className="w-5 h-5" />
               </Button>
-              <UserButton afterSignOutUrl="/" />
+              <UserButton {...clerkUserButtonProps} />
             </SignedIn>
             <SignedOut>
               <Link href="/signup">
@@ -88,7 +89,7 @@ const Navbar = () => {
                   Sign Up
                 </Button>
               </Link>
-              <Link href="/signin">
+              <Link href="/">
                 <Button size="sm">
                   Sign In
                 </Button>
@@ -150,7 +151,7 @@ const Navbar = () => {
                   <span>Profile</span>
                 </Link>
                 <div className="px-2 py-2">
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton {...clerkUserButtonProps} />
                 </div>
               </div>
             </SignedIn>
@@ -161,7 +162,7 @@ const Navbar = () => {
                     Sign Up
                   </Button>
                 </Link>
-                <Link href="/signin" className="w-full">
+                <Link href="/" className="w-full">
                   <Button size="sm" className="w-full">
                     Sign In
                   </Button>

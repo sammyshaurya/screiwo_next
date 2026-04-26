@@ -2,9 +2,8 @@ import "./globals.css";
 import Provider from "./provider";
 import {
   ClerkProvider,
-  SignedIn,
-  UserButton,
 } from "@clerk/nextjs";
+import { clerkAppearance } from "./lib/clerkConfig";
 
 export const metadata = {
   title: "Screiwo",
@@ -13,7 +12,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      appearance={clerkAppearance}
+    >
       <html lang="en" className="dark">
       <head>
         <link rel="dns-prefetch" href="https://img.clerk.com" />

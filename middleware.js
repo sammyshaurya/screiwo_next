@@ -18,43 +18,25 @@ const isProtectedRoute = createRouteMatcher([
 
 const isPublicRoute = createRouteMatcher([
   '/',
-  '/signin(.*)',
   '/signup(.*)',
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
-  
+export default clerkMiddleware((auth, req) => {
+  if (isProtectedRoute(req)) {
+    auth.protect();
+  }
+
   const pathname = req.nextUrl.pathname;
 
-  // Handle protected routes
-  if (isProtectedRoute(req)) {
-    if (!userId) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
+  if (isPublicRoute(req) && auth().userId) {
+    return NextResponse.redirect(new URL('/home', req.url));
   }
-
-  // Redirect authenticated users away from public routes to profile
-  if (isPublicRoute(req) && userId && pathname === '/') {
-    return NextResponse.redirect(new URL('/profile', req.url));
-  }
-
-  return NextResponse.next();
 });
 
 export const config = {
   matcher: [
+    '/((?!.*\\..*|_next).*)',
     '/',
-    '/home/:path*',
-    '/profile/:path*',
-    '/settings/:path*',
-    '/editprofile/:path*',
-    '/follow-requests/:path*',
-    '/createpost/:path*',
-    '/createprofile/:path*',
-    '/editor/:path*',
-    '/post/:path*',
-    '/user/:path*',
-    '/api/:path*',
+    '/(api|trpc)(.*)',
   ],
 };

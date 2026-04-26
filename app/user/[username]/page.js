@@ -333,7 +333,7 @@ export default function UsersProfile() {
               coverImageUrl: latestPost.coverImageUrl || null,
             } : null}
             activitySnapshot={activitySnapshot}
-            badgeLabel={
+            badgeLabel={isOwner ? "Your profile" : (
               followed
                 ? "Following"
                 : requested
@@ -341,9 +341,9 @@ export default function UsersProfile() {
                   : followBack
                     ? "Follows you"
                     : "Private"
-            }
+            )}
             actions={[
-              {
+              !isOwner ? {
                 onClick: () => submitFollow(curUser.userid),
                 label: actionLabel,
                 icon: <UserPlus className="h-4 w-4" />,
@@ -352,7 +352,7 @@ export default function UsersProfile() {
                 className: followed || requested
                   ? "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
                   : "bg-slate-950 text-white hover:bg-slate-800",
-              },
+              } : null,
               hasLatestPost
                 ? {
                     href: `/post/${latestPost._id}`,
@@ -557,7 +557,7 @@ export default function UsersProfile() {
             } : null}
             activitySnapshot={activitySnapshot}
             actions={[
-              {
+              !isOwner ? {
                 onClick: () => submitFollow(curUser.userid),
                 label: actionLabel,
                 icon: <UserPlus className="h-4 w-4" />,
@@ -567,14 +567,14 @@ export default function UsersProfile() {
                   ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
                   : "bg-blue-600 text-white hover:bg-blue-700",
                 disabled: false,
-              },
+              } : null,
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
                 icon: <Share2 className="h-4 w-4" />,
                 className: "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
               },
-            ]}
+            ].filter(Boolean)}
             statCards={[
               { label: "Posts", value: curUser.postCount || posts.length || 0 },
               {

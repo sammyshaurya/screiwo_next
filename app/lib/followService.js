@@ -73,6 +73,10 @@ function buildRelationshipPayload({
   };
 }
 
+function isSameUser(followerId, followingId) {
+  return toId(followerId) === toId(followingId) && Boolean(toId(followerId));
+}
+
 async function syncFollowCounts(userId) {
   if (!userId) {
     return { Followers: 0, Followings: 0 };
@@ -248,6 +252,20 @@ export async function getFollowRelationshipState({ viewerId, targetId }) {
 }
 
 export async function followUserRelationship({ followerId, followingId }) {
+  if (isSameUser(followerId, followingId)) {
+    return {
+      message: "You cannot follow yourself",
+      relationship: "self",
+      isFollowing: false,
+      isRequested: false,
+      isFollowBack: false,
+      isSelf: true,
+      noOp: true,
+      actorProfile: await getProfileSnapshot(followerId),
+      targetProfile: await getProfileSnapshot(followingId),
+    };
+  }
+
   const state = await upsertFollowRelation({ followerId, followingId });
   if (!state) {
     return null;
@@ -311,6 +329,20 @@ export async function followUserRelationship({ followerId, followingId }) {
 }
 
 export async function unfollowUserRelationship({ followerId, followingId }) {
+  if (isSameUser(followerId, followingId)) {
+    return {
+      message: "You cannot unfollow yourself",
+      relationship: "self",
+      isFollowing: false,
+      isRequested: false,
+      isFollowBack: false,
+      isSelf: true,
+      noOp: true,
+      actorProfile: await getProfileSnapshot(followerId),
+      targetProfile: await getProfileSnapshot(followingId),
+    };
+  }
+
   const existing = await Follow.findOne({ followerId, followingId }).lean();
   if (!existing) {
     return {
