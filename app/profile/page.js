@@ -194,19 +194,19 @@ export default function Profile() {
                 href: "/createpost",
                 label: "Write",
                 icon: <PenLine className="h-4 w-4" />,
-                className: "bg-slate-950 text-white hover:bg-slate-800",
+                className: "border border-white/10 bg-white text-slate-950 hover:bg-slate-100",
               },
               {
                 href: "/settings",
                 label: "Settings",
                 icon: <Settings className="h-4 w-4" />,
-                className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
+                className: "border border-slate-700/80 bg-slate-900 text-slate-200 hover:border-slate-500 hover:bg-slate-800",
               },
               {
                 onClick: handleCopyProfile,
                 label: copied ? "Copied" : "Share",
                 icon: <Share2 className="h-4 w-4" />,
-                className: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
+                className: "border border-slate-700/80 bg-slate-900 text-slate-200 hover:border-slate-500 hover:bg-slate-800",
               },
             ]}
             statCards={[
@@ -227,10 +227,10 @@ export default function Profile() {
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Featured
                 </p>
-                <h3 className="mt-3 text-xl font-black leading-snug text-slate-950">
+                <h3 className="mt-3 text-xl font-black leading-snug text-white">
                   {latestPost ? latestPost.title : "No featured post yet"}
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">
+                <p className="mt-3 text-sm leading-7 text-slate-300">
                   {latestPost
                     ? latestPost.excerpt || "Your latest post is highlighted here for returning readers."
                     : "Publish a post and it will become the starting point for readers visiting your profile."}
@@ -238,7 +238,7 @@ export default function Profile() {
                 {latestPost ? (
                   <Link
                     href={`/post/${latestPost._id}`}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-950 hover:text-slate-600"
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-slate-300"
                   >
                     Read featured post
                     <ArrowRight className="h-4 w-4" />
@@ -252,19 +252,19 @@ export default function Profile() {
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Reader context
                 </p>
-                <div className="mt-5 space-y-4 text-sm text-slate-700">
+                <div className="mt-5 space-y-4 text-sm text-slate-300">
                   {showProfileDetails && joinedLabel ? (
                     <div className="flex items-center gap-3">
-                      <BookOpen className="h-4 w-4 text-slate-950" />
+                      <BookOpen className="h-4 w-4 text-white" />
                       <span>Joined {joinedLabel}</span>
                     </div>
                   ) : !showProfileDetails ? (
-                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    <div className="rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/80 px-4 py-3 text-sm text-slate-400">
                       Profile details are hidden on the main profile.
                     </div>
                   ) : null}
                     <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-slate-950" />
+                      <Users className="h-4 w-4 text-white" />
                       <span>{user.Followers || 0} followers</span>
                     </div>
                   </div>
@@ -277,6 +277,9 @@ export default function Profile() {
               <FollowersList
                 handleFollowersClick={() => setShowFollowers(false)}
                 user={user.username}
+                ownerId={user.userid}
+                viewerIsOwner={true}
+                onMutate={() => fetchProfile()}
               />
             )}
             {showFollowing && (
@@ -290,16 +293,16 @@ export default function Profile() {
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                       Library
                     </p>
-                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-950">
+                    <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
                       Published writing
                     </h2>
                   </div>
                   <Link
                     href="/createpost"
-                    className="hidden items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800 sm:inline-flex"
+                    className="hidden items-center gap-2 text-sm font-semibold text-slate-200 transition hover:text-white sm:inline-flex"
                   >
                     New post
                     <ArrowRight className="h-4 w-4" />
@@ -307,17 +310,17 @@ export default function Profile() {
                 </div>
 
                 {posts.length === 0 ? (
-                  <div className="border border-dashed border-gray-300 bg-white px-8 py-12 text-center">
-                    <FileText className="mx-auto h-8 w-8 text-gray-400" />
-                    <h3 className="mt-4 text-xl font-bold text-gray-950">
+                  <div className="rounded-[28px] border border-dashed border-slate-700/80 bg-slate-900/80 px-8 py-12 text-center">
+                    <FileText className="mx-auto h-8 w-8 text-slate-400" />
+                    <h3 className="mt-4 text-xl font-bold text-white">
                       Start your first post
                     </h3>
-                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-400">
                       Your profile is ready. Publish a story, note, or idea so readers have something to explore.
                     </p>
                     <Link
                       href="/createpost"
-                      className="mt-6 inline-flex h-10 items-center bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+                      className="mt-6 inline-flex h-10 items-center rounded-full border border-slate-700 bg-white px-4 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
                     >
                       Write first post
                     </Link>
@@ -335,28 +338,28 @@ export default function Profile() {
             {activeTab === "about" && (
               <div className="grid gap-5 md:grid-cols-2">
             <section className="app-section">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                     Profile
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-gray-500">Display name</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{displayName(user)}</dd>
+                        <dt className="text-sm text-slate-400">Display name</dt>
+                        <dd className="mt-1 font-semibold text-white">{displayName(user)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Username</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">@{user.username}</dd>
+                        <dt className="text-sm text-slate-400">Username</dt>
+                        <dd className="mt-1 font-semibold text-white">@{user.username}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Joined</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{formatJoinDate(user.createdAt)}</dd>
+                        <dt className="text-sm text-slate-400">Joined</dt>
+                        <dd className="mt-1 font-semibold text-white">{formatJoinDate(user.createdAt) || "Not available"}</dd>
                       </div>
                       {user.website ? (
                         <div>
-                          <dt className="text-sm text-gray-500">Website</dt>
-                          <dd className="mt-1 font-semibold text-blue-700">
-                            <a href={user.website.startsWith("http") ? user.website : `https://${user.website}`} target="_blank" rel="noreferrer">
+                          <dt className="text-sm text-slate-400">Website</dt>
+                          <dd className="mt-1 font-semibold text-white">
+                            <a href={user.website.startsWith("http") ? user.website : `https://${user.website}`} target="_blank" rel="noreferrer" className="transition hover:text-slate-300">
                               {user.website}
                             </a>
                           </dd>
@@ -364,33 +367,33 @@ export default function Profile() {
                       ) : null}
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                    <div className="mt-5 rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/80 px-5 py-6 text-sm leading-6 text-slate-400">
                       Profile details are hidden by your preference. Your bio and posts remain visible where allowed.
                     </div>
                   )}
                 </section>
 
             <section className="app-section">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                     Details
                   </p>
                   {showProfileDetails ? (
                     <dl className="mt-5 space-y-4">
                       <div>
-                        <dt className="text-sm text-gray-500">Profile type</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{user.profileType || "Personal"}</dd>
+                        <dt className="text-sm text-slate-400">Profile type</dt>
+                        <dd className="mt-1 font-semibold text-white">{user.profileType || "Personal"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Birthday</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{formatBirthday(user.dob)}</dd>
+                        <dt className="text-sm text-slate-400">Birthday</dt>
+                        <dd className="mt-1 font-semibold text-white">{formatBirthday(user.dob)}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500">Gender</dt>
-                        <dd className="mt-1 font-semibold text-gray-950">{user.gender || "Not shared"}</dd>
+                        <dt className="text-sm text-slate-400">Gender</dt>
+                        <dd className="mt-1 font-semibold text-white">{user.gender || "Not shared"}</dd>
                       </div>
                     </dl>
                   ) : (
-                    <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-6 text-sm leading-6 text-gray-600">
+                    <div className="mt-5 rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/80 px-5 py-6 text-sm leading-6 text-slate-400">
                       Only your posts and public activity are shown here.
                     </div>
                   )}
@@ -406,20 +409,20 @@ export default function Profile() {
                   { label: "Bookmarks", value: profileMetrics.saves },
                   { label: "Reads", value: profileMetrics.views },
                 ].map((item) => (
-                  <section key={item.label} className="border border-gray-200 bg-white p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  <section key={item.label} className="rounded-[24px] border border-slate-800/80 bg-slate-900/90 p-6 shadow-[0_20px_50px_rgba(2,6,23,0.35)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                       {item.label}
                     </p>
-                    <p className="mt-3 text-3xl font-bold text-gray-950">{item.value}</p>
+                    <p className="mt-3 text-3xl font-black text-white">{item.value}</p>
                   </section>
                 ))}
               </div>
             )}
           </ProfileShell>
         ) : (
-          <section className="app-panel p-8 text-center">
-            <h1 className="text-2xl font-black text-slate-950">Profile not available</h1>
-            <p className="mt-3 text-slate-600">We could not load your profile right now.</p>
+          <section className="app-panel rounded-[28px] p-8 text-center">
+            <h1 className="text-2xl font-black text-white">Profile not available</h1>
+            <p className="mt-3 text-slate-300">We could not load your profile right now.</p>
           </section>
         )}
       </main>

@@ -98,23 +98,21 @@ export const unbookmarkPost = async (postId) => {
 // FOLLOWS
 export const followUser = async (followUserId) => {
   try {
-    const response = await apiClient.post('/profile/follow', {
-      followUser: followUserId,
-    });
+    const response = await apiClient.post(`/users/${followUserId}/follow`);
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    const normalized = error.response?.data || { message: error.message || 'Follow request failed' };
+    throw normalized;
   }
 };
 
 export const unfollowUser = async (followUserId) => {
   try {
-    const response = await apiClient.delete('/profile/follow', {
-      params: { followUser: followUserId },
-    });
+    const response = await apiClient.post(`/users/${followUserId}/unfollow`);
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    const normalized = error.response?.data || { message: error.message || 'Unfollow request failed' };
+    throw normalized;
   }
 };
 
@@ -127,12 +125,23 @@ export const getFollowRequests = async () => {
   }
 };
 
+export const getFollowStatus = async (followUserId = null, username = null) => {
+  try {
+    const response = await apiClient.get('/profile/follow/status', {
+      params: {
+        followUser: followUserId || undefined,
+        username: username || undefined,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 export const acceptFollowRequest = async (requestUserId) => {
   try {
-    const response = await apiClient.post('/profile/follow/requests', {
-      requestUser: requestUserId,
-      action: 'accept',
-    });
+    const response = await apiClient.post(`/requests/${requestUserId}/accept`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -141,10 +150,25 @@ export const acceptFollowRequest = async (requestUserId) => {
 
 export const declineFollowRequest = async (requestUserId) => {
   try {
-    const response = await apiClient.post('/profile/follow/requests', {
-      requestUser: requestUserId,
-      action: 'decline',
-    });
+    const response = await apiClient.post(`/requests/${requestUserId}/decline`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const cancelFollowRequest = async (followUserId) => {
+  try {
+    const response = await apiClient.post(`/users/${followUserId}/request/cancel`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const removeFollower = async (ownerId, followerId) => {
+  try {
+    const response = await apiClient.delete(`/users/${ownerId}/followers/${followerId}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -177,10 +201,22 @@ export const markNotificationAsRead = async (notificationId = null, readAll = fa
 
 export const getUnreadNotificationCount = async () => {
   try {
-    const response = await apiClient.head('/notifications');
-    return parseInt(response.headers['x-unread-count'] || 0);
+    const response = await apiClient.get('/notifications/summary');
+    return parseInt(response.data?.unreadCount || 0, 10);
   } catch (error) {
     return 0;
+  }
+};
+
+export const getNotificationSummary = async () => {
+  try {
+    const response = await apiClient.get('/notifications/summary');
+    return {
+      unreadCount: parseInt(response.data?.unreadCount || 0, 10),
+      requestCount: parseInt(response.data?.requestCount || 0, 10),
+    };
+  } catch (error) {
+    return { unreadCount: 0, requestCount: 0 };
   }
 };
 

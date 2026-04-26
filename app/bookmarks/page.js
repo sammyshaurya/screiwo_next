@@ -36,23 +36,23 @@ export default function BookmarksPage() {
       <div className="app-shell max-w-3xl">
         <div className="app-panel sticky top-[4.75rem] z-10 rounded-t-none">
           <div className="flex items-center gap-3 px-4 py-3 md:px-6">
-            <Link href="/home" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950">
+            <Link href="/home" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white">
               <ArrowLeft size={20} />
             </Link>
             <div>
               <p className="app-kicker">Library</p>
-              <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">Saved posts</h1>
+              <h1 className="mt-1 text-2xl font-black tracking-tight text-white">Saved posts</h1>
             </div>
           </div>
         </div>
 
         <div className="space-y-4 py-6">
           {loading ? (
-            <div className="app-section text-center text-slate-500">
+            <div className="app-section text-center text-slate-400">
               Loading bookmarks...
             </div>
           ) : posts.length === 0 ? (
-            <div className="app-section text-center text-slate-500">
+            <div className="app-section text-center text-slate-400">
               No saved posts yet. Start bookmarking posts to see them here!
             </div>
           ) : (
@@ -77,7 +77,7 @@ export default function BookmarksPage() {
                   >
                     Previous
                   </button>
-                  <span className="inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-500">
+                  <span className="inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-400">
                     Page {page} of {totalPages}
                   </span>
                   <button

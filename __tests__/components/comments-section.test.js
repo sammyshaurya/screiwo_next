@@ -86,7 +86,7 @@ describe('CommentsSection', () => {
       expect(screen.getByText('Delete me')).toBeInTheDocument()
     })
 
-    const deleteButton = screen.getAllByRole('button').find((button) => button.className.includes('hover:text-red-600'))
+    const deleteButton = screen.getByLabelText('Delete comment')
     fireEvent.click(deleteButton)
 
     await waitFor(() => {

@@ -33,6 +33,10 @@ jest.mock('@/app/models/Notification.model', () => ({
   },
 }))
 
+jest.mock('@/app/lib/notifications/pipeline', () => ({
+  enqueueNotificationEvent: jest.fn().mockResolvedValue({ queued: true }),
+}))
+
 jest.mock('@/app/models/Activity.model', () => ({
   __esModule: true,
   default: {
@@ -58,6 +62,7 @@ import Posts from '@/app/models/Posts.model'
 import Notification from '@/app/models/Notification.model'
 import Activity from '@/app/models/Activity.model'
 import Profile from '@/app/models/Profile.model'
+import { enqueueNotificationEvent } from '@/app/lib/notifications/pipeline'
 import { auth } from '@clerk/nextjs/server'
 
 function makeQuery(result) {
@@ -151,10 +156,10 @@ describe('Comments API Routes', () => {
         type: 'post_comment',
       })
     )
-    expect(Notification.create).toHaveBeenCalledWith(
+    expect(enqueueNotificationEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        userId: 'user_999',
-        fromUserId: 'user_123',
+        recipientId: 'user_999',
+        actorId: 'user_123',
         type: 'comment',
         message: expect.stringContaining('Alice'),
       })

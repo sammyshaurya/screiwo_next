@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { X, Users } from "lucide-react";
+import { Trash2, X, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { removeFollower as removeFollowerApi } from "@/app/lib/api";
 
-const FollowersList = ({ handleFollowersClick, user = null }) => {
+const FollowersList = ({ handleFollowersClick, user = null, ownerId = null, viewerIsOwner = false, onMutate = null }) => {
   const [followers, setFollowers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [privacyBlocked, setPrivacyBlocked] = useState(false);
   const [message, setMessage] = useState("");
+  const [isRemoving, setIsRemoving] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,26 +63,43 @@ const FollowersList = ({ handleFollowersClick, user = null }) => {
     };
   }, [user]);
 
+  const handleRemoveFollower = async (follower) => {
+    if (!viewerIsOwner || !ownerId || !follower?.userid) {
+      return;
+    }
+
+    try {
+      setIsRemoving(follower.userid);
+      await removeFollowerApi(ownerId, follower.userid);
+      setFollowers((current) => current.filter((item) => item.userid !== follower.userid));
+      await onMutate?.();
+    } catch (error) {
+      console.error("Failed to remove follower:", error);
+    } finally {
+      setIsRemoving(null);
+    }
+  };
+
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-slate-950/50" />
+      <div className="fixed inset-0 z-40 bg-slate-950/80" />
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
-        <div className="w-full max-w-md overflow-hidden border border-gray-200 bg-white shadow-xl">
-          <div className="border-b border-slate-100 px-6 py-5">
+        <div className="w-full max-w-md overflow-hidden border border-slate-800 bg-slate-900 shadow-[0_30px_90px_rgba(2,6,23,0.6)]">
+          <div className="border-b border-slate-800 px-6 py-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                   Community
                 </p>
-                <h3 className="mt-2 text-2xl font-black text-slate-950">Followers</h3>
-                <p className="mt-2 text-sm text-slate-500">
+                <h3 className="mt-2 text-2xl font-black text-white">Followers</h3>
+                <p className="mt-2 text-sm text-slate-400">
                   People who want to keep up with this profile.
                 </p>
               </div>
               <button
                 onClick={handleFollowersClick}
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800"
+                className="inline-flex h-10 w-10 items-center justify-center border border-slate-700 text-slate-400 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
                 aria-label="Close followers list"
               >
                 <X className="h-4 w-4" />
@@ -91,7 +110,7 @@ const FollowersList = ({ handleFollowersClick, user = null }) => {
           <div className="max-h-[24rem] space-y-3 overflow-y-auto px-6 py-5">
             {isLoading &&
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="flex items-center gap-3 border border-gray-100 p-3">
+                <div key={index} className="flex items-center gap-3 border border-slate-800 p-3">
                   <Skeleton className="h-12 w-12 rounded-full" />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-28" />
@@ -101,14 +120,14 @@ const FollowersList = ({ handleFollowersClick, user = null }) => {
               ))}
 
             {!isLoading && followers.length === 0 && (
-              <div className="border border-dashed border-gray-200 bg-gray-50 px-5 py-10 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center bg-white shadow-sm">
-                  <Users className="h-5 w-5 text-slate-500" />
+              <div className="border border-dashed border-slate-700 bg-slate-950 px-5 py-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center bg-slate-900 shadow-sm">
+                  <Users className="h-5 w-5 text-slate-300" />
                 </div>
-                <p className="mt-4 text-sm font-semibold text-slate-900">
+                <p className="mt-4 text-sm font-semibold text-white">
                   {privacyBlocked ? "Followers are private" : "No followers yet"}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
+                <p className="mt-2 text-sm leading-6 text-slate-400">
                   {privacyBlocked
                     ? message || "This profile has chosen to keep follower details private."
                     : "Once people start following this profile, they’ll show up here."}
@@ -118,28 +137,41 @@ const FollowersList = ({ handleFollowersClick, user = null }) => {
 
             {!isLoading &&
               followers.map((follower) => (
-                <Link
-                  className="flex items-center justify-between border border-gray-100 p-3 transition hover:border-gray-200 hover:bg-gray-50"
+                <div
+                  className="flex items-center justify-between border border-slate-800 p-3 transition hover:border-slate-600 hover:bg-slate-800"
                   key={follower.userid || follower.username}
-                  href={`/user/${follower.username}`}
-                  onClick={handleFollowersClick}
                 >
-                  <div className="flex items-center gap-3">
+                  <Link
+                    href={`/user/${follower.username}`}
+                    onClick={handleFollowersClick}
+                    className="flex min-w-0 flex-1 items-center gap-3"
+                  >
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={follower.profileImageUrl || undefined} />
-                      <AvatarFallback className="bg-slate-950 text-sm font-semibold text-white">
+                      <AvatarFallback className="bg-white text-sm font-semibold text-slate-950">
                         {(follower.username || "?").charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-semibold text-slate-950">@{follower.username}</p>
-                      <p className="text-sm text-slate-500">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-white">@{follower.username}</p>
+                      <p className="truncate text-sm text-slate-400">
                         {[follower.FirstName, follower.LastName].filter(Boolean).join(" ") || "View profile"}
                       </p>
                     </div>
-                  </div>
-                  <span className="text-sm font-semibold text-slate-400">View</span>
-                </Link>
+                    <span className="text-sm font-semibold text-slate-500">View</span>
+                  </Link>
+                  {viewerIsOwner ? (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFollower(follower)}
+                      disabled={isRemoving === follower.userid}
+                      className="ml-3 inline-flex h-9 items-center gap-2 rounded-full border border-slate-700 px-3 text-xs font-semibold text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {isRemoving === follower.userid ? "Removing..." : "Remove"}
+                    </button>
+                  ) : null}
+                </div>
               ))}
           </div>
         </div>

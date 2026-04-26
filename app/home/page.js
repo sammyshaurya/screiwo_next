@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import ProfileNav from "@/app/components/Pages/main/ProfileNav";
 import EnhancedPostCard from "@/app/components/Pages/EnhancedPostCard";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { followUser as followProfile } from "@/app/lib/api";
 import { useActionLock } from "@/app/lib/useActionLock";
@@ -81,32 +83,32 @@ function matchesTopic(post, topic) {
 
 function HeroStat({ label, value, hint }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/85 p-4 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-black tracking-tight text-slate-950">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
-    </div>
+    <Card className="border-white/10 bg-[#0a0d14] shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition-shadow hover:border-white/20 hover:shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
+      <CardContent className="p-4 md:p-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/45">{label}</p>
+        <p className="mt-2 text-2xl font-black tracking-tight text-white">{value}</p>
+        {hint ? <p className="mt-1 text-xs leading-5 text-white/55">{hint}</p> : null}
+      </CardContent>
+    </Card>
   );
 }
 
 function TopicChip({ topic, count, active, onClick }) {
   return (
-    <button
+    <Button
       type="button"
+      variant={active ? "default" : "secondary"}
+      size="sm"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-        active
-          ? "border-slate-950 bg-slate-950 text-white"
-          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
-      }`}
+      className={`gap-2 rounded-full px-4 ${active ? "border-white bg-white text-black hover:bg-white hover:text-black" : "border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10 hover:text-white"}`}
     >
       <span>{topic}</span>
       {count ? (
-        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${active ? "bg-white/15 text-white" : "bg-slate-100 text-slate-500"}`}>
+        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${active ? "bg-black/15 text-black" : "bg-white/10 text-white/70"}`}>
           {count}
         </span>
       ) : null}
-    </button>
+    </Button>
   );
 }
 
@@ -114,10 +116,10 @@ function ContinueCard({ item }) {
   return (
     <Link
       href={`/post/${item._id}`}
-      className="group min-w-[260px] rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+      className="group min-w-[260px] rounded-[1.5rem] border border-white/10 bg-[#0a0d14] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_60px_rgba(0,0,0,0.48)]"
     >
       {item.coverImageUrl ? (
-        <div className="mb-4 overflow-hidden rounded-2xl border border-slate-100">
+        <div className="mb-4 overflow-hidden rounded-2xl border border-white/10">
           <img
             src={item.coverImageUrl}
             alt={item.title || "Continue reading"}
@@ -125,16 +127,16 @@ function ContinueCard({ item }) {
           />
         </div>
       ) : (
-        <div className="mb-4 flex h-32 items-center justify-center rounded-2xl bg-slate-950 text-white">
+        <div className="mb-4 flex h-32 items-center justify-center rounded-2xl border border-white/10 bg-black text-white">
           <Clock3 className="h-6 w-6" />
         </div>
       )}
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Continue reading</p>
-      <h3 className="mt-2 line-clamp-2 text-lg font-bold tracking-tight text-slate-950">{item.title}</h3>
-      <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/45">Continue reading</p>
+      <h3 className="mt-2 line-clamp-2 text-lg font-bold tracking-tight text-foreground">{item.title}</h3>
+      <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/60">
         {item.excerpt || "Tap to pick up where you left off."}
       </p>
-      <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-blue-700">
+      <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-white">
         Resume
         <ArrowRight className="h-4 w-4" />
       </div>
@@ -147,43 +149,45 @@ function CreatorCard({ profile, onFollow, status, busy }) {
   const label = status === "following" ? "Following" : status === "requested" ? "Requested" : profile?.isPrivate ? "Request" : "Follow";
 
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <Link href={`/user/${profile.username}`} className="shrink-0">
-        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-sm font-bold text-slate-700">
-          {profile.profileImageUrl ? (
-            <img src={profile.profileImageUrl} alt={profile.username} className="h-full w-full object-cover" />
-          ) : initials}
-        </div>
-      </Link>
-      <div className="min-w-0 flex-1">
-        <Link href={`/user/${profile.username}`} className="block">
-          <p className="truncate text-sm font-semibold text-slate-950">
-            {[profile.FirstName, profile.LastName].filter(Boolean).join(" ") || profile.username}
-          </p>
-          <p className="text-xs text-slate-500">@{profile.username}</p>
+    <Card className="border-white/10 bg-[#0a0d14] shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+      <CardContent className="flex items-start gap-3 p-4">
+        <Link href={`/user/${profile.username}`} className="shrink-0">
+          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 text-sm font-bold text-white">
+            {profile.profileImageUrl ? (
+              <img src={profile.profileImageUrl} alt={profile.username} className="h-full w-full object-cover" />
+            ) : (
+              initials
+            )}
+          </div>
         </Link>
-        <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
-          {profile.Bio || "A creator worth following for new ideas and strong opinions."}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-          <span>{profile.Followers || 0} followers</span>
-          <span>•</span>
-          <span>{profile.postCount || 0} posts</span>
+        <div className="min-w-0 flex-1">
+          <Link href={`/user/${profile.username}`} className="block">
+            <p className="truncate text-sm font-semibold text-white">
+              {[profile.FirstName, profile.LastName].filter(Boolean).join(" ") || profile.username}
+            </p>
+            <p className="text-xs text-white/55">@{profile.username}</p>
+          </Link>
+          <p className="mt-2 line-clamp-2 text-xs leading-5 text-white/55">
+            {profile.Bio || "A creator worth following for new ideas and strong opinions."}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-white/45">
+            <span>{profile.Followers || 0} followers</span>
+            <span>•</span>
+            <span>{profile.postCount || 0} posts</span>
+          </div>
         </div>
-      </div>
-      <button
+        <Button
         type="button"
         onClick={() => onFollow(profile)}
         disabled={busy || status === "following"}
-        className={`inline-flex h-9 items-center justify-center rounded-full px-3 text-xs font-semibold transition ${
-          status === "following"
-            ? "border border-slate-200 bg-slate-50 text-slate-600"
-            : "bg-slate-950 text-white hover:bg-slate-800 disabled:opacity-70"
-        }`}
+        variant={status === "following" ? "outline" : "default"}
+        size="sm"
+        className="shrink-0 rounded-full px-3 text-xs"
       >
         {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : label}
-      </button>
-    </div>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -317,45 +321,48 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(219,234,254,0.85),_transparent_30%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_22%),linear-gradient(180deg,_#000000_0%,_#05070d_36%,_#090b12_100%)] text-white">
       <ProfileNav />
 
-      <main className="mx-auto max-w-7xl px-4 pt-6 md:px-6 md:pt-8">
-        <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white/90 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+      <main className="mx-auto max-w-[1200px] px-4 pb-8 pt-5 md:px-6 md:pt-8">
+        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-black/90 shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
           <div className="grid gap-6 p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
-              <div className="rounded-[2rem] border border-slate-200 bg-slate-950 px-5 py-6 text-white shadow-sm md:px-6 md:py-7">
-                <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                  <div className="max-w-2xl">
-                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
-                      Screiwo Home
-                    </p>
-                    <h1 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
-                      {sectionTitle(activeFeed)}
-                    </h1>
-                    <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300 md:text-base">
-                      Catch up, discover new voices, and continue reading without losing your place.
-                    </p>
+              <Card className="overflow-hidden border-white/10 bg-[#05070d] shadow-[0_20px_60px_rgba(0,0,0,0.38)]">
+                <CardContent className="p-5 md:p-6">
+                  <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                    <div className="max-w-2xl">
+                      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/45">
+                        Screiwo Home
+                      </p>
+                      <h1 className="mt-3 text-3xl font-black tracking-tight text-white md:text-5xl">
+                        {sectionTitle(activeFeed)}
+                      </h1>
+                      <p className="mt-3 max-w-xl text-sm leading-7 text-white/60 md:text-base">
+                        Catch up, discover new voices, and continue reading without losing your place.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <Button asChild size="lg" className="h-11 gap-2 rounded-full border border-white bg-white px-4 text-black hover:bg-white hover:text-black">
+                        <Link href="/createpost">
+                          <PenSquare className="h-4 w-4" />
+                          Write
+                        </Link>
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => loadFeed(activeFeed)}
+                        variant="outline"
+                        size="lg"
+                        className="h-11 gap-2 rounded-full border-white/15 bg-white/5 px-4 text-white hover:border-white/25 hover:bg-white/10 hover:text-white"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isLoadingFeed ? "animate-spin" : ""}`} />
+                        Refresh
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Link
-                      href="/createpost"
-                      className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-                    >
-                      <PenSquare className="h-4 w-4" />
-                      Write
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => loadFeed(activeFeed)}
-                      className="inline-flex h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isLoadingFeed ? "animate-spin" : ""}`} />
-                      Refresh
-                    </button>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <HeroStat label="Posts" value={overviewLoading ? "…" : stats.posts || 0} hint="Published from your profile" />
@@ -368,10 +375,10 @@ const Home = () => {
                 <section>
                   <div className="mb-4 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Continue</p>
-                      <h2 className="mt-2 text-xl font-bold tracking-tight text-slate-950">Continue reading</h2>
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/45">Continue</p>
+                      <h2 className="mt-2 text-xl font-bold tracking-tight text-white">Continue reading</h2>
                     </div>
-                    <span className="text-sm font-semibold text-slate-500">Recent pages</span>
+                    <span className="text-sm font-semibold text-white/55">Recent pages</span>
                   </div>
                   <div className="flex gap-4 overflow-x-auto pb-1">
                     {recentPosts.map((item) => (
@@ -384,41 +391,39 @@ const Home = () => {
               <section className="space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Feed</p>
-                    <h2 className="mt-2 text-xl font-bold tracking-tight text-slate-950">Choose your stream</h2>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/45">Feed</p>
+                    <h2 className="mt-2 text-xl font-bold tracking-tight text-white">Choose your stream</h2>
                   </div>
-                  <Sparkles className="h-5 w-5 text-slate-400" />
+                  <Sparkles className="h-5 w-5 text-white/45" />
                 </div>
 
-                <div className="sticky top-[4.75rem] z-20 -mx-5 border-y border-slate-200 bg-white/95 px-5 py-3 backdrop-blur md:static md:mx-0 md:border md:border-slate-200 md:rounded-2xl">
+                <div className="sticky top-[4.75rem] z-20 -mx-5 border-y border-white/10 bg-black/90 px-5 py-3 backdrop-blur md:static md:mx-0 md:rounded-2xl md:border md:border-white/10">
                   <div className="flex gap-2 overflow-x-auto">
                     {FEED_TABS.map((tab) => (
-                      <button
+                      <Button
                         key={tab.id}
                         type="button"
                         onClick={() => handleFeedChange(tab.id)}
-                        className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                          activeFeed === tab.id
-                            ? "border-slate-950 bg-slate-950 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-950"
-                        }`}
+                        variant={activeFeed === tab.id ? "default" : "secondary"}
+                        size="sm"
+                        className={`shrink-0 rounded-full px-4 ${activeFeed === tab.id ? "border border-white bg-white text-black hover:bg-white hover:text-black" : "border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10 hover:text-white"}`}
                       >
                         {tab.label}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setTopicFilter("")}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                      topicFilter ? "border-slate-200 bg-white text-slate-500" : "border-slate-950 bg-slate-950 text-white"
-                    }`}
+                    variant={topicFilter ? "secondary" : "default"}
+                    size="sm"
+                    className={`rounded-full px-3 text-xs ${topicFilter ? "border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10 hover:text-white" : "border border-white bg-white text-black hover:bg-white hover:text-black"}`}
                   >
                     All topics
-                  </button>
+                  </Button>
                   {trendingTopics.map((topic) => (
                     <TopicChip
                       key={topic.topic}
@@ -431,156 +436,159 @@ const Home = () => {
                 </div>
               </section>
 
-              {isLoadingFeed ? (
-                <div className="space-y-6">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm md:p-5">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-11 w-11 rounded-full" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-36" />
-                          <Skeleton className="h-3 w-24" />
-                        </div>
-                      </div>
-                      <Skeleton className="mt-4 h-6 w-3/4" />
-                      <Skeleton className="mt-3 h-40 w-full rounded-2xl" />
-                      <Skeleton className="mt-3 h-20 w-full" />
+                {isLoadingFeed ? (
+                  <div className="space-y-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Card key={i} className="overflow-hidden border-white/10 bg-[#05070d] shadow-[0_14px_40px_rgba(0,0,0,0.32)]">
+                        <CardContent className="p-4 md:p-5">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-11 w-11 rounded-full" />
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-36" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                          </div>
+                          <Skeleton className="mt-4 h-6 w-3/4" />
+                          <Skeleton className="mt-3 h-40 w-full rounded-2xl" />
+                          <Skeleton className="mt-3 h-20 w-full" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : feedError ? (
+                  <div className="rounded-[1.75rem] border border-dashed border-white/10 bg-[#05070d] px-6 py-10 text-center text-white/60">
+                    {feedError}
+                  </div>
+                ) : filteredPosts.length > 0 ? (
+                  <div className="space-y-5">
+                    {filteredPosts.map((post) => (
+                      <EnhancedPostCard key={post._id} post={post} currentUserId={userId} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-[1.75rem] border border-dashed border-white/10 bg-[#05070d] px-6 py-14 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white">
+                      <Flame className="h-6 w-6" />
                     </div>
-                  ))}
-                </div>
-              ) : feedError ? (
-                <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-slate-600">
-                  {feedError}
-                </div>
-              ) : filteredPosts.length > 0 ? (
-                <div className="space-y-5">
-                  {filteredPosts.map((post) => (
-                    <EnhancedPostCard key={post._id} post={post} currentUserId={userId} />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white">
-                    <Flame className="h-6 w-6" />
+                    <h3 className="mt-5 text-xl font-bold tracking-tight text-white">
+                      Nothing here yet
+                    </h3>
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-white/60">
+                      Try another feed, follow a few more creators, or open trending topics to fill this space.
+                    </p>
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                      <Button asChild size="sm" className="h-10 rounded-full border border-white bg-white px-4 text-black hover:bg-white hover:text-black">
+                        <Link href="/home?tab=trending">
+                          Explore trending
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm" className="h-10 rounded-full border-white/15 bg-white/5 px-4 text-white hover:border-white/25 hover:bg-white/10 hover:text-white">
+                        <Link href="/createpost">
+                          Write a post
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                  <h3 className="mt-5 text-xl font-bold tracking-tight text-slate-950">
-                    Nothing here yet
-                  </h3>
-                  <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-slate-600">
-                    Try another feed, follow a few more creators, or open trending topics to fill this space.
-                  </p>
-                  <div className="mt-6 flex flex-wrap justify-center gap-3">
-                    <Link
-                      href="/home?tab=trending"
-                      className="inline-flex h-10 items-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white"
-                    >
-                      Explore trending
-                    </Link>
-                    <Link
-                      href="/createpost"
-                      className="inline-flex h-10 items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700"
-                    >
-                      Write a post
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
             <aside className="space-y-5">
-              <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-slate-500" />
-                  <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500">
-                    Trending topics
-                  </h3>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {trendingTopics.length > 0 ? trendingTopics.map((topic) => (
-                    <TopicChip
-                      key={topic.topic}
-                      topic={topic.topic}
-                      count={topic.count}
-                      active={topicFilter === topic.topic}
-                      onClick={() => setTopicFilter(topic.topic)}
-                    />
-                  )) : (
-                    <p className="text-sm text-slate-500">Topic signals will appear here as the community grows.</p>
-                  )}
-                </div>
-              </section>
-
-              <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-slate-500" />
-                  <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500">
-                    Suggested creators
-                  </h3>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {overviewLoading ? (
-                    Array.from({ length: 3 }).map((_, index) => (
-                      <div key={index} className="rounded-2xl border border-slate-200 p-4">
-                        <Skeleton className="h-4 w-36" />
-                        <Skeleton className="mt-2 h-3 w-24" />
-                        <Skeleton className="mt-4 h-8 w-full rounded-full" />
-                      </div>
-                    ))
-                  ) : suggestedCreators.length > 0 ? (
-                    suggestedCreators.map((profile) => (
-                      <CreatorCard
-                        key={profile.userid}
-                        profile={profile}
-                        status={creatorStatus[profile.userid] || "none"}
-                        busy={isBusy && activeKey === `suggest:${profile.userid}`}
-                        onFollow={handleFollowSuggestion}
+              <Card className="border-white/10 bg-[#05070d] shadow-[0_16px_40px_rgba(0,0,0,0.32)]">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-white/45" />
+                    <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-white/45">
+                      Trending topics
+                    </h3>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {trendingTopics.length > 0 ? trendingTopics.map((topic) => (
+                      <TopicChip
+                        key={topic.topic}
+                        topic={topic.topic}
+                        count={topic.count}
+                        active={topicFilter === topic.topic}
+                        onClick={() => setTopicFilter(topic.topic)}
                       />
-                    ))
-                  ) : (
-                    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-sm text-slate-500">
-                      Follow more creators to see richer suggestions here.
-                    </div>
-                  )}
-                </div>
-              </section>
+                    )) : (
+                      <p className="text-sm text-white/60">Topic signals will appear here as the community grows.</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <section className="rounded-[1.75rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Quick actions
-                </p>
-                <div className="mt-4 space-y-3">
-                  <Link
-                    href="/createpost"
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:bg-white/10"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold">Write a post</p>
-                      <p className="text-xs text-slate-400">Start something new</p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-slate-300" />
-                  </Link>
-                  <Link
-                    href="/bookmarks"
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:bg-white/10"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold">Bookmarks</p>
-                      <p className="text-xs text-slate-400">Return to saved reading</p>
-                    </div>
-                    <Bookmark className="h-4 w-4 text-slate-300" />
-                  </Link>
-                  <Link
-                    href="/follow-requests"
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:bg-white/10"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold">Requests</p>
-                      <p className="text-xs text-slate-400">Private profile approvals</p>
-                    </div>
-                    <Users className="h-4 w-4 text-slate-300" />
-                  </Link>
-                </div>
-              </section>
+              <Card className="border-white/10 bg-[#05070d] shadow-[0_16px_40px_rgba(0,0,0,0.32)]">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-white/45" />
+                    <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-white/45">
+                      Suggested creators
+                    </h3>
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    {overviewLoading ? (
+                      Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                          <Skeleton className="h-4 w-36" />
+                          <Skeleton className="mt-2 h-3 w-24" />
+                          <Skeleton className="mt-4 h-8 w-full rounded-full" />
+                        </div>
+                      ))
+                    ) : suggestedCreators.length > 0 ? (
+                      suggestedCreators.map((profile) => (
+                        <CreatorCard
+                          key={profile.userid}
+                          profile={profile}
+                          status={creatorStatus[profile.userid] || "none"}
+                          busy={isBusy && activeKey === `suggest:${profile.userid}`}
+                          onFollow={handleFollowSuggestion}
+                        />
+                      ))
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-white/10 px-4 py-8 text-sm text-white/60">
+                        Follow more creators to see richer suggestions here.
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-white/10 bg-[#05070d] shadow-[0_16px_40px_rgba(0,0,0,0.32)]">
+                <CardContent className="p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/45">
+                    Quick actions
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    <Button asChild variant="outline" className="h-auto w-full justify-between rounded-2xl border-white/10 bg-white/5 px-4 py-3 text-left text-white hover:border-white/20 hover:bg-white/10 hover:text-white">
+                      <Link href="/createpost">
+                        <div>
+                          <p className="text-sm font-semibold">Write a post</p>
+                          <p className="text-xs text-white/55">Start something new</p>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-white/55" />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto w-full justify-between rounded-2xl border-white/10 bg-white/5 px-4 py-3 text-left text-white hover:border-white/20 hover:bg-white/10 hover:text-white">
+                      <Link href="/bookmarks">
+                        <div>
+                          <p className="text-sm font-semibold">Bookmarks</p>
+                          <p className="text-xs text-white/55">Return to saved reading</p>
+                        </div>
+                        <Bookmark className="h-4 w-4 text-white/55" />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto w-full justify-between rounded-2xl border-white/10 bg-white/5 px-4 py-3 text-left text-white hover:border-white/20 hover:bg-white/10 hover:text-white">
+                      <Link href="/follow-requests">
+                        <div>
+                          <p className="text-sm font-semibold">Requests</p>
+                          <p className="text-xs text-white/55">Private profile approvals</p>
+                        </div>
+                        <Users className="h-4 w-4 text-white/55" />
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </aside>
           </div>
         </section>

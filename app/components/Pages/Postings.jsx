@@ -1,9 +1,12 @@
 import React, { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const Postings = () => {
+  const router = useRouter();
   const textareaRef = useRef(null);
   const [post, setPost] = useState({ title: "", content: "" });
 
@@ -33,7 +36,7 @@ const Postings = () => {
 
       if (response.status === 201) {
         alert("Post created successfully!");
-        <Navigate to={'/profile'}/>
+        router.push("/profile");
       } else {
         alert("Error creating post");
       }
@@ -64,13 +67,13 @@ const Postings = () => {
           >
             Title
           </label>
-          <input
+          <Input
             type="text"
             id="title"
             name="title"
             onChange={postHandler}
             placeholder="Title"
-            className="w-full noto font-normal text-2xl px-4 py-3 border-l-4 border-transparent focus:border-blue-500 outline-none transition-colors duration-300 placeholder-gray-400"
+            className="w-full text-2xl font-normal"
           />
         </div>
         <div>
@@ -80,16 +83,15 @@ const Postings = () => {
           >
             Content
           </label>
-          <textarea
+          <Textarea
             id="content"
             name="content"
             onChange={postHandler}
             placeholder="Content"
-            rows="1"
             ref={textareaRef}
             onInput={handleTextareaInput}
-            className="w-full opensans font-extralight text-lg px-4 py-3 border-l-4 border-transparent focus:border-blue-500 outline-none transition-colors duration-300 placeholder-gray-400"
-          ></textarea>
+            className="w-full text-lg font-normal"
+          />
         </div>
         <div className="flex justify-center">
           <Button

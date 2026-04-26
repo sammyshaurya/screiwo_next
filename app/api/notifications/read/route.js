@@ -17,7 +17,10 @@ export async function POST(req) {
 
     if (readAll) {
       // Mark all notifications as read
-      await Notification.updateMany({ userId, read: false }, { read: true });
+      await Notification.updateMany(
+        { userId, read: false },
+        { read: true, readAt: new Date(), seenAt: new Date() }
+      );
       return Response.json({
         success: true,
         message: 'All notifications marked as read',
@@ -34,8 +37,8 @@ export async function POST(req) {
     // Mark single notification as read
     const notification = await Notification.findOneAndUpdate(
       { _id: notificationId, userId },
-      { read: true },
-      { new: true }
+      { read: true, readAt: new Date(), seenAt: new Date() },
+      { returnDocument: 'after' }
     );
 
     if (!notification) {

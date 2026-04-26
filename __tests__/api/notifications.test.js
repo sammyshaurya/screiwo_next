@@ -112,8 +112,12 @@ describe('Notifications API Routes', () => {
     expect(response.status).toBe(200)
     expect(Notification.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: 'notif_1', userId: 'user_123' },
-      { read: true },
-      { new: true }
+      expect.objectContaining({
+        read: true,
+        readAt: expect.any(Date),
+        seenAt: expect.any(Date),
+      }),
+      { returnDocument: 'after' }
     )
     expect(payload.notification.read).toBe(true)
   })

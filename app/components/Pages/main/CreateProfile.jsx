@@ -1,7 +1,6 @@
 'use client'
 import React, { useState } from "react";
 import { ProfileNav } from "./ProfileNav";
-import { DatePicker } from "antd";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
 import axios from "axios";
@@ -24,8 +23,8 @@ const CreateProfile = () => {
         setProfileData({ ...profileData, [e.target.name]: e.target.value });
     };
 
-    const handleDobChange = (dob, dateString) => {
-        setProfileData({ ...profileData, dob: dateString });
+    const handleDobChange = (event) => {
+        setProfileData({ ...profileData, dob: event.target.value });
     };
 
     const validateMobile = (mobile) => {
@@ -121,12 +120,12 @@ const CreateProfile = () => {
                         >
                             Date of Birth:
                         </label>
-                        <DatePicker
+                        <Input
                             id="dob"
                             name="dob"
+                            type="date"
                             value={profileData.dob}
                             onChange={handleDobChange}
-                            picker="date"
                             className="mt-1 w-full"
                         />
                     </div>

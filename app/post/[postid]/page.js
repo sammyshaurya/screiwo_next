@@ -9,13 +9,8 @@ import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import CommentsSection from "../../components/Pages/CommentsSection";
 import { recordRecentlyViewedPost } from "@/app/lib/readingHistory";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Button,
-} from "@nextui-org/react";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const VIEW_WINDOW_MS = 5000;
 
@@ -78,19 +73,21 @@ function clearViewPending(postid) {
 const AuthorCard = ({ author, follows }) => {
   const [isFollowed, setIsFollowed] = useState(false);
   return (
-    <Card className="w-full">
-      <CardHeader className="justify-between">
+    <Card className="w-full border border-slate-800/80 bg-slate-900/90 text-slate-100 shadow-[0_20px_60px_rgba(2,6,23,0.35)]">
+      <CardHeader className="justify-between gap-4 border-b border-slate-800/70">
         <Link href={`/user/${author.username}`}>
           <div className="flex gap-5">
-            <Avatar>
+            <Avatar className="border border-slate-700/80 bg-slate-900">
               <AvatarImage src={author.profileImageUrl} />
-              <AvatarFallback>{author.username.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="bg-slate-800 text-white">
+                {author.username.charAt(0)}
+              </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1 items-start justify-center">
-              <h4 className="text-small font-semibold leading-none text-default-600">
+              <h4 className="text-small font-semibold leading-none text-white">
                 {author.username}
               </h4>
-              <h5 className="text-small tracking-tight text-default-400">
+              <h5 className="text-small tracking-tight text-slate-400">
                 @{author.username}
               </h5>
             </div>
@@ -100,20 +97,18 @@ const AuthorCard = ({ author, follows }) => {
           <Button
             className={
               isFollowed
-                ? "bg-transparent text-foreground border-default-200"
+                ? "border border-slate-700/80 bg-slate-950 text-slate-200"
                 : ""
             }
-            color="primary"
-            radius="full"
+            variant={isFollowed ? "outline" : "default"}
             size="sm"
-            variant={isFollowed ? "bordered" : "solid"}
-            onPress={() => setIsFollowed(!isFollowed)}
+            onClick={() => setIsFollowed(!isFollowed)}
           >
             {isFollowed ? "Unfollow" : "Follow"}
           </Button>
         )}
       </CardHeader>
-      <CardBody className="px-3 py-0 text-small text-default-400">
+      <CardContent className="px-3 py-0 text-small text-slate-300">
         <p>
           {author.bio ||
             "Frontend developer and UI/UX enthusiast. Join me on this coding adventure!"}
@@ -124,19 +119,19 @@ const AuthorCard = ({ author, follows }) => {
             💻
           </span>
         </span>
-      </CardBody>
-      <CardFooter className="gap-3">
+      </CardContent>
+      <CardFooter className="gap-3 border-t border-slate-800/70 bg-slate-950/60">
         <div className="flex gap-1">
-          <p className="font-semibold text-default-400 text-small">
+          <p className="font-semibold text-white text-small">
             {author.Followers}
           </p>
-          <p className="text-default-400 text-small">Following</p>
+          <p className="text-slate-400 text-small">Following</p>
         </div>
         <div className="flex gap-1">
-          <p className="font-semibold text-default-400 text-small">
+          <p className="font-semibold text-white text-small">
             {author.Followings}
           </p>
-          <p className="text-default-400 text-small">Followers</p>
+          <p className="text-slate-400 text-small">Followers</p>
         </div>
       </CardFooter>
     </Card>
@@ -202,39 +197,44 @@ const PostPage = () => {
   }
 
   return (
-    <div className="app-page text-slate-950">
+    <div className="app-page text-slate-100">
       <ProfileNav />
-      <header className="app-shell max-w-4xl py-8 md:py-10">
-        <div className="app-panel overflow-hidden">
-          <div className="space-y-4 p-6 md:p-8">
-            <p className="app-kicker">Reading</p>
-            <h1 className="text-3xl font-black tracking-tight md:text-5xl">
+      <header className="app-shell max-w-6xl py-8 md:py-10">
+        <div className="space-y-5 border-b border-slate-800/80 pb-8">
+          <p className="app-kicker">Reading</p>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
               {post.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 text-slate-500">
-              <div className="flex items-center gap-2">
-                <Avatar>
-                  <AvatarImage src={post.profileImageUrl} />
-                  <AvatarFallback>
-                    {post.author.username.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
+            <div className="flex items-center gap-3 text-sm text-slate-400">
+              <span>{new Date(post.DateofCreation || post.createdAt || post.createdat).toLocaleDateString()}</span>
+              <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:block" />
+              <span>{post.allowComments !== false ? "Comments open" : "Comments closed"}</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="border border-slate-700/80 bg-slate-900">
+                <AvatarImage src={post.profileImageUrl} />
+                <AvatarFallback className="bg-slate-800 text-white">
+                  {post.author.username.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
                 <Link href={`/user/${post.author.username}`}>
-                  <span className="text-sm font-semibold text-slate-950">
-                    {post.author.username}
-                  </span>
+                  <span className="text-sm font-semibold text-white">{post.author.username}</span>
                 </Link>
+                <p className="text-xs text-slate-400">
+                  {post.follows === "myself" ? "Your post" : "Creator profile"}
+                </p>
               </div>
-              <span className="text-sm">
-                  {new Date(post.DateofCreation || post.createdAt || post.createdat).toLocaleDateString()}
-              </span>
             </div>
           </div>
         </div>
       </header>
-      <main className="app-shell grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-8 w-full">
-          <article className="prose max-w-none rounded-[1.75rem] border border-slate-200 bg-white p-6 text-lg prose-gray shadow-sm md:p-8 md:pr-8">
+      <main className="app-shell grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="w-full space-y-8">
+          <article className="prose prose-invert prose-zinc max-w-none rounded-[1.75rem] border border-white/10 bg-[#05070d] p-6 text-lg shadow-[0_24px_70px_rgba(0,0,0,0.42)] md:p-8 md:pr-8 prose-headings:tracking-tight prose-headings:text-white prose-p:leading-8 prose-p:text-white/75 prose-strong:text-white prose-li:text-white/75 prose-a:text-white prose-a:underline-offset-4 hover:prose-a:text-white/80">
             <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
           </article>
           <CommentsSection
@@ -246,7 +246,7 @@ const PostPage = () => {
             allowComments={post.allowComments !== false}
           />
         </div>
-        <div className="w-full">
+        <div className="w-full lg:pt-2">
           <AuthorCard author={post.author} follows={post.follows} />
         </div>
       </main>

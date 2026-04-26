@@ -5,9 +5,8 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Navigate } from "react-router";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useRouter, useParams } from "next/navigation";
 import DOMPurify from "isomorphic-dompurify";
 import { useUser } from "@clerk/nextjs";
 
@@ -16,6 +15,7 @@ export const UsersProfile = () => {
   const [posts, setPosts] = useState([]);
   const searchUser = useParams();
   const [followed, setFollowed] = useState(false);
+  const router = useRouter();
 
   const { user: clerkUser } = useUser();
 
@@ -23,7 +23,7 @@ export const UsersProfile = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Navigate("/");
+        router.push("/");
         return;
       }
       const response = await axios.get(
@@ -59,9 +59,9 @@ export const UsersProfile = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          Navigate("/");
+      const token = localStorage.getItem("token");
+      if (!token) {
+          router.push("/");
           return;
         }
         const response = await axios.get(
@@ -110,7 +110,7 @@ export const UsersProfile = () => {
     };
 
     fetchData();
-  }, [searchUser.username]);
+  }, [router, searchUser.username]);
 
   return (
     <div>

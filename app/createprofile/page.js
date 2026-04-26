@@ -1,13 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import ProfileNav from "../components/Pages/main/ProfileNav";
-import { DatePicker } from "antd";
-import { Input } from "@nextui-org/input";
-import { Button } from "@nextui-org/button";
 import axios from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 const CreateProfile = () => {
   const [profileData, setProfileData] = useState({
@@ -72,107 +72,84 @@ const CreateProfile = () => {
     <>
       <ProfileNav />
       <div className="app-page">
-        <main className="app-shell max-w-3xl">
-          <section className="app-panel overflow-hidden">
-            <div className="border-b border-slate-100 px-6 py-7 md:px-8">
+        <main className="app-shell max-w-4xl">
+          <section className="app-panel overflow-hidden rounded-[28px]">
+            <div className="border-b border-slate-800/80 bg-slate-950/70 px-6 py-7 md:px-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Image
-                  className="h-20 w-20 rounded-full border border-slate-200 bg-slate-100"
-                  src={clerkUser?.imageUrl || "https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yajRnVkRFaDFMak1JTzRKcXNWY3drckdZMmEiLCJyaWQiOiJ1c2VyXzJqUDlkb0p2TE9uYmVZOVkxZlUzUEVVYm1wViIsImluaXRpYWxzIjoiVFUifQ?width=160"}
+                  className="h-20 w-20 rounded-full border border-slate-700/80 bg-slate-900 object-cover"
+                  src={
+                    clerkUser?.imageUrl ||
+                    "https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yajRnVkRFaDFMak1JTzRKcXNWY3drckdZMmEiLCJyaWQiOiJ1c2VyXzJqUDlkb0p2TE9uYmVZOVkxZlUzUEVVYm1wViIsImluaXRpYWxzIjoiVFUifQ?width=160"
+                  }
                   width={80}
                   height={80}
                   alt="Profile"
                 />
                 <div>
                   <p className="app-kicker">Onboarding</p>
-                  <h2 className="mt-1 text-3xl font-black tracking-tight text-slate-950">
+                  <h2 className="mt-1 text-3xl font-black tracking-tight text-white">
                     Setup profile details
                   </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    This is the information readers will see when they open your profile. Keep it accurate and polished.
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="grid gap-8 p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_280px]">
-              <div className="flex flex-col">
-                <div className="mb-4">
-                  <label
-                    htmlFor="profileType"
-                    className="block text-sm font-medium text-slate-900"
-                  >
-                    Profile type:
+              <div className="space-y-5">
+                <div>
+                  <label htmlFor="profileType" className="mb-2 block text-sm font-medium text-slate-200">
+                    Profile type
                   </label>
-                  <select
-                    id="profileType"
-                    name="profileType"
-                    value={profileData.profileType}
-                    onChange={handleChange}
-                    className="mt-1 w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500"
-                  >
+                  <Select id="profileType" name="profileType" value={profileData.profileType} onChange={handleChange}>
                     <option value="Personal">Personal</option>
                     <option value="Professional">Professional</option>
-                  </select>
+                  </Select>
                 </div>
 
-                <div className="mb-4">
-                  <label
-                    htmlFor="gender"
-                    className="block text-sm font-medium text-slate-900"
-                  >
-                    Gender:
+                <div>
+                  <label htmlFor="gender" className="mb-2 block text-sm font-medium text-slate-200">
+                    Gender
                   </label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={profileData.gender}
-                    onChange={handleChange}
-                    className="mt-1 w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500"
-                  >
+                  <Select id="gender" name="gender" value={profileData.gender} onChange={handleChange}>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
-                  </select>
+                  </Select>
                 </div>
 
-                <div className="mb-4">
-                  <label
-                    htmlFor="dob"
-                    className="block text-sm font-medium text-slate-900"
-                  >
-                    Date of Birth:
+                <div>
+                  <label htmlFor="dob" className="mb-2 block text-sm font-medium text-slate-200">
+                    Date of birth
                   </label>
-                  <DatePicker
+                  <Input
                     id="dob"
-                    onChange={(date, dateString) => handledob(dateString)}
                     name="dob"
-                    type="dob"
-                    picker="date"
-                    className="mt-1 w-full"
+                    type="date"
+                    value={profileData.dob}
+                    onChange={handleChange}
                   />
                 </div>
 
-                <div className="mb-4">
-                  <label
-                    htmlFor="mobile"
-                    className="block text-sm font-medium text-slate-900"
-                  >
-                    Mobile Number:
+                <div>
+                  <label htmlFor="mobile" className="mb-2 block text-sm font-medium text-slate-200">
+                    Mobile number
                   </label>
                   <Input
                     id="mobile"
                     name="mobile"
                     value={profileData.mobile}
                     onChange={handleChange}
-                    className="mt-1 w-full"
+                    placeholder="Enter 10 digit number"
                   />
                 </div>
 
-                {error && <div className="mb-4 text-red-500">{error}</div>}
+                {error ? <div className="text-sm font-medium text-red-400">{error}</div> : null}
 
-                <div className="mt-8">
-                  <Button
-                    onClick={submit}
-                    className="app-action-primary w-full justify-center"
-                    disabled={loading}
-                  >
+                <div className="pt-2">
+                  <Button onClick={submit} className="app-action-primary w-full justify-center" disabled={loading}>
                     {loading ? "Submitting..." : "Submit"}
                   </Button>
                 </div>
@@ -181,8 +158,8 @@ const CreateProfile = () => {
               <aside className="space-y-4">
                 <section className="app-section">
                   <p className="app-kicker">Preview</p>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">
-                    This is the information readers will see when they open your profile. Keep it accurate and polished.
+                  <p className="mt-3 text-sm leading-7 text-slate-300">
+                    Your profile details will appear in your public profile and help readers understand who you are.
                   </p>
                 </section>
               </aside>

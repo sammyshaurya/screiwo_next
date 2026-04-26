@@ -2,10 +2,10 @@ import { connectDB } from '../../../lib/db';
 import { auth } from '@clerk/nextjs/server';
 import Comment from '../../../models/Comment.model';
 import Posts from '../../../models/Posts.model';
-import Notification from '../../../models/Notification.model';
 import Activity from '../../../models/Activity.model';
 import Profile from '../../../models/Profile.model';
 import { getProfileMapByUserIds } from '../../../lib/profileData';
+import { enqueueNotificationEvent } from '@/app/lib/notifications/pipeline';
 import { canViewProfile, canCommentOnPost } from '@/app/lib/profilePrivacy';
 
 // GET comments for a post with pagination
@@ -187,24 +187,40 @@ export async function POST(req) {
       // Notify the user whose comment is being replied to (if not self)
       const parentComment = await Comment.findById(parentCommentId);
       if (parentComment && parentComment.userId.toString() !== userId) {
-        await Notification.create({
-          userId: parentComment.userId,
-          fromUserId: userId,
+        await enqueueNotificationEvent({
           type: 'reply',
+          recipientId: parentComment.userId.toString(),
+          actorId: userId,
           postId,
           commentId: comment._id,
+          entityType: 'comment',
+          entityId: parentCommentId,
+          groupKey: `reply:${parentComment.userId.toString()}:${parentCommentId}:${userId}`,
+          actorSnapshot: {
+            userid: userId,
+            username: commenterProfile?.username || null,
+            FirstName: commenterProfile?.FirstName || null,
+          },
           message: `${commenterName} replied to your comment`,
         });
       }
     } else {
       // Notify post owner (if not self)
       if (post.userid !== userId) {
-        await Notification.create({
-          userId: post.userid,
-          fromUserId: userId,
+        await enqueueNotificationEvent({
           type: 'comment',
+          recipientId: post.userid,
+          actorId: userId,
           postId,
           commentId: comment._id,
+          entityType: 'post',
+          entityId: postId,
+          groupKey: `comment:${post.userid}:${postId}:${userId}`,
+          actorSnapshot: {
+            userid: userId,
+            username: commenterProfile?.username || null,
+            FirstName: commenterProfile?.FirstName || null,
+          },
           message: `${commenterName} commented on your post`,
         });
       }

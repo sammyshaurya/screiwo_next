@@ -63,24 +63,24 @@ const FollowingsList = ({ handleFollowingClick, user = null }) => {
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-slate-950/50" />
+      <div className="fixed inset-0 z-40 bg-slate-950/80" />
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
-        <div className="w-full max-w-md overflow-hidden border border-gray-200 bg-white shadow-xl">
-          <div className="border-b border-slate-100 px-6 py-5">
+        <div className="w-full max-w-md overflow-hidden border border-slate-800 bg-slate-900 shadow-[0_30px_90px_rgba(2,6,23,0.6)]">
+          <div className="border-b border-slate-800 px-6 py-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                   Discovery
                 </p>
-                <h3 className="mt-2 text-2xl font-black text-slate-950">Following</h3>
-                <p className="mt-2 text-sm text-slate-500">
+                <h3 className="mt-2 text-2xl font-black text-white">Following</h3>
+                <p className="mt-2 text-sm text-slate-400">
                   Creators and thinkers this profile follows.
                 </p>
               </div>
               <button
                 onClick={handleFollowingClick}
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800"
+                className="inline-flex h-10 w-10 items-center justify-center border border-slate-700 text-slate-400 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
                 aria-label="Close following list"
               >
                 <X className="h-4 w-4" />
@@ -91,7 +91,7 @@ const FollowingsList = ({ handleFollowingClick, user = null }) => {
           <div className="max-h-[24rem] space-y-3 overflow-y-auto px-6 py-5">
             {isLoading &&
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="flex items-center gap-3 border border-gray-100 p-3">
+                <div key={index} className="flex items-center gap-3 border border-slate-800 p-3">
                   <Skeleton className="h-12 w-12 rounded-full" />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-28" />
@@ -101,14 +101,14 @@ const FollowingsList = ({ handleFollowingClick, user = null }) => {
               ))}
 
             {!isLoading && followings.length === 0 && (
-              <div className="border border-dashed border-gray-200 bg-gray-50 px-5 py-10 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center bg-white shadow-sm">
-                  <Compass className="h-5 w-5 text-slate-500" />
+              <div className="border border-dashed border-slate-700 bg-slate-950 px-5 py-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center bg-slate-900 shadow-sm">
+                  <Compass className="h-5 w-5 text-slate-300" />
                 </div>
-                <p className="mt-4 text-sm font-semibold text-slate-900">
+                <p className="mt-4 text-sm font-semibold text-white">
                   {privacyBlocked ? "Following list is private" : "Not following anyone yet"}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
+                <p className="mt-2 text-sm leading-6 text-slate-400">
                   {privacyBlocked
                     ? message || "This profile has chosen to keep following details private."
                     : "Once this profile starts following others, they’ll appear here."}
@@ -119,7 +119,7 @@ const FollowingsList = ({ handleFollowingClick, user = null }) => {
             {!isLoading &&
               followings.map((profile) => (
                 <Link
-                  className="flex items-center justify-between border border-gray-100 p-3 transition hover:border-gray-200 hover:bg-gray-50"
+                className="flex items-center justify-between border border-slate-800 p-3 transition hover:border-slate-600 hover:bg-slate-800"
                   key={profile.userid || profile.username}
                   href={`/user/${profile.username}`}
                   onClick={handleFollowingClick}
@@ -127,18 +127,18 @@ const FollowingsList = ({ handleFollowingClick, user = null }) => {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={profile.profileImageUrl || undefined} />
-                      <AvatarFallback className="bg-slate-950 text-sm font-semibold text-white">
+                      <AvatarFallback className="bg-white text-sm font-semibold text-slate-950">
                         {(profile.username || "?").charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-semibold text-slate-950">@{profile.username}</p>
-                      <p className="text-sm text-slate-500">
+                      <p className="font-semibold text-white">@{profile.username}</p>
+                      <p className="text-sm text-slate-400">
                         {[profile.FirstName, profile.LastName].filter(Boolean).join(" ") || "View profile"}
                       </p>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-slate-400">View</span>
+                  <span className="text-sm font-semibold text-slate-500">View</span>
                 </Link>
               ))}
           </div>

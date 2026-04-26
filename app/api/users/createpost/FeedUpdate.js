@@ -22,7 +22,7 @@ async function FeedUpdate(authorId, postId, followingsList) {
             },
           },
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       )
     );
 
@@ -81,9 +81,9 @@ async function FeedFromFollow(followerID, followingID, followingUsername) {
               $position: 0,
             },
           },
-        },
-        { upsert: true, new: true }
-      );
+      },
+      { upsert: true, returnDocument: "after" }
+    );
     }
   } catch (error) {
     console.error("Error updating feed from follow:", error);

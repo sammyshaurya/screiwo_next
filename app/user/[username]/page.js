@@ -20,7 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import ProfileShell from "@/app/components/profile/ProfileShell";
-import { followUser as followProfile, unfollowUser as unfollowProfile } from "@/app/lib/api";
+import { followUser as followProfile, unfollowUser as unfollowProfile, getFollowStatus } from "@/app/lib/api";
 import { formatRelativeTime } from "@/app/lib/time";
 import { normalizeUsername } from "@/app/lib/username";
 
@@ -64,9 +64,51 @@ export default function UsersProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
+  const [pendingFollowAction, setPendingFollowAction] = useState(null);
   const { run, activeKey, isBusy } = useActionLock(700);
   const followed = relationship === "following";
   const requested = relationship === "requested";
+  const followBack = relationship === "follow_back";
+  const actionLabel = followed
+    ? "Following"
+    : requested
+      ? "Requested"
+      : followBack
+        ? "Follow Back"
+        : "Follow";
+  const loadingLabel = pendingFollowAction === "unfollow"
+    ? "Unfollowing..."
+    : pendingFollowAction === "cancel_request"
+      ? "Cancelling request..."
+      : pendingFollowAction === "follow_request"
+        ? "Requesting..."
+        : "Following...";
+
+  const syncRelationshipState = useCallback(async (fallbackProfile = null) => {
+    const targetUserId = fallbackProfile?.userid || null;
+    const targetUsername = fallbackProfile?.username || searchUser || null;
+
+    if (!targetUserId && !targetUsername) {
+      return null;
+    }
+
+    try {
+      const state = await getFollowStatus(targetUserId, targetUsername);
+
+      if (state?.relationship) {
+        setRelationship(state.relationship);
+      }
+
+      if (typeof state?.isPrivate === "boolean") {
+        setIsPrivate(state.isPrivate);
+      }
+
+      return state;
+    } catch (error) {
+      console.error("Failed to sync follow state:", error);
+      return null;
+    }
+  }, [searchUser]);
 
   const fetchData = useCallback(async ({ preferCache = true } = {}) => {
     if (!searchUser) {
@@ -91,6 +133,7 @@ export default function UsersProfile() {
       setPosts(nextData.posts);
       setRelationship(nextData.relationship);
       setIsPrivate(Boolean(response.data.isPrivate));
+      await syncRelationshipState(nextData.userProfile);
     } catch (error) {
       console.error("Error fetching user data:", error);
       if (error?.response?.status === 403) {
@@ -99,13 +142,14 @@ export default function UsersProfile() {
         setPosts([]);
         setRelationship(error.response.data?.relationship || (error.response.data?.isFollowing ? "following" : error.response.data?.isRequested ? "requested" : "none"));
         setIsPrivate(true);
+        await syncRelationshipState(privateProfile);
         return;
       }
       toast.error("Could not load this profile right now.");
     } finally {
       setIsLoading(false);
     }
-  }, [searchUser]);
+  }, [searchUser, syncRelationshipState]);
 
   useEffect(() => {
     fetchData({ preferCache: true });
@@ -156,9 +200,26 @@ export default function UsersProfile() {
 
   const submitFollow = async (toFollow) => {
     const followKey = `follow:${toFollow}`;
+    const prevRelationship = relationship;
+    const prevUser = curUser;
+    const isUnfollowAction = followed || requested;
+    const pendingAction = isUnfollowAction
+      ? (requested ? "cancel_request" : "unfollow")
+      : isPrivate
+        ? "follow_request"
+        : "follow";
+    const nextOptimisticRelationship = isUnfollowAction
+      ? "none"
+      : isPrivate
+        ? "requested"
+        : "following";
+
+    setPendingFollowAction(pendingAction);
+    setRelationship(nextOptimisticRelationship);
+
     try {
       const responseData = await run(followKey, async () => (
-        followed || requested
+        isUnfollowAction
           ? await unfollowProfile(toFollow)
           : await followProfile(toFollow)
       ));
@@ -191,6 +252,8 @@ export default function UsersProfile() {
         await fetchData({ preferCache: false });
       }
 
+      await syncRelationshipState(targetSnapshot || prevUser);
+
       toast.success(
         nextRelationship === "following"
           ? "Now following this profile."
@@ -201,8 +264,12 @@ export default function UsersProfile() {
               : "Follow request sent."
       );
     } catch (error) {
+      setRelationship(prevRelationship);
+      setUser(prevUser);
       console.error("Error following profile:", error);
       toast.error("We could not follow this profile.");
+    } finally {
+      setPendingFollowAction(null);
     }
   };
 
@@ -258,7 +325,7 @@ export default function UsersProfile() {
             profileTypeLabel="Private profile"
             title={displayName(curUser)}
             subtitle={`@${curUser.username}`}
-            bio={curUser.Bio || "This profile is private. Follow to request access to posts and details."}
+            bio={curUser.Bio || "This profile is private. Follow to view posts and updates."}
             featuredPost={hasLatestPost ? {
               title: latestPost.title,
               excerpt: latestPost.excerpt || latestPost.contentText || "",
@@ -266,14 +333,22 @@ export default function UsersProfile() {
               coverImageUrl: latestPost.coverImageUrl || null,
             } : null}
             activitySnapshot={activitySnapshot}
-            badgeLabel={followed ? "Following" : requested ? "Request sent" : "Private"}
+            badgeLabel={
+              followed
+                ? "Following"
+                : requested
+                  ? "Requested"
+                  : followBack
+                    ? "Follows you"
+                    : "Private"
+            }
             actions={[
               {
                 onClick: () => submitFollow(curUser.userid),
-                label: followed ? "Unfollow" : requested ? "Cancel request" : "Request access",
+                label: actionLabel,
                 icon: <UserPlus className="h-4 w-4" />,
                 loading: isBusy && activeKey === `follow:${curUser.userid}`,
-                loadingLabel: followed ? "Unfollowing..." : requested ? "Cancelling..." : "Requesting...",
+                loadingLabel,
                 className: followed || requested
                   ? "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
                   : "bg-slate-950 text-white hover:bg-slate-800",
@@ -352,6 +427,9 @@ export default function UsersProfile() {
               <FollowersList
                 handleFollowersClick={() => setShowFollowers(false)}
                 user={curUser.username}
+                ownerId={curUser.userid}
+                viewerIsOwner={isOwner}
+                onMutate={() => fetchData({ preferCache: false })}
               />
             )}
             {showFollowing && (
@@ -481,10 +559,10 @@ export default function UsersProfile() {
             actions={[
               {
                 onClick: () => submitFollow(curUser.userid),
-                label: followed ? "Unfollow" : requested ? "Cancel request" : isPrivate ? "Request access" : "Follow",
+                label: actionLabel,
                 icon: <UserPlus className="h-4 w-4" />,
                 loading: isBusy && activeKey === `follow:${curUser.userid}`,
-                loadingLabel: followed ? "Unfollowing..." : requested ? "Cancelling..." : isPrivate ? "Requesting..." : "Following...",
+                loadingLabel,
                 className: followed || requested
                   ? "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
                   : "bg-blue-600 text-white hover:bg-blue-700",
@@ -499,8 +577,16 @@ export default function UsersProfile() {
             ]}
             statCards={[
               { label: "Posts", value: curUser.postCount || posts.length || 0 },
-              { label: "Followers", value: curUser.Followers || 0, onClick: () => setShowFollowers(true) },
-              { label: "Following", value: curUser.Followings || 0, onClick: () => setShowFollowing(true) },
+              {
+                label: "Followers",
+                value: curUser.Followers || 0,
+                onClick: canOpenRelationshipLists ? () => setShowFollowers(true) : undefined,
+              },
+              {
+                label: "Following",
+                value: curUser.Followings || 0,
+                onClick: canOpenRelationshipLists ? () => setShowFollowing(true) : undefined,
+              },
               { label: "Reads", value: profileMetrics.views },
             ]}
             tabs={[]}
@@ -550,6 +636,9 @@ export default function UsersProfile() {
               <FollowersList
                 handleFollowersClick={() => setShowFollowers(false)}
                 user={curUser.username}
+                ownerId={curUser.userid}
+                viewerIsOwner={isOwner}
+                onMutate={() => fetchData({ preferCache: false })}
               />
             )}
             {showFollowing && (

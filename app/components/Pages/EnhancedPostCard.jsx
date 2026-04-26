@@ -1,11 +1,14 @@
-'use client';
+"use client";
 
 import React, { useState, useCallback } from 'react';
-import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Trash2, Edit, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Trash2, Edit, Loader2, Link2 } from 'lucide-react';
 import Link from 'next/link';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '@/app/lib/api';
 import { formatRelativeTime } from '@/app/lib/time';
 import { useActionLock } from '@/app/lib/useActionLock';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export default function PostCard({ post, onCommentClick, onEditClick, onDeleteClick, isLiked = false, isBookmarked = false, currentUserId }) {
   const [liked, setLiked] = useState(isLiked);
@@ -13,6 +16,7 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
   const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [savesCount, setSavesCount] = useState(post.saves || 0);
   const [showMenu, setShowMenu] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
   const { run, activeKey, isBusy } = useActionLock(700);
   const authorName = post.username || post.author?.username || 'Unknown user';
   const authorImage = post.profileImageUrl || post.author?.profileImageUrl || null;
@@ -20,6 +24,7 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
   const authorHref = post.author?.username || post.username ? `/user/${post.author?.username || post.username}` : '#';
   const previewText = post.excerpt || post.contentText || post.content || '';
   const coverImageUrl = post.coverImageUrl || null;
+  const hasImage = Boolean(coverImageUrl) && !imageFailed;
 
   // Calculate reading time
   const wordCount = previewText.split(/\s+/).length || 0;
@@ -72,151 +77,215 @@ export default function PostCard({ post, onCommentClick, onEditClick, onDeleteCl
   }, [bookmarked, savesCount, post._id, run]);
 
   const isAuthor = currentUserId === authorId;
+  const postHref = `/post/${post._id}`;
+
+  const handleShare = useCallback(async (e) => {
+    e.preventDefault();
+
+    const shareUrl = typeof window !== "undefined" ? `${window.location.origin}${postHref}` : postHref;
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({
+          title: post.title || authorName,
+          text: previewText.slice(0, 120),
+          url: shareUrl,
+        });
+        return;
+      }
+
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        return;
+      }
+
+      if (typeof window !== "undefined") {
+        window.prompt("Copy link", shareUrl);
+      }
+    } catch (error) {
+      console.error("Error sharing post:", error);
+    }
+  }, [authorName, post.title, postHref, previewText]);
 
   // Truncate content for preview
   const contentPreview = previewText.substring(0, 200) + (previewText.length > 200 ? '...' : '');
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow mb-4">
-      {/* Post Header */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {authorImage && (
-            <img
-              src={authorImage}
-              alt={authorName}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          )}
-          <div>
-            <Link href={authorHref} className="text-sm font-semibold text-gray-900 dark:text-white hover:underline">
-              {authorName}
+    <Card className="mx-auto mb-4 w-full max-w-[760px] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#05070d] shadow-[0_18px_60px_rgba(0,0,0,0.38)] transition-shadow hover:border-white/20 hover:shadow-[0_24px_72px_rgba(0,0,0,0.48)]">
+      <div className="space-y-4 px-4 py-4">
+        {/* Post Header */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Link href={authorHref} className="shrink-0">
+              <Avatar className="h-10 w-10 border border-white/10">
+                <AvatarImage src={authorImage || undefined} alt={authorName} />
+                <AvatarFallback className="bg-white/10 text-sm font-semibold text-white">
+                  {authorName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </Link>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {formatRelativeTime(post.DateofCreation || post.createdAt)}
-            </p>
+            <div className="min-w-0 flex-1">
+              <Link href={authorHref} className="block text-sm font-semibold text-white hover:underline">
+                <span className="truncate">{authorName}</span>
+              </Link>
+              <p className="text-xs text-white/55">
+                {formatRelativeTime(post.DateofCreation || post.createdAt)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden flex-wrap items-center justify-end gap-x-3 gap-y-1 text-[11px] font-medium text-white/45 sm:flex">
+              <span>{likesCount} {likesCount === 1 ? 'like' : 'likes'}</span>
+              <span className="h-1 w-1 rounded-full bg-white/20" />
+              <span>{post.commentscount || 0} {post.commentscount === 1 ? 'comment' : 'comments'}</span>
+              <span className="h-1 w-1 rounded-full bg-white/20" />
+              <span>{readingTime} min read</span>
+            </div>
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setShowMenu((current) => !current)}
+                className="rounded-full p-1.5 transition-colors hover:bg-white/10"
+                aria-label="Post actions"
+              >
+                <MoreHorizontal size={18} className="text-white/55" />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 top-8 z-20 min-w-44 overflow-hidden rounded-xl border border-white/10 bg-[#0a0d14] shadow-xl">
+                  <button
+                    onClick={handleShare}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-white hover:bg-white/10"
+                  >
+                    <Share2 size={16} />
+                    Share
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-white/70 hover:bg-white/10"
+                  >
+                    <Link2 size={16} />
+                    Copy link
+                  </button>
+                  {isAuthor ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          onEditClick?.(post);
+                          setShowMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-white hover:bg-white/10"
+                      >
+                        <Edit size={16} />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          onDeleteClick?.(post._id);
+                          setShowMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 hover:bg-white/10"
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        {isAuthor && (
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors"
-            >
-              <MoreHorizontal size={18} className="text-gray-500 dark:text-gray-400" />
-            </button>
-            {showMenu && (
-              <div className="absolute right-0 top-8 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg shadow-lg z-10 overflow-hidden">
-                <button
-                  onClick={() => {
-                    onEditClick?.(post);
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 flex items-center gap-2"
-                >
-                  <Edit size={16} />
-                  Edit
-                </button>
-                <button
-                  onClick={() => {
-                    onDeleteClick?.(post._id);
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-slate-600 flex items-center gap-2"
-                >
-                  <Trash2 size={16} />
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
+
+        {/* Post Title */}
+        {post.title && (
+          <Link href={postHref} className="block pt-1">
+            <h3 className={`font-bold tracking-tight text-white ${hasImage ? "text-[1.35rem] sm:text-[1.65rem]" : "text-[1.65rem] sm:text-[2rem]"}`}>
+              {post.title}
+            </h3>
+          </Link>
         )}
-      </div>
 
-      {/* Post Title */}
-      {post.title && (
-        <div className="px-4 pt-3">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">{post.title}</h3>
-        </div>
-      )}
-
-      {/* Post Content */}
-      <div className="px-4 py-3">
-        {coverImageUrl && (
-          <div className="mb-3 overflow-hidden rounded-lg border border-gray-100 dark:border-slate-700">
+        {/* Post Content */}
+        {hasImage ? (
+          <div className="pt-2">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
             <img
               src={coverImageUrl}
               alt={post.title || 'Post preview image'}
-              className="h-44 w-full object-cover"
+              className="aspect-[4/5] w-full object-cover max-h-[420px] sm:aspect-video sm:max-h-none"
+              loading="lazy"
+              decoding="async"
+              onError={() => setImageFailed(true)}
             />
+            </div>
           </div>
-        )}
-        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{contentPreview}</p>
+        ) : null}
+        <p className={`pt-2 text-sm leading-6 ${hasImage ? "text-white/68" : "text-white/72"}`}>
+          {contentPreview}
+        </p>
         {previewText.length > 200 && (
-          <Link href={`/post/${post._id}`} className="text-blue-500 hover:text-blue-600 text-sm font-medium">
+          <Link href={postHref} className="inline-flex pt-1 text-sm font-medium text-white hover:underline">
             Read more →
           </Link>
         )}
+
+        {/* Post Actions */}
+        <div className="flex items-center gap-2 border-t border-white/10 pt-3">
+          <Button
+            onClick={handleLike}
+            disabled={isBusy}
+            aria-busy={activeKey === `like:${post._id}` ? "true" : undefined}
+            variant="ghost"
+            size="sm"
+            className={`h-10 justify-center gap-2 rounded-full px-3 text-sm font-medium ${
+              liked
+                ? "bg-white/10 text-white"
+                : "text-white/60 hover:bg-white/5 hover:text-white"
+            }`}
+          >
+            {activeKey === `like:${post._id}` ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
+            )}
+            <span className="text-xs font-semibold tabular-nums">
+              {likesCount}
+            </span>
+          </Button>
+
+          <Button
+            onClick={() => onCommentClick?.(post)}
+            variant="ghost"
+            size="sm"
+            className="h-10 justify-center gap-2 rounded-full px-3 text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white"
+          >
+            <MessageCircle size={18} />
+            <span className="text-xs font-semibold tabular-nums">
+              {post.commentscount || 0}
+            </span>
+          </Button>
+
+          <Button
+            onClick={handleBookmark}
+            disabled={isBusy}
+            aria-busy={activeKey === `bookmark:${post._id}` ? "true" : undefined}
+            variant="ghost"
+            size="sm"
+            className={`h-10 justify-center gap-2 rounded-full px-3 text-sm font-medium ${
+              bookmarked
+                ? "bg-white/10 text-white"
+                : "text-white/60 hover:bg-white/5 hover:text-white"
+            }`}
+            aria-label={bookmarked ? "Remove bookmark" : "Bookmark post"}
+          >
+            {activeKey === `bookmark:${post._id}` ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+            )}
+          </Button>
+        </div>
       </div>
-
-      {/* Post Metadata */}
-      <div className="px-4 py-2 bg-gray-50 dark:bg-slate-700/50 flex justify-between text-xs text-gray-500 dark:text-gray-400">
-        <span>{likesCount} {likesCount === 1 ? 'like' : 'likes'}</span>
-        <span>{post.commentscount || 0} {post.commentscount === 1 ? 'comment' : 'comments'}</span>
-        <span>{readingTime} min read</span>
-      </div>
-
-      {/* Post Actions */}
-      <div className="px-4 py-3 flex gap-1 border-t border-gray-100 dark:border-slate-700">
-        <button
-          onClick={handleLike}
-          disabled={isBusy}
-          aria-busy={activeKey === `like:${post._id}` ? "true" : undefined}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors text-sm font-medium ${
-            liked
-              ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
-          }`}
-        >
-          {activeKey === `like:${post._id}` ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
-          )}
-          {activeKey === `like:${post._id}` ? 'Liking...' : liked ? 'Liked' : 'Like'}
-        </button>
-
-        <button
-          onClick={() => onCommentClick?.(post)}
-          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-        >
-          <MessageCircle size={18} />
-          Comment
-        </button>
-
-        <button
-          onClick={handleBookmark}
-          disabled={isBusy}
-          aria-busy={activeKey === `bookmark:${post._id}` ? "true" : undefined}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors text-sm font-medium ${
-            bookmarked
-              ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
-          }`}
-        >
-          {activeKey === `bookmark:${post._id}` ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
-          )}
-          {activeKey === `bookmark:${post._id}` ? 'Saving...' : bookmarked ? 'Saved' : 'Save'}
-        </button>
-
-        <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-          <Share2 size={18} />
-          Share
-        </button>
-      </div>
-    </div>
+    </Card>
   );
 }

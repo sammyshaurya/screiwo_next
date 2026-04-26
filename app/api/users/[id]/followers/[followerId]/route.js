@@ -1,0 +1,26 @@
+import { NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { connectdb } from "@/app/lib/db";
+import { removeFollower } from "@/app/lib/followService";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export const DELETE = async (_req, { params }) => {
+  await connectdb();
+
+  const signeduser = await currentUser();
+  if (!signeduser) {
+    return NextResponse.json("Unauthorized access", { status: 401 });
+  }
+
+  const result = await removeFollower({
+    ownerId: params?.id?.toString?.(),
+    followerId: params?.followerId?.toString?.(),
+  });
+
+  return NextResponse.json(result, {
+    status: result?.noOp ? 202 : 200,
+    headers: { "Cache-Control": "no-store" },
+  });
+};

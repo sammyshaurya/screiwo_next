@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const AuthGuard = ({ children }) => {
   const [isValidToken, setIsValidToken] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const verifyToken = async (token) => {
@@ -33,12 +34,18 @@ const AuthGuard = ({ children }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (isValidToken === false) {
+      router.replace("/");
+    }
+  }, [isValidToken, router]);
+
   if (isValidToken === null) {
-    return <h1>Loading...</h1>
+    return <h1>Loading...</h1>;
   } else if (isValidToken) {
     return children;
   } else {
-    return <Navigate to="/" replace />;
+    return null;
   }
 };
 

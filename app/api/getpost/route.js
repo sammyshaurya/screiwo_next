@@ -51,7 +51,7 @@ export const GET = async (req, res) => {
       await AllPosts.findByIdAndUpdate(
         postid,
         { $inc: { viewsCount: 1 } },
-        { new: true }
+        { returnDocument: 'after' }
       );
     }
 

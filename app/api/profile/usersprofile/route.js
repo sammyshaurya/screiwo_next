@@ -7,6 +7,7 @@ import { canViewProfile } from "@/app/lib/profilePrivacy";
 import { withLiveProfileCounts } from "@/app/lib/profileData";
 import Posts from "@/app/models/Posts.model";
 import { normalizeUsername, createUsernameRegex } from "@/app/lib/username";
+import { getFollowRelationshipState } from "@/app/lib/followService";
 
 export const GET = async (req,{params})=> {
   await connectdb();
@@ -25,8 +26,10 @@ export const GET = async (req,{params})=> {
             console.error('No user found');
             return NextResponse.json("No user found", { status: 404 });
           }
-        const follower = (searchedUsers.FollowersList || []).some((id) => id?.toString?.() === signeduser.id);
-        const requested = (searchedUsers.FollowRequestsReceived || []).some((id) => id?.toString?.() === signeduser.id);
+        const followState = await getFollowRelationshipState({
+          viewerId: signeduser.id,
+          targetId: searchedUsers.userid,
+        });
         const canView = canViewProfile(searchedUsers, signeduser.id);
         const postCount = await Posts.countDocuments({ userid: searchedUsers.userid, isDeleted: { $ne: true } });
         if (!canView) {
@@ -39,9 +42,9 @@ export const GET = async (req,{params})=> {
                 preferences: searchedUsers.preferences || {},
               },
               posts: [],
-              isFollowing: follower,
-              isRequested: requested,
-              relationship: follower ? "following" : requested ? "requested" : "none",
+              isFollowing: followState.isFollowing,
+              isRequested: followState.isRequested,
+              relationship: followState.relationship,
             },
             {
               status: 403,
@@ -54,7 +57,13 @@ export const GET = async (req,{params})=> {
 
         const posts = await getPostsByAuthorId(searchedUsers.userid);
         return NextResponse.json(
-          { userProfile: withLiveProfileCounts(searchedUsers, posts.length), posts, isFollowing : follower, isRequested: requested, relationship: follower ? "following" : requested ? "requested" : "none" },
+          {
+            userProfile: withLiveProfileCounts(searchedUsers, posts.length),
+            posts,
+            isFollowing: followState.isFollowing,
+            isRequested: followState.isRequested,
+            relationship: followState.relationship,
+          },
           {
             status: 200,
             headers: {

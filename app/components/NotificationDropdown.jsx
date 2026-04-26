@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, X, CheckCheck } from 'lucide-react';
 import { getNotifications, getUnreadNotificationCount, markNotificationAsRead } from '@/app/lib/api';
 import Link from 'next/link';
+import useNotificationStream from '@/app/lib/useNotificationStream';
 
 export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState([]);
@@ -12,11 +13,40 @@ export default function NotificationDropdown() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (typeof document !== 'undefined' && document.hidden) {
+      return undefined;
+    }
+
     fetchUnreadCount();
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return;
+      }
+
+      fetchUnreadCount();
+    }, 30000);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchUnreadCount();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
+
+  useNotificationStream(() => {
+    fetchUnreadCount();
+    if (showDropdown) {
+      fetchNotifications();
+    }
+  });
 
   useEffect(() => {
     if (showDropdown) {
@@ -75,6 +105,12 @@ export default function NotificationDropdown() {
         return `replied to your comment`;
       case 'follow':
         return `followed you`;
+      case 'follow_request':
+        return `sent you a follow request`;
+      case 'follow_request_accepted':
+        return `accepted your follow request`;
+      case 'follow_request_declined':
+        return `declined your follow request`;
       default:
         return notification.message;
     }
@@ -86,6 +122,9 @@ export default function NotificationDropdown() {
       comment: '💬',
       reply: '↩️',
       follow: '👤',
+      follow_request: '✉️',
+      follow_request_accepted: '✅',
+      follow_request_declined: '✖️',
     };
     return icons[type] || '📝';
   };
@@ -94,7 +133,7 @@ export default function NotificationDropdown() {
     <div className="relative">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors dark:text-gray-400 dark:hover:bg-slate-700"
+        className="relative rounded-full p-2 text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -105,15 +144,15 @@ export default function NotificationDropdown() {
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-slate-800 bg-slate-900 shadow-[0_30px_90px_rgba(2,6,23,0.6)]">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+          <div className="flex items-center justify-between border-b border-slate-800 p-4">
+            <h3 className="font-semibold text-white">Notifications</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs text-blue-300 hover:underline"
                 >
                   <CheckCheck size={14} />
                   Mark all read
@@ -121,7 +160,7 @@ export default function NotificationDropdown() {
               )}
               <button
                 onClick={() => setShowDropdown(false)}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
+                className="rounded p-1 hover:bg-slate-800"
               >
                 <X size={18} />
               </button>
@@ -131,19 +170,19 @@ export default function NotificationDropdown() {
           {/* Notifications List */}
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+              <div className="p-4 text-center text-sm text-slate-400">
                 Loading...
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+              <div className="p-4 text-center text-sm text-slate-400">
                 No notifications yet
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  className={`p-4 border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors ${
-                    !notification.read ? 'bg-blue-50 dark:bg-slate-700/50' : ''
+                  className={`cursor-pointer border-b border-slate-800 p-4 transition-colors hover:bg-slate-800/70 ${
+                    !notification.read ? 'bg-slate-800/60' : ''
                   }`}
                   onClick={() => {
                     if (!notification.read) {
@@ -152,22 +191,22 @@ export default function NotificationDropdown() {
                   }}
                 >
                   <div className="flex gap-3">
-                    <div className="text-xl flex-shrink-0">
+                    <div className="flex-shrink-0 text-xl">
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap gap-1">
                         <Link
                           href={notification.fromUserId?.username ? `/user/${notification.fromUserId.username}` : '/notifications'}
-                          className="font-semibold text-sm text-gray-900 dark:text-white hover:underline truncate"
+                          className="truncate text-sm font-semibold text-white hover:underline"
                         >
                           {notification.fromUserId?.FirstName || notification.fromUserId?.username || 'Someone'}
                         </Link>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm text-slate-300">
                           {getNotificationMessage(notification)}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="mt-1 text-xs text-slate-400">
                         {new Date(notification.createdAt).toLocaleDateString()} at{' '}
                         {new Date(notification.createdAt).toLocaleTimeString([], {
                           hour: '2-digit',
@@ -175,7 +214,7 @@ export default function NotificationDropdown() {
                         })}
                       </p>
                       {!notification.read && (
-                        <div className="w-2 h-2 bg-gray-300 dark:bg-slate-600 rounded-full mt-2"></div>
+                        <div className="mt-2 h-2 w-2 rounded-full bg-slate-500"></div>
                       )}
                     </div>
                   </div>
@@ -185,10 +224,10 @@ export default function NotificationDropdown() {
           </div>
 
           {/* Footer */}
-          <div className="p-3 border-t border-gray-200 dark:border-slate-700 text-center">
+          <div className="border-t border-slate-800 p-3 text-center">
             <Link
               href="/notifications"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm text-blue-300 hover:underline"
             >
               View all notifications
             </Link>

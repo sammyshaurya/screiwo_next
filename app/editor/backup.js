@@ -1,6 +1,6 @@
 "use client";
 import "./styles.css";
-import { Button } from "@nextui-org/button";
+import { Button } from "@/components/ui/button";
 import {
   BubbleMenu,
   EditorContent,
